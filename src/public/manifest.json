@@ -1,0 +1,13 @@
+{
+ "name": "Cryptometric",
+ "short_name": "Cryptometric",
+ "theme_color": "#01B7FF",
+ "display": "fullscreen",
+ "icons": [
+  {
+    "src": "/images/favicon.svg",
+    "type": "image/svg+xml",
+    "sizes": "512x512"
+  }
+ ]
+}

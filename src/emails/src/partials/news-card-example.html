@@ -1,0 +1,27 @@
+<row class="news-card">
+  <columns small="14" large="3" class="news-card__image-wrapper">
+    <center>
+      <img class="news-card__image" width="220" height="160" style="width: 220px; height: 160px;"
+        src="https://cdn.abo.media/upload/article/res/770-430/o_1fuhgsl6d18v11f581jh3j8a14jk35.jpg" />
+    </center>
+  </columns>
+  <columns small="14" large="11">
+    <div class="news-card__typography">
+      <p class="m-0 text news-card__title">{{data.title}}</p>
+      <p class="m-0 text news-card__description">{{data.description}}</p>
+      <row class="news-card__footer">
+        <columns small="7" large="7">
+          <a href="{{data.link}}" class="text media-text">Read more</a>
+        </columns>
+        <columns small="7" large="7">
+          <div class="news-card__date">
+            <img class="mr-1 icon" width="16" height="16" style="width: 16px; height: 16px;"
+              src="../assets/img/calendar.png" alt="Calendar">
+            {{#date-formatter}}{{data.date}}{{/date-formatter}}
+          </div>
+        </columns>
+      </row>
+    </div>
+  </columns>
+</row>
+<hr class="m-0" style="height: 1px; border: none;" color="#C4C4C4" />

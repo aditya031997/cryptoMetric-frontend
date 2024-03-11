@@ -1,0 +1,18 @@
+.profile-forms {
+  position: relative;
+}
+.profile-forms--admin{
+  max-width: 354px;
+}
+.profile-forms__title {
+  border-bottom: 1px solid $grey-light;
+}
+.profile-forms__loader{
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba($white, 0.2);
+}

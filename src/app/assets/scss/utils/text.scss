@@ -1,0 +1,93 @@
+%regular {
+  font-weight: 400;
+}
+
+%medium {
+  font-weight: 500;
+}
+
+%semi-bold {
+  font-weight: 600;
+}
+
+/*- Styles from Figma -*/
+.text {
+  line-height: 1.5;
+}
+
+// body UI
+.text--body {
+  font-size: 1rem;
+}
+
+// h2 UI
+.text--title-2 {
+  @extend %semi-bold;
+
+  font-size: 2.38rem;
+}
+
+// text medium
+.text-medium {
+  @extend %medium;
+}
+
+// h3 UI
+.text--title-3 {
+  @extend %semi-bold;
+
+  font-size: 1.38rem;
+}
+
+// subh1 UI
+.text--subtitile-1 {
+  font-size: 1.25rem;
+}
+
+// h3 subh UI
+.text--subtitle-3 {
+  font-size: 1.38rem;
+}
+
+// caption UI
+.text--caption {
+  font-size: 0.88rem;
+}
+
+// body btn UI
+.text--button {
+  @extend %medium;
+  font-size: 1rem;
+}
+
+// caption UI bold
+.text--caption-bold {
+  @extend .text--caption;
+  @extend %medium;
+}
+
+// caption 2 UI
+.text--caption-2 {
+  font-size: 0.75rem;
+}
+/*-  -*/
+
+// Colors
+$colors: (
+  black: $black,
+  secondary: $secondary,
+  red: $red,
+  green: $green,
+  grey: $grey,
+  cod-grey: $cod-grey,
+  blue: $blue,
+  grey-mid: $grey-mid,
+  grey-light: $grey-light,
+  grey-dark: $grey-dark,
+);
+
+@each $name, $color in $colors {
+  .text-#{$name} {
+    color: $color;
+  }
+}

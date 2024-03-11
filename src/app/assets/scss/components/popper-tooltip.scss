@@ -1,0 +1,33 @@
+.popper-tooltip {
+  padding: 8px 24px 8px;
+  border-radius: 80px;
+  background-color: $blue;
+  color: $white;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 0.75rem;
+  line-height: 18px;
+  &:last-child {
+    padding: 8px 24px 8px;
+  }
+  &.is-active {
+    animation: opacity-popper 0.33s;
+  }
+  &.is-disabled {
+    display: none;
+  }
+}
+@keyframes opacity-popper {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.popper-tooltip__trigger {
+  cursor: help;
+  &.is-disabled {
+    cursor: inherit;
+  }
+}

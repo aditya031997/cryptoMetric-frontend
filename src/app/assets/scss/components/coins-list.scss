@@ -1,0 +1,38 @@
+.coins-list {
+  list-style: none;
+  padding: 0;
+}
+
+.coins-list__item {
+  position: relative;
+  padding: 12px 8px 12px 6px;
+  border-top: 1px solid $grey-light;
+  transition: box-shadow 0.33s ease-in-out;
+
+  &:last-child {
+    border-bottom: 1px solid $grey-light;
+  }
+
+  &:not(.coins-list__item--active) {
+    cursor: pointer;
+
+    &:hover {
+      box-shadow: 0 0 3px 3px $blue-10;
+    }
+  }
+}
+
+.coins-list__item--active {
+  background-color: $blue-10;
+
+  &::before {
+    content: '';
+    background-color: $blue;
+    width: 2px;
+    height: 100%;
+
+    position: absolute;
+    top: 0;
+    left: -2px;
+  }
+}

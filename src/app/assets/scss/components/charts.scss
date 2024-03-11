@@ -1,0 +1,20 @@
+.tradingview-chart {
+}
+
+.tradingview-chart--rounded {
+  iframe {
+    border-radius: $border-radius-lg;
+  }
+}
+
+.tradingview-chart-sm {
+  height: 260px;
+}
+
+.tradingview-chart-md {
+  height: 460px;
+}
+
+.tradingview-chart-lg {
+  height: 672px;
+}

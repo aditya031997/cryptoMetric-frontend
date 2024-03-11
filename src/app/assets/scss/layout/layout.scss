@@ -1,0 +1,30 @@
+.dashboard {
+}
+.dashboard__content {
+  flex-grow: 1;
+}
+.dashboard__main {
+  padding: 78px 33px 23px 108px;
+  background: $grey-lighten;
+  transition: 0.15s padding ease-in-out;
+  // -webkit-overflow-scrolling: touch;
+  @media (max-width: breakpoint-max('sm')) {
+    padding: 78px 33px 24px 30px;
+  }
+  @media (max-width: breakpoint-max('xs')) {
+    width: 100vw;
+    padding: 78px 10px 24px 10px;
+  }
+  &.is-sidebar {
+    padding: 78px 33px 23px 285px;
+    @media (max-width: breakpoint-max('md')) {
+      padding: 78px 33px 23px 108px;
+    }
+    @media (max-width: breakpoint-max('sm')) {
+      padding: 78px 33px 24px 30px;
+    }
+    @media (max-width: breakpoint-max('xs')) {
+      padding: 78px 10px 24px 10px;
+    }
+  }
+}

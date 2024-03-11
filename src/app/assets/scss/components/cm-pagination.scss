@@ -1,0 +1,103 @@
+.cm-pagination {
+  display: flex;
+  @media (max-width: breakpoint-max('md')) {
+    justify-content: space-between;
+  }
+  &.is-rows {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    .cm-pagination__pagination {
+      margin-top: 24px;
+    }
+    @media (max-width: breakpoint-max('md')) {
+      flex-direction: row;
+      justify-content: space-between;
+      .cm-pagination__pagination {
+        margin-top: 0px;
+      }
+    }
+  }
+}
+.cm-pagination__label {
+  @media (max-width: breakpoint-max('xs')) {
+    display: none;
+  }
+}
+
+.cm-pagination__pagination {
+  display: flex;
+  align-items: center;
+  margin: 0 auto;
+  @media (max-width: breakpoint-max('md')) {
+    margin: 0px;
+  }
+}
+.cm-pagination__arrow {
+  z-index: 0;
+  margin-left: 8px;
+  padding: 5px 10px;
+  color: $blue;
+  border-radius: 4px;
+  transition: 0.33s background-color ease-in-out, 0.33s color ease-in-out;
+  &:hover {
+    background-color: $blue-10;
+  }
+  &.is-disabled {
+    cursor: not-allowed;
+    color: $grey-mid;
+    &:hover {
+      background-color: transparent;
+    }
+  }
+  @media (max-width: breakpoint-max('md')) {
+    padding: 10px 10px;
+    margin-left: 20px;
+  }
+}
+.cm-pagination__arrow--left {
+  margin-left: 0;
+  margin-right: 15px;
+  transform: rotate(180deg);
+  @media (max-width: breakpoint-max('md')) {
+    margin-right: 20px;
+  }
+}
+.cm-pagination__button-groups {
+  margin-left: -8px;
+}
+.cm-pagination__button {
+  margin-left: 7px;
+  padding: 5px 11px;
+  border: none;
+  border-radius: 8px;
+  background-color: transparent;
+  font-weight: 500;
+  font-size: 0.88rem;
+  transition: 0.33s background-color ease-in-out, 0.33s color ease-in-out;
+  &:hover {
+    background-color: $blue-10;
+    color: $blue;
+  }
+  &.is-active {
+    cursor: not-allowed;
+    color: $white;
+    background-color: $blue;
+  }
+  &.is-disable {
+    cursor: not-allowed;
+    color: $cod-grey;
+    &:hover {
+      background-color: transparent;
+      color: $cod-grey;
+    }
+  }
+  @media (max-width: breakpoint-max('lg')) {
+    padding: 4px 9px;
+    margin-left: 4px;
+    font-size: 0.75rem;
+  }
+  @media (max-width: breakpoint-max('md')) {
+    display: none;
+  }
+}

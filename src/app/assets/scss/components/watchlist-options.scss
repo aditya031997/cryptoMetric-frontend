@@ -1,0 +1,35 @@
+.watchlist-options {
+  display: flex;
+  align-items: center;
+  @media (max-width: breakpoint-max('xs')) {
+    flex-direction: column;
+  }
+}
+.watchlist-options__button.cm-button{
+  @media (max-width: breakpoint-max('xs')) {
+    justify-content: center;
+  }
+}
+.watchlist-options__button {
+  @media (max-width: breakpoint-max('xs')) {
+    width: 100%;
+    max-width: 120px;
+  }
+}
+.watchlist-options__button--add{
+  padding: 3px 8px;
+}
+.watchlist-options__button-edit {
+  margin-left: 10px;
+  @media (max-width: breakpoint-max('xs')) {
+    margin-left: 0;
+    margin-top: 5px;
+  }
+}
+.watchlist-options__button-cancel {
+  margin-left: 10px;
+  @media (max-width: breakpoint-max('xs')) {
+    margin-left: 0;
+    margin-top: 5px;
+  }
+}

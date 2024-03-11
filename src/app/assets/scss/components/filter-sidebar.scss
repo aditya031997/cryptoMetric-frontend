@@ -1,0 +1,49 @@
+.filter-sidebar__header {
+  display: none;
+  @media (max-width: breakpoint-max('lg')) {
+    display: flex;
+    justify-content: space-between;
+  }
+}
+
+.filter-sidebar {
+  @media (max-width: breakpoint-max('lg')) {
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 54;
+    &.is-active {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      right: 0;
+      background-color: rgba($cod-grey, 0.2);
+      .filter-sidebar__content {
+        right: 0;
+      }
+      // // Affects only safari 10.1+ (ugly hack)
+      // @media not all and (min-resolution: 0.001dpcm) {
+      //   @media {
+      //     right: calc(0 + env(safe-area-inset-right, 0));
+      //     .filter-sidebar__content {
+      //       right: calc(0 + env(safe-area-inset-right, 0));
+      //     }
+      //   }
+      // }
+    }
+  }
+}
+.filter-sidebar__content {
+  @media (max-width: breakpoint-max('lg')) {
+    position: fixed;
+    z-index: 54;
+    bottom: 0;
+    right: -200px;
+    padding: 20px 15px 30px 15px;
+    width: 200px;
+    height: calc(100vh - calc(100vh - 100%));
+    overflow: auto;
+    background-color: $white;
+    transition: right 0.33s ease-in-out;
+  }
+}

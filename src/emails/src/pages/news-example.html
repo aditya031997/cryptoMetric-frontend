@@ -1,0 +1,22 @@
+<container>
+  <row>
+    <columns large="1">
+    </columns>
+    <columns large="12" small="14">
+      <spacer size="28"></spacer>
+      <h1 style="color: #1A1A1A;" class="text-center text text-bold m-0 text--tittle">Here is your weekly news!</h1>
+      <spacer size="8"></spacer>
+      <ul class="p-0 m-0">
+        {{#each news}}
+        {{> news-card-example data=this}}
+        {{/each}}
+      </ul>
+      <spacer size="24"></spacer>
+      <center>
+        <button href="{{links.news}}" class="expanded text radius">Click for more news!</button>
+      </center>
+    </columns>
+    <columns large="1">
+    </columns>
+  </row>
+</container>

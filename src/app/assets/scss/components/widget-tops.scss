@@ -1,0 +1,36 @@
+.widget-tops {
+  padding-top: 24px;
+  margin-left: -15px;
+  @media (max-width: 1430px) {
+    margin-left: 0px;
+    margin-top: -30px;
+    flex-wrap: wrap;
+  }
+}
+.widget-tops.is-dnd {
+  @media (min-width: 1430px) {
+    margin-top: 24px;
+  }
+}
+.widget-tops__table {
+  margin-left: 15px;
+  flex: 0 0 50%;
+  max-width: calc(50% - 15px);
+
+  @media (max-width: 1430px) {
+    flex: 0 0 100%;
+    max-width: none;
+    width: 100%;
+    margin-left: 0px;
+    margin-top: 30px;
+  }
+}
+.widget-tops__loader-wrapper {
+  position: relative;
+  height: 100px;
+}
+.widget-tops__list-empty {
+  text-align: center;
+  font-size: 1.5rem;
+  color: rgba($secondary, 0.7);
+}

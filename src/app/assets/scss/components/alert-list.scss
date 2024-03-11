@@ -1,0 +1,21 @@
+.alert-list {
+  padding: 0;
+  margin: 0;
+}
+.alert-list__element-link {
+  padding: 16px 0 14px 0;
+  display: block;
+  border-top: 1px solid $grey-light;
+  list-style-type: none;
+  color: $cod-grey;
+  transition: 0.33s background-color ease-in-out, 0.33s border-color ease-in-out;
+  &:hover {
+    color: $cod-grey;
+    background-color: $blue-10;
+    border-color: $blue;
+  }
+
+  .cm-link__text {
+    margin: 0;
+  }
+}

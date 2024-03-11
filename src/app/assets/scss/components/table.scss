@@ -1,0 +1,237 @@
+.table {
+  margin: 0;
+  thead th {
+    border: none;
+  }
+  td,
+  th {
+    padding: 16px 3px;
+  }
+  tr {
+    td {
+      border-top: 1px solid $grey-light;
+    }
+    td:first-child {
+      padding-left: 0;
+    }
+    td:last-child {
+      padding-right: 0;
+    }
+  }
+  tr:last-child td {
+    padding-bottom: 0;
+  }
+}
+.table--alerts {
+  max-width: 650px;
+  width: 100%;
+}
+.table__image {
+  margin-right: 8px;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+.table__image--alerts {
+  @media (max-width: breakpoint-max('sm')) {
+    width: 18px;
+    height: 18px;
+  }
+}
+.table__image-icon{
+  width: 20px;
+  height: 20px;
+}
+.table__link {
+  p,
+  span {
+    transition: 0.15s color ease-in-out;
+  }
+  svg {
+    color: $grey;
+    transition: 0.15s color ease-in-out;
+  }
+  &:hover {
+    color: $blue;
+    p,
+    span,
+    svg {
+      color: $blue;
+    }
+  }
+}
+.table__link--alternative {
+  color: $blue;
+  &:hover {
+    color: $secondary;
+    p,
+    span,
+    svg {
+      color: $secondary;
+    }
+  }
+}
+.table-col {
+  @media (max-width: breakpoint-max('lg')) {
+    font-size: 0.88rem;
+  }
+}
+.table-col--email {
+  @media (max-width: breakpoint-max('xs')) {
+    overflow: auto;
+    max-width: 150px;
+  }
+}
+.table-col--name {
+  margin: 0;
+  max-width: 80px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  transition: 0.33s color ease-in-out;
+  @media (max-width: breakpoint-max('sm')) {
+    display: none;
+  }
+}
+.table-col--symbol {
+  margin: 0;
+  margin-left: 3px;
+  flex-shrink: 0;
+  color: $secondary;
+  transition: 0.33s color ease-in-out;
+  @media (max-width: breakpoint-max('sm')) {
+    font-size: 0.75rem;
+  }
+}
+.table-nav__progress {
+  display: none;
+  @media (max-width: breakpoint-max('md')) {
+    display: block;
+  }
+}
+.table-nav__arrow {
+  padding: 5px 10px;
+  margin-left: 6px;
+  color: $blue;
+  transition: 0.33s background-color ease-in-out, 0.33s color ease-in-out;
+  border-radius: 4px;
+  &:hover {
+    background-color: $blue-10;
+  }
+  &.is-disabled {
+    cursor: not-allowed;
+    color: $secondary;
+    &:hover {
+      background-color: transparent;
+    }
+  }
+}
+.table-nav__arrow--left {
+  transform: rotate(180deg);
+  margin-left: 0px;
+  margin-right: 6px;
+}
+.table-nav__dots {
+  display: flex;
+  align-items: center;
+  @media (max-width: breakpoint-max('md')) {
+    display: none;
+  }
+}
+.table-nav__dot {
+  width: 4px;
+  height: 4px;
+  list-style-type: none;
+  background-color: $grey-mid;
+  border-radius: 50%;
+  &.is-active {
+    background-color: $cod-grey;
+  }
+}
+.table-nav {
+  display: flex;
+  align-items: center;
+}
+.table-nav--mobile {
+  display: none;
+  @media (max-width: breakpoint-max('md')) {
+    display: flex;
+  }
+}
+.table-nav--desktop {
+  @media (max-width: breakpoint-max('md')) {
+    display: none;
+  }
+}
+.popper-markets {
+  @media (max-width: 340px) {
+    max-width: 110px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+}
+.table__popper {
+  text-overflow: ellipsis;
+}
+.table__popper--coins {
+  text-overflow: ellipsis;
+  @media (max-width: 1600px) and (min-width: 1430px) {
+    max-width: 100px;
+    overflow: hidden;
+  }
+  @media (max-width: 380px) {
+    max-width: 60px;
+    overflow: hidden;
+  }
+}
+.table-col__border-right {
+  border-right: 1px solid $grey-light;
+}
+.table__row-text {
+  @media (max-width: breakpoint-max('md')) {
+    font-size: 0.88rem;
+  }
+  @media (max-width: breakpoint-max('sm')) {
+    font-size: 0.75rem;
+  }
+}
+.table__header {
+  @media (max-width: breakpoint-max('md')) {
+    th {
+      font-size: 0.75rem;
+    }
+  }
+}
+.table__row--alerts-text {
+  font-size: 1rem;
+  @media (max-width: breakpoint-max('sm')) {
+    font-size: 0.75rem;
+  }
+}
+.table__row--alerts-popper {
+  @media (max-width: breakpoint-max('sm')) {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 80px;
+  }
+}
+.table__row-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+}
+.table__row-alert--link {
+  color: $cod-grey;
+  .cm-link__text {
+    display: flex;
+    align-items: center;
+  }
+  &:hover {
+    .table-col--symbol {
+      color: $blue;
+    }
+    .table-col--name {
+      color: $blue;
+    }
+  }
+}
