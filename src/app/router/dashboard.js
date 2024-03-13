@@ -7,7 +7,7 @@ import DashboardProfile from '../pages/dashboard-profile.vue';
 import DashboardAlerts from '../pages/dashboard-alerts.vue';
 import DashboardUsers from '../pages/dashboard-users.vue';
 import DashboardUser from '../pages/dashboard-user.vue';
-import DashboardBubble from '../pages/dashboard-bubble.vue';
+import DashboardBubble from '../pages/top-token-by-marketCap.vue';
 import roles from './roles';
 
 export default [
