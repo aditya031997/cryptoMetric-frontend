@@ -8,7 +8,6 @@ function setAccessToken(accessToken, isLocal) {
 
 function getAccessToken() {
   const token = localStorage.getItem(ACCESS_TOKEN_KEY);
-  console.log('getAccessToken:', token); // Log the retrieved token for debugging
   return token;
 }
 
@@ -20,18 +19,19 @@ export default {
   token: null,
   get(isLocal = false) {
     if (this.token) {
-      console.log('token:::::', this.token);
       return this.token;
     } else {
       let token = getAccessToken(isLocal);
       this.token = token;
-      console.log('no token in memory::::::::', token);
       return token;
     }
   },
   set(token, isLocal) {
+    // set(token, userDetails, isLocal) {
     this.token = token;
+    // console.log('userDetails:::::', token, userDetails, isLocal);
     return setAccessToken(token, isLocal);
+    // return [setAccessToken(token, isLocal), setUserDetails(userDetails)];
   },
   clear() {
     this.token = null;

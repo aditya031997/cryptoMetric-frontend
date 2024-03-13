@@ -69,8 +69,6 @@ import { ValidationObserver } from 'vee-validate';
 import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
 import CmLogo from '../cm-logo.vue';
 import accessToken from '../../utils/helpers/access-token';
-import accessLocalToken from '../../utils/helpers/access-token';
-import configs from '../../../configs/configs';
 
 export default {
   components: {
@@ -110,25 +108,21 @@ export default {
         .then((data) => {
           accessToken.set(data.live.token, false);
           accessToken.set(data.local.token, true);
-          console.log('Login successful. Tokens set:', data.live.token, data.local.token);
+          // accessToken.set(data.local.token, data.local.data, true);
+          // localStorage.setItem('userData', JSON.stringify(data.local.data));
           const userData = data.live.user;
           this.$store.commit('setUser', userData);
-          // this.$router.push({ name: 'dashboard-home' });
-
-          // accessToken.set(data.token);
-          // const userData = data.user;
-          // console.log('Access token::::', userData);
-          // this.$store.commit('setUser', userData);
+          window.location.reload();
           // this.$router.push({ name: 'dashboard-home' });
         })
         .catch((errors) => {
-          if (typeof errors === 'string') {
+          if (typeof errors == 'string') {
             this.errorMessage = errors;
           } else {
             if (errors?.errors) {
               this.$refs.validator.setErrors({ ...errors.errors });
             } else {
-              this.$refs.validator.setErrors({ email: ['Unexpected error occured'] });
+              this.$refs.validator.setErrors({ email: ['Unexpected error occurred'] });
             }
           }
         })

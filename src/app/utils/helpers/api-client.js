@@ -92,41 +92,6 @@ export default {
       });
     }
 
-    // const axiosInstance = axios.create();
-    // return axiosInstance
-    //   .request(queryOptions)
-    //   .then((response) => {
-    //     document.dispatchEvent(new CustomEvent(queryOptions.listenerUUID, { detail: response.data }));
-    //     // return response.data;
-    //     const localOptions = { ...queryOptions, baseURL: configs.LOCAL_API_URL };
-    //     return axiosInstance
-    //       .request(localOptions)
-    //       .then((localResponse) => {
-    //         //     document.dispatchEvent(
-    //         //       new CustomEvent(queryOptions.listenerUUID, { detail: { live: response.data, local: localResponse.data } })
-    //         //     );
-    //         // document.dispatchEvent(new CustomEvent(queryOptions.listenerUUID, { detail: response.data }));
-    //         return { live: response.data, local: localResponse.data };
-    //       })
-    //       .catch((localError) => {
-    //         delete this.queryStack[queryOptions.uuid];
-    //         return Promise.reject(localError);
-    //       });
-    //   })
-    //   .catch((errors) => {
-    //     delete this.queryStack[queryOptions.uuid];
-    //     return this.tryResolveErrors(
-    //       errors,
-    //       queryOptions.url,
-    //       queryOptions.data ? queryOptions.data : {},
-    //       queryOptions.params,
-    //       queryOptions.method
-    //     );
-    //   })
-    //   .finally((result) => {
-    //     delete this.queryStack[queryOptions.uuid];
-    //   });
-
     const axiosInstance = axios.create();
 
     return axiosInstance
@@ -138,6 +103,7 @@ export default {
           return axiosInstance
             .request(localOptions)
             .then((localResponse) => {
+              console.log('response', localResponse);
               return { live: response.data, local: localResponse.data };
             })
             .catch((localError) => {
@@ -175,8 +141,6 @@ export default {
 
   tryResolveErrors(errors, url, data = {}, params = {}, type) {
     const accessToken = this.accessToken.get();
-    console.log('accessToken::::', accessToken);
-
     // TODO replace auth refresh url when API will be ready
     if (!!accessToken && errors && errors.response.status === 401 && url !== '/auth/refresh') {
       const options = this.options;
@@ -186,7 +150,6 @@ export default {
 
       return this.post(options.url, null, null)
         .then((response) => {
-          console.log('response:', response);
           if (response.data) {
             this.accessToken.set(response.data.response.auth.access_token);
           } else if (response.response) {
