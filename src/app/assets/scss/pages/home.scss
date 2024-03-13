@@ -1,0 +1,9 @@
+.page-home {
+}
+.page-home__widgets-wrapper {
+  display: flex;
+  justify-content: space-between;
+  @media (max-width: breakpoint-max('lg')) {
+    flex-direction: column;
+  }
+}

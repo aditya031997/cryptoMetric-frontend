@@ -1,0 +1,43 @@
+@use "sass:string";
+
+@function isBootstrapSize($size) {
+	@return $size == '1' or $size == '2' or $size == '3' or $size == '4' or $size == '5' or $size == '6';
+}
+
+$spacings: (
+  // margin top "-5" -10px, => .mt-_5 { margin-top: -10px }
+  // padding all "5" 5px, => .p-5 { padding: 5px }
+);
+
+@each $name, $direction, $size, $value in $spacings {
+  $n: str-slice($name, 1, 1);
+  $d: str-slice($direction, 1, 1);
+  $s: str-slice($size, 1, 1);
+	$delimiter: '-';
+
+  @if $s == "-" {
+    $size: str-insert(str-slice($size, 2), _, 0);
+  } @else if isBootstrapSize($size) {
+		$delimiter: '_';
+	}
+
+	@if $direction == all {
+		.#{$n}#{$delimiter}#{$size} {
+			#{$name}: $value;
+		}
+	} @else if $direction == x {
+		.#{$n}#{$d}#{$delimiter}#{$size} {
+			#{$name}-left: $value;
+			#{$name}-right: $value;
+		}
+	}  @else if $direction == y {
+		.#{$n}#{$d}#{$delimiter}#{$size} {
+			#{$name}-top: $value;
+			#{$name}-bottom: $value;
+		}
+	} @else {
+		.#{$n}#{$d}#{$delimiter}#{$size} {
+			#{$name}-#{$direction}: $value;
+		}
+	}
+}

@@ -1,0 +1,117 @@
+.coin-stats {
+  &.is-dnd {
+    @media (max-width: breakpoint-max('md')) {
+      .coin-stats__typography {
+        display: none;
+      }
+      & ~ .chart-google {
+        display: none;
+      }
+    }
+  }
+  &.is-page {
+    .coin-stats__title {
+      justify-content: space-between;
+    }
+    .coin-stats__coin-image {
+      width: 32px;
+      height: 32px;
+    }
+    .coin-stats__coin-name {
+      font-weight: 500;
+      font-size: 1.38rem;
+      @media (max-width: breakpoint-max('md')) {
+        font-size: 1rem;
+      }
+    }
+    .coin-stats__coin-name-short {
+      margin-left: 16px;
+      font-weight: 600;
+      font-size: 1.38rem;
+      flex-grow: 0;
+      @media (max-width: breakpoint-max('md')) {
+        font-size: 1rem;
+      }
+    }
+    .coin-stats__typography {
+      margin-top: 16px;
+      justify-content: flex-start;
+    }
+    .coin-stats__typography-value {
+      font-size: 2.38rem;
+      @media (max-width: breakpoint-max('md')) {
+        font-size: 1rem;
+      }
+    }
+    .coin-stats__typography-percent {
+      margin-left: 16px;
+      flex-grow: 0;
+      font-size: 1.38rem;
+      @media (max-width: breakpoint-max('md')) {
+        margin-left: 8px;
+        font-size: 1rem;
+      }
+    }
+  }
+}
+.coin-stats__title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.coin-stats__coin {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  overflow: hidden;
+}
+.coin-stats__coin-image {
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+}
+.coin-stats__coin-name-short {
+  margin: 0;
+  margin-left: 4px;
+  flex-grow: 1;
+  color: $secondary;
+  font-weight: 400;
+  font-size: 1rem;
+}
+.coin-stats__coin-name {
+  margin: 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  font-weight: 400;
+  font-size: 1rem;
+}
+.coin-stats__typography {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+.coin-stats__popper-wrapper {
+  flex-shrink: 1;
+  overflow: hidden;
+}
+.coin-stats__typography-value {
+  max-width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  font-size: 1.38rem;
+  line-height: 33px;
+  margin: 0;
+}
+.coin-stats__typography-percent {
+  flex-grow: 1;
+  font-size: 1rem;
+  line-height: 24px;
+  text-align: right;
+  margin: 0;
+}
+.coin-stats__handle {
+  flex-shrink: 1;
+  color: $secondary;
+}

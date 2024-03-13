@@ -1,0 +1,29 @@
+.user-info {
+}
+.user-info__title {
+  padding-bottom: 24px;
+  border-bottom: 1px solid $grey-light;
+}
+.user-info__list {
+  margin: 0;
+  padding: 24px 0;
+  display: flex;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  border-bottom: 1px solid $grey-light;
+  :first-child {
+    margin-left: 0px;
+  }
+  @media (max-width: breakpoint-max('sm')) {
+    margin-top: -24px;
+    flex-direction: column;
+  }
+}
+.user-info__element {
+  margin-left: 32px;
+  list-style-type: none;
+  @media (max-width: breakpoint-max('sm')) {
+    margin: 0;
+    margin-top: 24px;
+  }
+}

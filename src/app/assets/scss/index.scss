@@ -1,0 +1,51 @@
+@import './variables.scss';
+
+@import 'node_modules/bootstrap/scss/bootstrap';
+
+@import '~vue-multiselect/dist/vue-multiselect.min.css';
+
+@import '~popper-vue/dist/popper-vue.css';
+
+@import './fonts.scss';
+
+// Utils
+@import './utils/index.scss';
+
+// UI
+@import './ui/index.scss';
+
+// Components
+@import './components/index.scss';
+
+// Layout
+@import './layout/index.scss';
+
+// Pages
+@import './pages/index.scss';
+
+// html,
+// body {
+//   max-height: 100vh;
+//   height: 100%;
+//   width: 100%;
+//   position: fixed;
+//   overflow: hidden;
+//   overscroll-behavior-y: none;
+// }
+
+body{
+  overflow: auto;
+  background: $grey-lighten;
+}
+
+a {
+  color: inherit;
+}
+.popper-vue {
+  --arrow-position: calc(var(--arrow-size) / 2 * -0.45);
+}
+.popper-test {
+  width: 200px;
+  height: 200px;
+  background-color: $blue;
+}

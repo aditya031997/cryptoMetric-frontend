@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Bitcoin",
+    "symbol": "BTC",
+    "percent": "4.78",
+    "price": "0.4124124112322",
+    "date": "2022-06-12T16:01:22.000000Z",
+    "alert_type": 2
+  },
+  {
+    "name": "Ethereum",
+    "symbol": "ETH",
+    "percent": "10.44",
+    "price": "31419.41",
+    "date": "2022-06-12T16:01:22.000000Z",
+    "alert_type": 1
+  },
+  {
+    "name": "Bitcoin",
+    "symbol": "BTC",
+    "percent": "4.78",
+    "price": "0.4124124112322",
+    "date": "2022-06-12T16:01:22.000000Z",
+    "alert_type": 1
+  },
+  {
+    "name": "Bitcoin",
+    "symbol": "BTC",
+    "percent": "4.78",
+    "price": "31419.41",
+    "date": "2022-06-12T16:01:22.000000Z",
+    "alert_type": 1
+  },
+  {
+    "name": "Hedera Hashgraph",
+    "symbol": "HBAR",
+    "percent": "6.44",
+    "price": "99.2323",
+    "date": "2022-06-12T16:01:22.000000Z",
+    "alert_type": 2
+  }
+]

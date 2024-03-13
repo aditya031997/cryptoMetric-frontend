@@ -1,0 +1,27 @@
+.modal-alert {
+  max-width: 354px;
+  width: 100%;
+  @media (max-width: breakpoint-max('xs')) {
+    max-width: none;
+  }
+}
+.modal-alert__switch {
+  background-color: rgba($green, 0.1);
+  &:hover {
+    box-shadow: 0px 0px 5px 2px rgba($green, 0.2);
+  }
+  &::before {
+    background-color: $green;
+  }
+  &.is-active {
+    background-color: rgba($red, 0.1);
+    &::before {
+      left: 90%;
+      transform: translate(-90%, -50%);
+      background-color: $red;
+    }
+    &:hover {
+      box-shadow: 0px 0px 5px 2px rgba($red, 0.2);
+    }
+  }
+}

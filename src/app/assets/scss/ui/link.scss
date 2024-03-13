@@ -1,0 +1,25 @@
+.cm-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  color: $secondary;
+  svg {
+    flex-shrink: 0;
+    * {
+      transition: 0.15s color ease-in-out;
+    }
+  }
+  &:hover {
+    text-decoration: none;
+    color: $blue;
+  }
+  &.active {
+    color: $blue;
+  }
+}
+.cm-link__text {
+  margin: 0;
+  margin-left: 10px;
+  text-decoration: none;
+  transition: 0.15s color ease-in-out;
+}

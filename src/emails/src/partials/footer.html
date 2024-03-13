@@ -1,0 +1,18 @@
+<container class="footer">
+  <row>
+    <columns large="1">&nbsp;</columns>
+    <columns large="12" small="14">
+      <spacer size="8"></spacer>
+      <hr class="m-0" style="height: 1px; border: none; width: 100%;" color="#C4C4C4" />
+      <spacer size="20"></spacer>
+      <!--Add current year via function-->
+      <p class="m-0 text">© 2021 Cryptometric. All rights reserved.</p>
+      <spacer size="16"></spacer>
+      {{#unlesspage  'reset-password'}}
+      <p class="m-0 text">For unsubscribe email notifications click <a href={{links.unsubscribe}}>here</a>.</p>
+      {{/unlesspage }}
+      <spacer size="2"></spacer>
+    </columns>
+    <columns large="1">&nbsp;</columns>
+  </row>
+</container>

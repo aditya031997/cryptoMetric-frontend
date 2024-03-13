@@ -1,0 +1,12 @@
+.modal-user {
+  margin: 0 auto;
+  max-width: 354px;
+}
+.modal-user__wrapper-loader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba($secondary, 0.1);
+}

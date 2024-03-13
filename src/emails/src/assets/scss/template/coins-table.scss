@@ -1,0 +1,78 @@
+table.coins-table {
+  border-spacing: 0px;
+  table-layout: fixed;
+  img {
+    width: 24px;
+    height: 24px;
+    @media only screen and (max-width: #{$global-breakpoint}) {
+      width: 16px;
+      height: 16px;
+    }
+  }
+  th {
+    padding: 5px 8px;
+    border-bottom: 1px solid #dfe8ef;
+    font-size: 0.7rem;
+    color: #9ea8b0;
+    @media only screen and (max-width: #{$global-breakpoint}) {
+      font-size: 0.5rem;
+      text-align: center;
+    }
+  }
+  .coins-table__name {
+    th {
+      padding: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+    td {
+      border-bottom: none;
+    }
+  }
+  td {
+    padding: 7px 5px;
+    border-bottom: 1px solid #dfe8ef;
+    font-size: 0.7rem;
+    width: auto;
+    .coins-table__name {
+      font-size: 0.7rem;
+      margin-bottom: 0 !important;
+    }
+    @media only screen and (max-width: 680px) {
+      padding: 5px;
+      font-size: 0.6rem;
+      text-align: center;
+      .coins-table__name {
+        font-size: 0.55rem !important;
+      }
+    }
+  }
+  td:first-child {
+    padding-left: 0;
+  }
+  td:last-child {
+    padding-right: 0;
+  }
+}
+table.coins-table img {
+  width: 20px;
+  height: 20px;
+  @media only screen and (max-width: #{$global-breakpoint - 0.5}) {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+@media only screen and (max-width: 588px) {
+  table.body table.coins-table__name .columns {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
+.coins-table__text {
+  font-size: 0.7rem !important;
+  @media only screen and (max-width: #{$global-breakpoint}) {
+    font-size: 0.5rem !important;
+  }
+}

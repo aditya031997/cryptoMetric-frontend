@@ -1,0 +1,55 @@
+.popper-profile {
+  position: relative;
+  padding: 26px 26px 20px 26px;
+  max-width: 234px;
+  width: 100%;
+
+  background: $white;
+  box-shadow: 0px 3px 28px rgba($cod-grey, 0.06);
+  border-radius: 8px;
+}
+.popper-profile__loader-wrapper {
+  position: relative;
+  height: 150px;
+  width: 150px;
+}
+.popper-profile__margin {
+  margin-top: 25px;
+}
+.popper-profile__link {
+  display: flex;
+  justify-content: flex-start;
+}
+.popper-profile__switch-wrapper {
+  display: flex;
+  align-items: center;
+  color: $grey;
+  &:hover {
+    color: $blue;
+  }
+}
+.popper-profile__switch {
+  margin-left: 10px;
+}
+.popper-profile__button {
+  margin-top: 35px;
+  display: flex;
+  align-items: center;
+  color: $red;
+  &:hover {
+    opacity: 0.6;
+  }
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: 57px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: $grey-light;
+  }
+}
+.popper-profile__text {
+  margin: 0;
+  margin-left: 10px;
+}

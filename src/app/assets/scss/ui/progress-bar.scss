@@ -1,0 +1,17 @@
+.cm-progress {
+  display: block;
+  width: 100%;
+  height: 5px;
+  border-radius: 0;
+  &::-webkit-progress-bar {
+    background-color: $grey-lightest;
+  }
+  &::-webkit-progress-value {
+    transition: all 0.3s ease-out;
+    background-color: $blue;
+  }
+  &::-moz-progress-bar {
+    transition: all 0.3s ease-out;
+    background-color: $blue;
+  }
+}

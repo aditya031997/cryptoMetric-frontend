@@ -1,0 +1,53 @@
+deploy-live:
+  image: naymkazp/gitlab-runner-envoy-node:latest
+  script:
+    - echo "Manual Start Deploying to LIVE"
+    - apk add --no-cache python3 py3-pip
+    - pip install --upgrade pip && pip install --upgrade awscli
+    - aws configure set aws_access_key_id ${AWS_ACCESS_KEY_ID} && aws configure set aws_access_key_id ${AWS_SECRET_ACCESS_KEY}
+    - aws configure set default.region ${AWS_DEFAULT_REGION}
+    - echo ${LIVE_CONFIGS_JS} > ./src/configs/configs.js
+    - cd ./src
+    - npm install
+    - npm run build
+    - aws s3 sync ./dist s3://${AWS_BUCKET} --delete --acl public-read
+    - aws cloudfront create-invalidation --distribution-id ${AWS_CF_DISTRIBUTION} --paths "/*"
+  only:
+    refs:
+      - branches
+    variables:
+      - $CI_COMMIT_REF_NAME == $LIVE_DEPLOY_BRANCH
+  when: manual
+
+.base_autodeploy_script: &base_autodeploy_script
+  - eval $(ssh-agent -s)
+  - ssh-add <(echo "$SSH_PRIVATE_KEY")
+  - mkdir -p ~/.ssh
+  - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+  - current_dir=$(pwd)
+  - remove_dir=$(date +'%m%d%Y%H%M%S')
+  - node -v
+  - connection="$SSH_USER_NAME@91.225.201.50"
+  - scp "$connection":"$SERVER_DIR"/configs.js ./src/configs/configs.js
+  - cd ./src
+  - npm install
+  - npm run build
+  - scp -r "$current_dir" "$connection":"$SERVER_DIR"/releases/"$remove_dir"
+  - cd ..
+  - envoy run deploy --remove_dir="$remove_dir" --server_dir="$SERVER_DIR" --connection="$connection"
+
+deploy-current-branch:
+  image: naymkazp/gitlab-runner-envoy-node:latest
+  script:
+    - *base_autodeploy_script
+  only:
+    refs:
+      - branches
+    variables:
+      - $CI_COMMIT_REF_NAME == $AUTO_DEPLOY_BRANCH
+
+manual-deploy:
+  image: naymkazp/gitlab-runner-envoy-node:latest
+  script:
+    - *base_autodeploy_script
+  when: manual

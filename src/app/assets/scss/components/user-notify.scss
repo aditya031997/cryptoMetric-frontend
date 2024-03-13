@@ -1,0 +1,38 @@
+.user-notify {
+  display: none;
+  &:hover {
+    & .user-notify__button {
+      color: $yellow;
+    }
+  }
+  &:active {
+    & .user-notify__button {
+      color: rgba($yellow, 0.3);
+    }
+  }
+}
+.user-notify__button {
+  display: flex;
+  align-items: center;
+  border: none;
+  background-color: transparent;
+  color: $grey;
+  transition: color 0.15s ease-in-out;
+}
+.user-notify__counter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: $yellow;
+
+  font-style: normal;
+  font-weight: 400;
+  font-size: 0.75rem;
+  line-height: 21px;
+  color: $white;
+  text-align: center;
+}

@@ -1,0 +1,24 @@
+.presets-markets {
+}
+.presets-markets__content {
+  z-index: 53;
+}
+.presets-markets__presets {
+  display: flex;
+  align-items: center;
+  @media (max-width: breakpoint-max('lg')) {
+    display: none;
+  }
+}
+.presets-markets__popper-button {
+  display: none;
+  @media (max-width: breakpoint-max('lg')) {
+    display: block;
+  }
+}
+.presets-markets__popper {
+  display: none;
+  @media (max-width: breakpoint-max('lg')) {
+    display: block;
+  }
+}

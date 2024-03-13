@@ -1,0 +1,25 @@
+.chart-google {
+  position: relative;
+  max-height: 80%;
+  overflow: hidden;
+  &.is-auto{
+    height: auto;
+  }
+  iframe {
+    border: none;
+    box-shadow: none;
+    width: 100%;
+  }
+  :last-child {
+    box-shadow: none;
+    border: none;
+  }
+}
+.coin-stats > .chart-google iframe {
+  box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0), 0px 2px 2px 0px rgba(0, 0, 0, 0);
+  border: none;
+}
+html body .chart-google iframe {
+  box-shadow: none;
+  border: none;
+}

@@ -1,0 +1,47 @@
+.price-card {
+  padding: 16px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  @media only screen and (max-width: #{$global-breakpoint}) {
+    display: block;
+  }
+}
+table.row.price-card {
+  padding: 16px 0;
+}
+.price-card__alert {
+  max-width: 300px;
+  @media only screen and (max-width: #{$global-breakpoint}) {
+    max-width: none;
+  }
+}
+table.row.price-card {
+  th {
+    padding: 4px 0;
+  }
+  table.row.price-card .footer {
+    th {
+      padding: 0;
+      padding-bottom: 0;
+    }
+  }
+}
+.price-card table.row {
+  th {
+    padding: 0;
+    padding-bottom: 0;
+  }
+}
+@media only screen and (max-width: #{$global-breakpoint}) {
+  table.row.price-card {
+    th {
+      padding: 2px 0;
+    }
+    table.row.footer {
+      th {
+        padding: 0;
+      }
+    }
+  }
+}
