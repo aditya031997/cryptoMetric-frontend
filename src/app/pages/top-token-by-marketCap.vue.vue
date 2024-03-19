@@ -1,60 +1,5 @@
-<!-- <template>
-  <div>
-    <div v-if="dataReceived">
-      <div
-        v-for="(item, index) in data"
-        :key="index"
-      >
-        <p>{{ item }}</p>
-      </div>
-    </div>
-    <div v-else>
-      <p>Loading...</p>
-    </div>
-  </div>
-</template>
-
-<script>
-import io from 'socket.io-client';
-
-export default {
-  data() {
-    return {
-      socket: null,
-      data: [],
-      dataReceived: false,
-    };
-  },
-  mounted() {
-    this.socket = io('http://localhost:5000');
-    this.saveSocketId();
-    this.socket.on('InitialTableListing', (initialData) => {
-      console.log('Received InitialTableListing event:', initialData);
-      this.data = initialData.data;
-      this.dataReceived = true;
-    });
-
-    this.socket.on('UpdatedTableListing', (updatedData) => {
-      console.log('Received UpdatedTableListing event:', updatedData);
-      this.data = updatedData;
-      this.saveSocketId();
-    });
-  },
-  methods: {
-    saveSocketId() {
-      this.socket.emit('saveSocketId', '2');
-    },
-  },
-  beforeDestroy() {
-    if (this.socket) {
-      this.socket.disconnect();
-    }
-  },
-};
-</script> -->
 <template>
   <div>
-    <!-- Filter buttons -->
     <div class="filter-buttons">
       <button
         @click="filterData('1h')"
@@ -81,16 +26,33 @@ export default {
         30 Days
       </button>
     </div>
-    <!-- Chart container -->
-    <div
-      ref="chartContainer"
-      style="width: 550px; height: 400px; margin: 0 auto"
-    ></div>
+    <div>
+      <div
+        ref="chartContainer"
+        style="width: 1050px; height: 500px; margin: 0 auto"
+      ></div>
+      <div class="pagination">
+        <button
+          @click="previousPage"
+          :disabled="currentPage === 1"
+        >
+          Previous
+        </button>
+        <span>{{ currentPage }} / {{ totalPages }}</span>
+        <button
+          @click="nextPage"
+          :disabled="currentPage === totalPages"
+        >
+          Next
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import io from 'socket.io-client';
+import configs from '../../configs/configs';
 export default {
   data() {
     return {
@@ -100,34 +62,32 @@ export default {
       activeFilter: '1h',
       socket: null,
       dataReceived: false,
+      currentPage: 1,
+      totalPages: 1,
+      bubblesPerPage: 20,
     };
   },
   mounted() {
-    this.socket = io('http://localhost:5000');
-    this.saveSocketId();
+    this.socket = io(configs.LOCAL_API_URL);
     this.socket.on('InitialTableListing', (initialData) => {
-      console.log('Received InitialTableListing event:', initialData.data);
       this.cryptocurrencyData = initialData.data;
       this.originalData = [...this.cryptocurrencyData];
+      this.updatePagination();
       this.renderChart();
       this.startAnimation();
       this.dataReceived = true;
     });
 
     this.socket.on('UpdatedTableListing', (updatedData) => {
-      console.log('Received UpdatedTableListing event:', updatedData.data);
       this.cryptocurrencyData = updatedData.data;
       this.originalData = [...this.cryptocurrencyData];
+      this.updatePagination();
       this.renderChart();
       this.startAnimation();
       this.dataReceived = true;
-      this.saveSocketId();
     });
   },
   methods: {
-    saveSocketId() {
-      this.socket.emit('saveSocketId', '2');
-    },
     renderChart() {
       // Render the bubble chart with default 1-hour filter
       this.filterData(this.activeFilter);
@@ -164,7 +124,9 @@ export default {
       this.updateChart(filteredData);
     },
     updateChart(data) {
-      const processedData = data.map((crypto, index) => {
+      const startIdx = (this.currentPage - 1) * this.bubblesPerPage;
+      const endIdx = startIdx + this.bubblesPerPage;
+      const processedData = data.slice(startIdx, endIdx).map((crypto, index) => {
         let percentageChange;
         switch (this.activeFilter) {
           case '1h':
@@ -184,6 +146,21 @@ export default {
             break;
         }
         const change = isNaN(percentageChange) ? 'N/A' : percentageChange.toFixed(2);
+
+        const link = `https://www.coingecko.com/en/coins/${crypto.slug}`;
+
+        // Adjust color based on percentage change
+        let color;
+        if (percentageChange >= 0) {
+          // Green shades for positive change
+          const greenShade = 255 - Math.floor(percentageChange * 2.55);
+          color = `rgba(0, ${greenShade}, 0, 0.5)`;
+        } else {
+          // Red shades for negative change
+          const redShade = 255 + Math.floor(percentageChange * 2.55);
+          color = `rgba(${redShade}, 0, 0, 0.5)`;
+        }
+
         return {
           x: index,
           y: Math.random() * 100,
@@ -191,7 +168,9 @@ export default {
           name: crypto.symbol,
           image: crypto.image,
           change: change,
-          color: percentageChange < 0 ? 'rgba(255, 0, 0, 0.5)' : 'rgba(0, 255, 0, 0.5)',
+          color: color,
+          slug: crypto.slug, // Include slug property
+          link: link, // Include link property
         };
       });
 
@@ -203,6 +182,15 @@ export default {
             type: 'bubble',
             zoomType: 'xy',
           },
+          title: {
+            text: null, // This disables the title
+          },
+          legend: {
+            enabled: false, // Disables the legend
+          },
+          tooltip: {
+            enabled: false, // Disables the tooltip
+          },
           xAxis: {
             visible: false,
           },
@@ -211,6 +199,13 @@ export default {
           },
           plotOptions: {
             series: {
+              point: {
+                events: {
+                  click: function () {
+                    window.open(this.options.link, '_blank');
+                  },
+                },
+              },
               dataLabels: {
                 enabled: true,
                 useHTML: true,
@@ -242,7 +237,7 @@ export default {
               marker: {
                 symbol: 'circle',
               },
-              colorByPoint: false,
+              colorByPoint: false, // Disable color by point
             },
           ],
         });
@@ -251,12 +246,56 @@ export default {
     updateBubbleData() {
       if (this.chart) {
         const series = this.chart.series[0];
+        const bubbleRadius = series.data[0].marker.radius; // Get the radius of the bubbles
+
+        // Iterate through each bubble
         series.data.forEach((point) => {
-          const newX = point.x + (Math.random() - 0.5) * 0.5;
-          const newY = point.y + (Math.random() - 0.5) * 0.5;
+          let newX = point.x;
+          let newY = point.y;
+
+          // Adjust the position of the current bubble based on its neighbors
+          series.data.forEach((otherPoint) => {
+            if (otherPoint !== point) {
+              const distance = Math.sqrt(Math.pow(newX - otherPoint.x, 2) + Math.pow(newY - otherPoint.y, 2));
+              const minDistance = bubbleRadius * 2; // Minimum distance between bubbles to avoid overlap
+
+              // If the current bubble is too close to another bubble, adjust its position
+              if (distance < minDistance) {
+                const directionX = Math.sign(newX - otherPoint.x);
+                const directionY = Math.sign(newY - otherPoint.y);
+                const overlap = minDistance - distance;
+                newX += (overlap / 2) * directionX;
+                newY += (overlap / 2) * directionY;
+              }
+            }
+          });
+
+          // Update bubble position
           point.update({ x: newX, y: newY }, false);
         });
+
+        // Redraw the chart after adjusting all bubble positions
         this.chart.redraw();
+      }
+    },
+    updatePagination() {
+      // Calculate total pages based on the length of data
+      this.totalPages = Math.ceil(this.originalData.length / this.bubblesPerPage);
+      // Ensure current page is within bounds
+      if (this.currentPage > this.totalPages) {
+        this.currentPage = this.totalPages;
+      }
+    },
+    nextPage() {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+        this.filterData(this.activeFilter);
+      }
+    },
+    previousPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+        this.filterData(this.activeFilter);
       }
     },
     startAnimation() {
@@ -280,5 +319,13 @@ export default {
 
 .filter-buttons button.active {
   font-weight: bold;
+}
+
+.pagination {
+  margin-top: 10px;
+}
+
+.pagination button {
+  margin-right: 5px;
 }
 </style>

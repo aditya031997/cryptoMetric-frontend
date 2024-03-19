@@ -99,12 +99,11 @@ export default {
       .then((response) => {
         document.dispatchEvent(new CustomEvent(queryOptions.listenerUUID, { detail: response.data }));
         if (queryOptions.url == '/login') {
-          const localOptions = { ...queryOptions, baseURL: configs.LOCAL_API_URL };
+          const localOptions = { ...queryOptions, baseURL: `${configs.LOCAL_API_URL}/api` };
           return axiosInstance
             .request(localOptions)
             .then((localResponse) => {
-              console.log('response', localResponse);
-              return { live: response.data, local: localResponse.data };
+              return { live: response?.data, local: localResponse?.data };
             })
             .catch((localError) => {
               delete this.queryStack[queryOptions.uuid];
@@ -131,7 +130,6 @@ export default {
 
   setAuthBearer() {
     const _token = accessToken.get();
-    console.log('setAuthBearer', _token);
     if (_token) {
       this.options.headers.Authorization = `Bearer ${_token}`;
     } else {

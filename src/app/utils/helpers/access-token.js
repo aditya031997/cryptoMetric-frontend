@@ -27,11 +27,8 @@ export default {
     }
   },
   set(token, isLocal) {
-    // set(token, userDetails, isLocal) {
     this.token = token;
-    // console.log('userDetails:::::', token, userDetails, isLocal);
     return setAccessToken(token, isLocal);
-    // return [setAccessToken(token, isLocal), setUserDetails(userDetails)];
   },
   clear() {
     this.token = null;

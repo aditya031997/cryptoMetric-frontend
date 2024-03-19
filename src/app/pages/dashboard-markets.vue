@@ -102,6 +102,9 @@ import PresetsMarkets from '../components/dashboard/presets-markets.vue';
 import FiltersSidebar from '../components/dashboard/filters-sidebar.vue';
 import { mapGetters } from 'vuex';
 import { getListenerEcho, stopListenerEcho } from '../utils/echo';
+import configs from '../../configs/configs';
+import axios from 'axios';
+
 export default {
   components: {
     PageCard,
@@ -116,6 +119,8 @@ export default {
     FiltersSidebar,
   },
   data: () => ({
+    categories: [],
+    selectedCategory: null,
     isLoad: false,
     isFilter: false,
     search: '',
@@ -134,104 +139,7 @@ export default {
     currentPage: 1,
     rows: 10,
     rowsOptions: [10, 20, 30, 40, 50],
-    filters: [
-      {
-        id: 0,
-        label: 'Price',
-        filterName: 'price',
-        options: [
-          { name: 'All', value: null },
-          { name: 'Under $1', value: { f: 1, o: '<' }, slug: '1' },
-          { name: 'Under $5', value: { f: 5, o: '<' }, slug: '<5' },
-          { name: '$1-$5', value: { f: 1, s: 5, o: 'between' }, slug: '1-5' },
-          { name: '$5-$10', value: { f: 5, s: 10, o: 'between' }, slug: '5-10' },
-          { name: '$10-$15', value: { f: 10, s: 15, o: 'between' }, slug: '10-15' },
-          { name: '$15-$50', value: { f: 15, s: 50, o: 'between' }, slug: '15-20' },
-          { name: '$10+', value: { f: 10, o: '>' }, slug: '>10' },
-          { name: '$100+', value: { f: 100, o: '>' }, slug: '>100' },
-        ],
-        value: { name: 'All', value: null },
-      },
-      {
-        id: 1,
-        label: 'Coin Rank',
-        filterName: 'coin_rank',
-        options: [
-          { name: 'All', value: null },
-          { name: 'top 5', value: { f: 5 }, slug: '5' },
-          { name: 'top 10', value: { f: 10 }, slug: '10' },
-          { name: 'top 25', value: { f: 25 }, slug: '25' },
-          { name: 'top 50', value: { f: 50 }, slug: '50' },
-          { name: 'top 100', value: { f: 100 }, slug: '100' },
-        ],
-        value: { name: 'All', value: null },
-      },
-      {
-        id: 2,
-        label: 'Market Cap',
-        filterName: 'market_cap_usd',
-        options: [
-          { name: 'All', value: null },
-          { name: 'Over $10k', value: { f: 10000, o: '>' }, slug: '>10k' },
-          { name: 'Under $10М', value: { f: 10000000, o: '<' }, slug: '>10m' },
-          { name: '$10M-$100M', value: { f: 10000000, s: 1000000000, o: 'between' }, slug: '10m-100m' },
-          { name: 'Over $100M', value: { f: 1000000000, o: '>' }, slug: '>100m' },
-          { name: 'Over $500M', value: { f: 5000000000, o: '>' }, slug: '>500m' },
-          { name: 'Over $1B', value: { f: 10000000000, o: '>' }, slug: '>1b' },
-        ],
-        value: { name: 'All', value: null },
-      },
-      {
-        id: 3,
-        label: '% Change 1h',
-        filterName: 'percent_change_1h',
-        options: [
-          { name: 'All', value: null },
-          { name: 'Less than 0%', value: { f: 0, o: '<' }, slug: '<0' },
-          { name: '1% - 5%', value: { f: 1, s: 5, o: 'between' }, slug: '1-5' },
-          { name: '5% - 10%', value: { f: 5, s: 10, o: 'between' }, slug: '5-10' },
-          { name: '1% - 10%', value: { f: 1, s: 10, o: 'between' }, slug: '1-10' },
-          { name: 'Over 10%', value: { f: 10, o: '>' }, slug: '>10' },
-          { name: 'Over 20%', value: { f: 20, o: '>' }, slug: '>20' },
-          { name: 'Over 50%', value: { f: 50, o: '>' }, slug: '>50' },
-          { name: 'Over 100%', value: { f: 100, o: '>' }, slug: '>100' },
-          { name: 'Over 500%', value: { f: 500, o: '>' }, slug: '>500' },
-        ],
-        value: { name: 'All', value: null },
-      },
-      {
-        id: 4,
-        label: '% Change 24h',
-        filterName: 'percent_change_24h',
-        options: [
-          { name: 'All', value: null },
-          { name: 'Less than 0%', value: { f: 0, o: '<' }, slug: '<0' },
-          { name: '1% - 5%', value: { f: 1, s: 5, o: 'between' }, slug: '1-5' },
-          { name: '5% - 10%', value: { f: 5, s: 10, o: 'between' }, slug: '5-10' },
-          { name: '1% - 10%', value: { f: 1, s: 10, o: 'between' }, slug: '1-10' },
-          { name: 'Over 10%', value: { f: 10, o: '>' }, slug: '>10' },
-          { name: 'Over 20%', value: { f: 20, o: '>' }, slug: '>20' },
-          { name: 'Over 50%', value: { f: 50, o: '>' }, slug: '>50' },
-          { name: 'Over 100%', value: { f: 100, o: '>' }, slug: '>100' },
-          { name: 'Over 500%', value: { f: 500, o: '>' }, slug: '>500' },
-        ],
-        value: { name: 'All', value: null },
-      },
-      {
-        id: 5,
-        label: 'Volume 24h',
-        filterName: 'volume_usd_24h',
-        options: [
-          { name: 'All', value: null },
-          { name: '$10М +', value: { f: 10000000 }, slug: '>10m' },
-          { name: '$1М +', value: { f: 1000000 }, slug: '>1m' },
-          { name: '$100К +', value: { f: 100000 }, slug: '>100k' },
-          { name: '$10К +', value: { f: 10000 }, slug: '>10k' },
-          { name: '$1К +', value: { f: 1000 }, slug: '>1k' },
-        ],
-        value: { name: 'All', value: null },
-      },
-    ],
+    filters: [],
     presets: [
       {
         id: 0,
@@ -268,9 +176,11 @@ export default {
   computed: {
     ...mapGetters(['getCoinsListMarkets', 'getCoinsListMarketsLength']),
     isActivePreset() {
-      const preset = this.presets.find((preset) => preset.isActive === true);
-      if (preset.value) {
-        return true;
+      if (this.presets && this.presets.length > 0) {
+        const preset = this.presets.find((preset) => preset.isActive === true);
+        if (preset && preset.value) {
+          return true;
+        }
       }
       return false;
     },
@@ -297,6 +207,154 @@ export default {
     },
   },
   methods: {
+    async fetchCategories() {
+      try {
+        const response = await axios.get(`${configs.LOCAL_API_URL}/api/coins/category`);
+        if (response.data && response.data.data && Array.isArray(response.data.data)) {
+          this.categories = response.data.data.map((category) => ({
+            name: category.name,
+            value: category.categoryId,
+          }));
+          this.initializeFilters();
+        } else {
+          console.error('Categories data is undefined or empty');
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    },
+    initializeFilters() {
+      this.filters = [
+        {
+          id: 0,
+          label: 'Category',
+          filterName: 'category',
+          options: [
+            { name: 'All', value: null },
+            ...(this.categories && Array.isArray(this.categories)
+              ? this.categories.map((category) => ({
+                  name: category.name,
+                  value: category.value, // Assuming category value is categoryId
+                  slug: category.value.toString(), // Convert categoryId to string
+                }))
+              : []),
+          ],
+          value: { name: 'All', value: null },
+        },
+        {
+          id: 1,
+          label: 'Price',
+          filterName: 'price',
+          options: [
+            { name: 'All', value: null },
+            { name: 'Under $1', value: { f: 1, o: '<' }, slug: '1' },
+            { name: 'Under $5', value: { f: 5, o: '<' }, slug: '<5' },
+            { name: '$1-$5', value: { f: 1, s: 5, o: 'between' }, slug: '1-5' },
+            { name: '$5-$10', value: { f: 5, s: 10, o: 'between' }, slug: '5-10' },
+            { name: '$10-$15', value: { f: 10, s: 15, o: 'between' }, slug: '10-15' },
+            { name: '$15-$50', value: { f: 15, s: 50, o: 'between' }, slug: '15-20' },
+            { name: '$10+', value: { f: 10, o: '>' }, slug: '>10' },
+            { name: '$100+', value: { f: 100, o: '>' }, slug: '>100' },
+          ],
+          value: { name: 'All', value: null },
+        },
+        {
+          id: 2,
+          label: 'Coin Rank',
+          filterName: 'coin_rank',
+          options: [
+            { name: 'All', value: null },
+            { name: 'top 5', value: { f: 5 }, slug: '5' },
+            { name: 'top 10', value: { f: 10 }, slug: '10' },
+            { name: 'top 25', value: { f: 25 }, slug: '25' },
+            { name: 'top 50', value: { f: 50 }, slug: '50' },
+            { name: 'top 100', value: { f: 100 }, slug: '100' },
+          ],
+          value: { name: 'All', value: null },
+        },
+        {
+          id: 3,
+          label: 'Market Cap',
+          filterName: 'market_cap_usd',
+          options: [
+            { name: 'All', value: null },
+            { name: 'Over $10k', value: { f: 10000, o: '>' }, slug: '>10k' },
+            { name: 'Under $10М', value: { f: 10000000, o: '<' }, slug: '>10m' },
+            { name: '$10M-$100M', value: { f: 10000000, s: 1000000000, o: 'between' }, slug: '10m-100m' },
+            { name: 'Over $100M', value: { f: 1000000000, o: '>' }, slug: '>100m' },
+            { name: 'Over $500M', value: { f: 5000000000, o: '>' }, slug: '>500m' },
+            { name: 'Over $1B', value: { f: 10000000000, o: '>' }, slug: '>1b' },
+          ],
+          value: { name: 'All', value: null },
+        },
+        {
+          id: 4,
+          label: '% Change 1h',
+          filterName: 'percent_change_1h',
+          options: [
+            { name: 'All', value: null },
+            { name: 'Less than 0%', value: { f: 0, o: '<' }, slug: '<0' },
+            { name: '1% - 5%', value: { f: 1, s: 5, o: 'between' }, slug: '1-5' },
+            { name: '5% - 10%', value: { f: 5, s: 10, o: 'between' }, slug: '5-10' },
+            { name: '1% - 10%', value: { f: 1, s: 10, o: 'between' }, slug: '1-10' },
+            { name: 'Over 10%', value: { f: 10, o: '>' }, slug: '>10' },
+            { name: 'Over 20%', value: { f: 20, o: '>' }, slug: '>20' },
+            { name: 'Over 50%', value: { f: 50, o: '>' }, slug: '>50' },
+            { name: 'Over 100%', value: { f: 100, o: '>' }, slug: '>100' },
+            { name: 'Over 500%', value: { f: 500, o: '>' }, slug: '>500' },
+          ],
+          value: { name: 'All', value: null },
+        },
+        {
+          id: 5,
+          label: '% Change 24h',
+          filterName: 'percent_change_24h',
+          options: [
+            { name: 'All', value: null },
+            { name: 'Less than 0%', value: { f: 0, o: '<' }, slug: '<0' },
+            { name: '1% - 5%', value: { f: 1, s: 5, o: 'between' }, slug: '1-5' },
+            { name: '5% - 10%', value: { f: 5, s: 10, o: 'between' }, slug: '5-10' },
+            { name: '1% - 10%', value: { f: 1, s: 10, o: 'between' }, slug: '1-10' },
+            { name: 'Over 10%', value: { f: 10, o: '>' }, slug: '>10' },
+            { name: 'Over 20%', value: { f: 20, o: '>' }, slug: '>20' },
+            { name: 'Over 50%', value: { f: 50, o: '>' }, slug: '>50' },
+            { name: 'Over 100%', value: { f: 100, o: '>' }, slug: '>100' },
+            { name: 'Over 500%', value: { f: 500, o: '>' }, slug: '>500' },
+          ],
+          value: { name: 'All', value: null },
+        },
+        {
+          id: 6,
+          label: 'Volume 24h',
+          filterName: 'volume_usd_24h',
+          options: [
+            { name: 'All', value: null },
+            { name: '$10М +', value: { f: 10000000 }, slug: '>10m' },
+            { name: '$1М +', value: { f: 1000000 }, slug: '>1m' },
+            { name: '$100К +', value: { f: 100000 }, slug: '>100k' },
+            { name: '$10К +', value: { f: 10000 }, slug: '>10k' },
+            { name: '$1К +', value: { f: 1000 }, slug: '>1k' },
+          ],
+          value: { name: 'All', value: null },
+        },
+        {
+          id: 7,
+          label: 'Circulating Supply',
+          filterName: 'available_supply',
+          options: [
+            { name: 'All', value: null },
+            { name: 'Under $10k', value: { f: 10000, o: '<' }, slug: '<10k' },
+            { name: 'Over $10k', value: { f: 10000, o: '>' }, slug: '>10k' },
+            { name: 'Under $10М', value: { f: 10000000, o: '<' }, slug: '>10m' },
+            { name: '$10M-$100M', value: { f: 10000000, s: 1000000000, o: 'between' }, slug: '10m-100m' },
+            { name: 'Over $100M', value: { f: 1000000000, o: '>' }, slug: '>100m' },
+            { name: 'Over $500M', value: { f: 5000000000, o: '>' }, slug: '>500m' },
+            { name: 'Over $1B', value: { f: 10000000000, o: '>' }, slug: '>1b' },
+          ],
+          value: { name: 'All', value: null },
+        },
+      ];
+    },
     changeTablePage(page) {
       this.tablePage = page;
     },
@@ -429,6 +487,7 @@ export default {
     },
   },
   mounted() {
+    this.fetchCategories();
     if (this.$route.query.search) {
       this.search = this.$route.query.search;
       this.filterApi.search = this.search;

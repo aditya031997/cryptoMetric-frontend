@@ -108,12 +108,9 @@ export default {
         .then((data) => {
           accessToken.set(data.live.token, false);
           accessToken.set(data.local.token, true);
-          // accessToken.set(data.local.token, data.local.data, true);
-          // localStorage.setItem('userData', JSON.stringify(data.local.data));
           const userData = data.live.user;
           this.$store.commit('setUser', userData);
           window.location.reload();
-          // this.$router.push({ name: 'dashboard-home' });
         })
         .catch((errors) => {
           if (typeof errors == 'string') {
