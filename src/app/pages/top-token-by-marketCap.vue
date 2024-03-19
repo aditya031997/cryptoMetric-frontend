@@ -3,232 +3,89 @@
     <!-- Filter buttons -->
     <div class="filter-buttons">
       <button
-        @click="filterData('1h')"
-        :class="{ active: activeFilter === '1h' }"
+        v-for="filter in filters"
+        :key="filter.value"
+        @click="filterData(filter.value)"
+        :class="{ active: activeFilter === filter.value }"
       >
-        1 Hour
-      </button>
-      <button
-        @click="filterData('24h')"
-        :class="{ active: activeFilter === '24h' }"
-      >
-        24 Hours
-      </button>
-      <button
-        @click="filterData('7d')"
-        :class="{ active: activeFilter === '7d' }"
-      >
-        7 Days
-      </button>
-      <button
-        @click="filterData('30d')"
-        :class="{ active: activeFilter === '30d' }"
-      >
-        30 Days
+        {{ filter.label }}
       </button>
     </div>
     <!-- Chart container -->
-    <div
-      ref="chartContainer"
-      style="width: 550px; height: 400px; margin: 0 auto"
-    ></div>
+    <div>
+      <div
+        ref="chartContainer"
+        style="width: 1050px; height: 500px; margin: 0 auto"
+      ></div>
+      <!-- Custom Pagination -->
+      <div class="pagination">
+        <button @click="gotoFirstPage">&lt;&lt;</button>
+        <button @click="previousPage">&lt;</button>
+        <span
+          v-for="pageNumber in paginationNumbers"
+          :key="pageNumber"
+        >
+          <button
+            @click="gotoPage(pageNumber)"
+            :class="{ active: currentPage === pageNumber }"
+          >
+            {{ pageNumber }}
+          </button>
+        </span>
+        <button @click="nextPage">&gt;</button>
+        <button @click="gotoLastPage">&gt;&gt;</button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+import io from 'socket.io-client';
+import configs from '../../configs/configs';
+import { mapGetters } from 'vuex';
+import {
+  getImageCoin,
+  getBigImageCoin,
+} from '.././utils/helpers/formatter-images';
+
 export default {
   data() {
     return {
       chart: null,
-      cryptocurrencyData: [
-        {
-          id: 1,
-          name: 'Bitcoin',
-          slug: 'bitcoin',
-          symbol: 'BTC',
-          image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1.png',
-          num_market_pairs: '10871',
-          cmc_rank: '1',
-          price: '72139.2003919586',
-          circulating_supply: '19652812',
-          total_supply: '19652812',
-          last_updated: '2024-03-13T05:27:00.000Z',
-          volume_24h: '61029472194.54385',
-          volume_change_24h: '-5.6477',
-          percent_change_1h: '0.09709489',
-          percent_change_24h: '0.24162183',
-          percent_change_7d: '9.85127924',
-          percent_change_30d: '49.82554745',
-          percent_change_60d: '68.11112126',
-          percent_change_90d: '68.57509244',
-          market_cap: '1417738143133.4888',
-        },
-        {
-          id: 2,
-          name: 'Litecoin',
-          slug: 'litecoin',
-          symbol: 'LTC',
-          image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/2.png',
-          num_market_pairs: '1128',
-          cmc_rank: '20',
-          price: '97.11807451855627',
-          circulating_supply: '74303656.10750493',
-          total_supply: '84000000',
-          last_updated: '2024-03-13T05:27:00.000Z',
-          volume_24h: '1001777670.2452488',
-          volume_change_24h: '-39.6518',
-          percent_change_1h: '-0.81650448',
-          percent_change_24h: '-2.52376791',
-          percent_change_7d: '14.32156288',
-          percent_change_30d: '36.61225519',
-          percent_change_60d: '34.21285002',
-          percent_change_90d: '32.92680544',
-          market_cap: '7216228010.849843',
-        },
-
-        {
-          id: 74,
-          name: 'Dogecoin',
-          slug: 'dogecoin',
-          symbol: 'DOGE',
-          image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/74.png',
-          num_market_pairs: '916',
-          cmc_rank: '9',
-          price: '0.17236832380129655',
-          circulating_supply: '143445456383.70523',
-          total_supply: '143445456383.70523',
-          last_updated: '2024-03-13T05:27:00.000Z',
-          volume_24h: '2507210611.1978927',
-          volume_change_24h: '-12.849',
-          percent_change_1h: '-0.10104219',
-          percent_change_24h: '-1.36780033',
-          percent_change_7d: '4.73208692',
-          percent_change_30d: '114.68073367',
-          percent_change_60d: '113.96745866',
-          percent_change_90d: '79.65935412',
-          market_cap: '24725452873.771263',
-        },
-        {
-          id: 328,
-          name: 'Monero',
-          slug: 'monero',
-          symbol: 'XMR',
-          image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/328.png',
-          num_market_pairs: '271',
-          cmc_rank: '48',
-          price: '147.04133660441158',
-          circulating_supply: '18409547.68584193',
-          total_supply: '18409547.68584193',
-          last_updated: '2024-03-13T05:27:00.000Z',
-          volume_24h: '71402711.56555751',
-          volume_change_24h: '-3.9876',
-          percent_change_1h: '0.37832768',
-          percent_change_24h: '1.75217952',
-          percent_change_7d: '1.09812418',
-          percent_change_30d: '21.11078515',
-          percent_change_60d: '-3.31221234',
-          percent_change_90d: '-12.67148248',
-          market_cap: '2706964498.0088496',
-        },
-        {
-          id: 512,
-          name: 'Stellar',
-          slug: 'stellar',
-          symbol: 'XLM',
-          image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/512.png',
-          num_market_pairs: '578',
-          cmc_rank: '34',
-          price: '0.15071418154498745',
-          circulating_supply: '28652698455.156082',
-          total_supply: '50001787021.71013',
-          last_updated: '2024-03-13T05:26:00.000Z',
-          volume_24h: '221752865.78368232',
-          volume_change_24h: '-58.3958',
-          percent_change_1h: '0.4616082',
-          percent_change_24h: '-0.98171663',
-          percent_change_7d: '12.51292321',
-          percent_change_30d: '36.6978106',
-          percent_change_60d: '26.15757977',
-          percent_change_90d: '20.94185519',
-          market_cap: '4318367996.724175',
-        },
-        {
-          id: 825,
-          name: 'Tether USDt',
-          slug: 'tether',
-          symbol: 'USDT',
-          image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/825.png',
-          num_market_pairs: '77891',
-          cmc_rank: '3',
-          price: '1.0003373519315544',
-          circulating_supply: '102662860009.6692',
-          total_supply: '106797122778.23004',
-          last_updated: '2024-03-13T05:26:00.000Z',
-          volume_24h: '113112980109.77145',
-          volume_change_24h: '-2.9311',
-          percent_change_1h: '0.00414632',
-          percent_change_24h: '0.03973948',
-          percent_change_7d: '-0.0141711',
-          percent_change_30d: '0.00175793',
-          percent_change_60d: '0.04096781',
-          percent_change_90d: '0.02105472',
-          market_cap: '102697493523.79236',
-        },
-        {
-          id: 1027,
-          name: 'Ethereum',
-          slug: 'ethereum',
-          symbol: 'ETH',
-          image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png',
-          num_market_pairs: '8532',
-          cmc_rank: '2',
-          price: '4040.131342749603',
-          circulating_supply: '120089623.3167966',
-          total_supply: '120089623.3167966',
-          last_updated: '2024-03-13T05:27:00.000Z',
-          volume_24h: '26150009590.05244',
-          volume_change_24h: '-6.4857',
-          percent_change_1h: '0.19100789',
-          percent_change_24h: '-0.00433613',
-          percent_change_7d: '8.44044702',
-          percent_change_30d: '61.70292539',
-          percent_change_60d: '58.7903148',
-          percent_change_90d: '78.80888564',
-          market_cap: '485177851101.1835',
-        },
-        {
-          id: 1321,
-          name: 'Ethereum Classic',
-          slug: 'ethereum-classic',
-          symbol: 'ETC',
-          image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1321.png',
-          num_market_pairs: '513',
-          cmc_rank: '24',
-          price: '37.146507737416876',
-          circulating_supply: '146006869.00784722',
-          total_supply: '210700000',
-          last_updated: '2024-03-13T05:27:00.000Z',
-          volume_24h: '393310809.15601945',
-          volume_change_24h: '-44.2238',
-          percent_change_1h: '0.1331799',
-          percent_change_24h: '-0.03028888',
-          percent_change_7d: '3.15444465',
-          percent_change_30d: '44.18664737',
-          percent_change_60d: '26.00612578',
-          percent_change_90d: '81.46959783',
-          market_cap: '5423645289.316009',
-        },
-        // Add more items as needed
-      ],
+      cryptocurrencyData: [],
       originalData: [],
       activeFilter: '1h',
+      currentPage: 1,
+      totalPages: 1,
+      bubblesPerPage: 55,
+      filters: [
+        { label: '1 Hour', value: '1h' },
+        { label: '24 Hours', value: '24h' },
+        { label: '7 Days', value: '7d' },
+        { label: '30 Days', value: '30d' },
+        { label: 'Favorites', value: 'favorites' },
+      ],
     };
   },
   mounted() {
-    this.loadHighchartsScript().then(() => {
+    this.socket = io(configs.LOCAL_API_URL);
+    this.socket.on('InitialTableListing', (initialData) => {
+      console.log(initialData, 'initialData');
+      this.cryptocurrencyData = initialData.data;
       this.originalData = [...this.cryptocurrencyData];
+      this.updatePagination();
       this.renderChart();
       this.startAnimation();
+      this.dataReceived = true;
+    });
+
+    this.socket.on('UpdatedTableListing', (updatedData) => {
+      this.cryptocurrencyData = updatedData.data;
+      this.originalData = [...this.cryptocurrencyData];
+      this.updatePagination();
+      this.renderChart();
+      this.startAnimation();
+      this.dataReceived = true;
     });
   },
   methods: {
@@ -237,90 +94,156 @@ export default {
         const script = document.createElement('script');
         script.src = 'https://code.highcharts.com/highcharts.js';
         script.async = true;
-        script.onload = resolve;
+        script.onload = () => {
+          Highcharts.setOptions({
+            licenseKey: '6E5D-5973-0560-97B0-E295',
+          });
+          resolve();
+        };
         document.head.appendChild(script);
       });
     },
     renderChart() {
-      // Render the bubble chart with default 1-hour filter
       this.filterData(this.activeFilter);
     },
     startAnimation() {
+      const animationInterval = 1000; // Adjust animation interval as needed
       setInterval(() => {
+        console.log('Updating bubble data...');
         this.updateBubbleData();
-      }, 1000);
+      }, animationInterval);
+    },
+    filterFavorites(data) {
+      const favorites = this.getFavorites.map((favorite) => favorite.slug);
+      return data.filter((item) => favorites.includes(item.slug));
     },
 
     filterData(interval) {
       this.activeFilter = interval;
-      const filteredData = this.originalData.map((item) => {
-        let percentageChange;
-        switch (interval) {
-          case '1h':
-            percentageChange = parseFloat(item.percent_change_1h);
-            break;
-          case '24h':
-            percentageChange = parseFloat(item.percent_change_24h);
-            break;
-          case '7d':
-            percentageChange = parseFloat(item.percent_change_7d);
-            break;
-          case '30d':
-            percentageChange = parseFloat(item.percent_change_30d);
-            break;
-          default:
-            break;
-        }
+      const imageUrl = this.getCoinImageUrl();
+      if (interval === 'favorites') {
+        const favoriteData = this.filterFavorites(this.getFavorites);
 
-        const change = isNaN(percentageChange)
-          ? 'N/A'
-          : percentageChange.toFixed(2);
+        this.updateChart(favoriteData, imageUrl);
+      } else {
+        const filteredData = this.originalData.map((item) => {
+          let percentageChange;
+          switch (interval) {
+            case '1h':
+              percentageChange = parseFloat(item.percent_change_1h);
+              break;
+            case '24h':
+              percentageChange = parseFloat(item.percent_change_24h);
+              break;
+            case '7d':
+              percentageChange = parseFloat(item.percent_change_7d);
+              break;
+            case '30d':
+              percentageChange = parseFloat(item.percent_change_30d);
+              break;
+            default:
+              break;
+          }
+          const change = isNaN(percentageChange)
+            ? 'N/A'
+            : percentageChange.toFixed(2);
 
-        return {
-          ...item,
-          percent_change: change,
-        };
-      });
-
-      this.updateChart(filteredData);
+          return {
+            ...item,
+            percent_change: change,
+            // imageUrl: imageUrl,
+          };
+        });
+        this.updateChart(filteredData, imageUrl);
+      }
     },
 
-    updateChart(data) {
-      const processedData = data.map((crypto, index) => {
-        let percentageChange;
-        switch (this.activeFilter) {
-          case '1h':
-            percentageChange = parseFloat(crypto.percent_change_1h);
-            break;
-          case '24h':
-            percentageChange = parseFloat(crypto.percent_change_24h);
-            break;
-          case '7d':
-            percentageChange = parseFloat(crypto.percent_change_7d);
-            break;
-          case '30d':
-            percentageChange = parseFloat(crypto.percent_change_30d);
-            break;
-          default:
-            percentageChange = NaN;
-            break;
-        }
-        const change = isNaN(percentageChange)
-          ? 'N/A'
-          : percentageChange.toFixed(2);
-        return {
-          x: index,
-          y: Math.random() * 100,
-          z: Math.abs(percentageChange) * 10,
-          name: crypto.symbol,
-          image: crypto.image,
-          change: change,
-          color:
-            percentageChange < 0
-              ? 'rgba(255, 0, 0, 0.5)'
-              : 'rgba(0, 255, 0, 0.5)', // Set color based on percentage change
-        };
-      });
+    updateChart(data, imageUrl) {
+      const startIdx = (this.currentPage - 1) * this.bubblesPerPage;
+      const endIdx = Math.min(startIdx + this.bubblesPerPage, data.length);
+
+      const numDataPoints = endIdx - startIdx;
+
+      const containerWidth = 1050;
+      const containerHeight = 500;
+
+      const maxBubbleSize = Math.min(containerWidth, containerHeight) * 0.99;
+      const minBubbleSize = maxBubbleSize * 2;
+
+      const bubbleSpacingX = containerWidth / Math.sqrt(numDataPoints);
+      const bubbleSpacingY = containerHeight / Math.sqrt(numDataPoints);
+
+      const processedData = data
+        .slice(startIdx, endIdx)
+        .map((crypto, index) => {
+          const row = Math.floor(index / Math.sqrt(numDataPoints));
+          const col = index % Math.sqrt(numDataPoints);
+          const x = col * bubbleSpacingX + bubbleSpacingX / 1;
+          const y = row * bubbleSpacingY + bubbleSpacingY / 1;
+          let percentageChange;
+          switch (this.activeFilter) {
+            case '1h':
+              percentageChange = parseFloat(crypto.percent_change_1h);
+              break;
+            case '24h':
+              percentageChange = parseFloat(crypto.percent_change_24h);
+              break;
+            case '7d':
+              percentageChange = parseFloat(crypto.percent_change_7d);
+              break;
+            case '30d':
+              percentageChange = parseFloat(crypto.percent_change_30d);
+              break;
+            case 'favorites':
+              percentageChange = parseFloat(crypto.percent_change_24h);
+              break;
+            default:
+              percentageChange = NaN;
+              break;
+          }
+
+          let dynamicBubbleSize = minBubbleSize;
+
+          const link = `https://www.coingecko.com/en/coins/${crypto.slug}`;
+
+          let color;
+          if (percentageChange >= 0) {
+            dynamicBubbleSize +=
+              (percentageChange / 100) * (maxBubbleSize - minBubbleSize) * 1.5;
+            color = {
+              radialGradient: { cx: 0.5, cy: 0.5, r: 0.5 },
+              stops: [
+                [0, 'rgba(33,128,81,0.15)'],
+                [0.8, 'rgba(33,128,81,0.15)'],
+                [1, 'rgba(33,128,81,0.6)'],
+              ],
+            };
+          } else {
+            dynamicBubbleSize +=
+              (-percentageChange / 100) * (maxBubbleSize - minBubbleSize);
+            color = {
+              radialGradient: { cx: 0.5, cy: 0.5, r: 0.5 },
+              stops: [
+                [0, 'rgba(141,38,56,0.2)'],
+                [0.8, 'rgba(141,38,56,0.2)'],
+                [1, 'rgba(141,38,56,0.65)'],
+              ],
+            };
+          }
+          const bubble = {
+            x: x,
+            y: y,
+            z: dynamicBubbleSize,
+            name: crypto.symbol,
+            image: imageUrl[crypto.slug],
+            change: percentageChange.toFixed(2) + '%',
+            color: color,
+            slug: crypto.slug,
+            link: link,
+          };
+
+          return bubble;
+        });
 
       if (this.chart) {
         this.chart.series[0].setData(processedData);
@@ -328,7 +251,26 @@ export default {
         this.chart = Highcharts.chart(this.$refs.chartContainer, {
           chart: {
             type: 'bubble',
-            zoomType: 'xy',
+            backgroundColor: '#9ea8b0',
+            events: {
+              load: function () {
+                const spans = document.querySelectorAll(
+                  '.highcharts-label span'
+                );
+                spans.forEach((span) => {
+                  span.style.marginTop = '-10px';
+                });
+              },
+            },
+          },
+          title: {
+            text: null,
+          },
+          legend: {
+            enabled: false,
+          },
+          tooltip: {
+            enabled: false,
           },
           xAxis: {
             visible: false,
@@ -338,38 +280,51 @@ export default {
           },
           plotOptions: {
             series: {
-              dataLabels: {
-                enabled: true,
-                useHTML: true,
-                formatter: function () {
-                  return `<div style="text-align:center;"><img src="${this.point.image}" style="width:20px; height:20px;"/><br>${this.point.name}<br>${this.point.change}</div>`;
-                },
-                style: {
-                  textOutline: false,
-                },
-              },
-              stickyTracking: false,
-              states: {
-                hover: {
-                  halo: {
-                    size: 5,
+              point: {
+                events: {
+                  click: function () {
+                    window.open(this.options.link, '_blank');
                   },
                 },
               },
-            },
-            bubble: {
-              minSize: '20%',
-              maxSize: '25%',
+              dataLabels: {
+                enabled: true,
+                useHTML: true,
+                allowOverlap: false,
+                allign: 'center',
+                formatter: function () {
+                  return `<div class="bubble-wrapper" style="text-align:center;"><img src="${this.point.image}" style="margin-bottom:px; width:auto; max-width:20px; height:auto; max-height:20px;"/><div class="name" style="font-size:12px; margin-bottom:3px;">${this.point.name}</div><div class="change" style="font-size:10px;">${this.point.change}</div></div>`;
+                },
+                style: {
+                  textOutline: false,
+                  border: 'none',
+                },
+              },
+              jitter: {
+                x: 0,
+                y: 0,
+              },
+
+              Animation: true,
+              animationLimit: 250,
+              boostThreshold: 5000,
+              stickyTracking: false,
+              // stacking:"stream",
+              softThreshold: true,
+              type: 'coulmn',
+              states: {
+                hover: {
+                  halo: {
+                    size: 10,
+                  },
+                },
+              },
             },
           },
 
           series: [
             {
               data: processedData,
-              marker: {
-                symbol: 'circle',
-              },
-              colorByPoint: false, // Disable color by point
             },
           ],
         });
@@ -379,13 +334,126 @@ export default {
     updateBubbleData() {
       if (this.chart) {
         const series = this.chart.series[0];
-        series.data.forEach((point) => {
-          const newX = point.x + (Math.random() - 0.5) * 0.5; // Adjust the range of movement as needed
-          const newY = point.y + (Math.random() - 0.5) * 0.5; // Adjust the range of movement as needed
+        const bubbleRadius = series.data[0].marker.radius;
+        const containerWidth = this.$refs.chartContainer?.offsetWidth;
+        const containerHeight = this.$refs.chartContainer?.offsetHeight;
+
+        // Calculate repulsive forces between bubbles
+        const forces = series.data.map((point, index) => {
+          let forceX = 0;
+          let forceY = 0;
+
+          series.data.forEach((otherPoint, otherIndex) => {
+            if (index !== otherIndex) {
+              const distanceX = point.x - otherPoint.x;
+              const distanceY = point.y - otherPoint.y;
+              const distance = Math.sqrt(
+                distanceX * distanceX + distanceY * distanceY
+              );
+              ``;
+              const minDistance = bubbleRadius * 0.5;
+
+              if (distance < minDistance) {
+                // Calculate repulsive force
+                const force = (minDistance - distance) / distance;
+                forceX += force * distanceX;
+                forceY += force * distanceY;
+              }
+            }
+          });
+
+          return { forceX, forceY };
+        });
+
+        // Apply forces to update bubble positions
+        series.data.forEach((point, index) => {
+          const { forceX, forceY } = forces[index];
+          let newX = point.x + forceX;
+          let newY = point.y + forceY;
+
+          // Ensure the bubble stays within the bounds of the container
+          newX = Math.max(
+            bubbleRadius,
+            Math.min(containerWidth - bubbleRadius, newX)
+          );
+          newY = Math.max(
+            bubbleRadius,
+            Math.min(containerHeight - bubbleRadius, newY)
+          );
+
           point.update({ x: newX, y: newY }, false);
         });
+
+        // Redraw the chart after adjusting all bubble positions
         this.chart.redraw();
       }
+    },
+
+    updatePagination() {
+      // Calculate total pages based on the length of data and bubblesPerPage
+      this.totalPages = Math.ceil(
+        this.originalData.length / this.bubblesPerPage
+      );
+      // Ensure current page is within bounds
+      if (this.currentPage > this.totalPages) {
+        this.currentPage = this.totalPages;
+      }
+    },
+    gotoPage(pageNumber) {
+      if (pageNumber >= 1 && pageNumber <= this.totalPages) {
+        this.currentPage = pageNumber;
+        this.filterData(this.activeFilter);
+      }
+    },
+    gotoFirstPage() {
+      this.gotoPage(1);
+    },
+    gotoLastPage() {
+      this.gotoPage(this.totalPages);
+    },
+    nextPage() {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+        this.filterData(this.activeFilter);
+      }
+    },
+    previousPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+        this.filterData(this.activeFilter);
+      }
+    },
+    getCoinImageUrl() {
+      if (this.activeFilter === 'favorites') {
+        const favorites = this.getFavorites.map((favorite) => favorite.slug);
+        const imageUrls = {};
+        favorites.forEach((slug) => {
+          imageUrls[slug] = getBigImageCoin(slug);
+        });
+        return imageUrls;
+      } else {
+        const imageUrls = {};
+        this.cryptocurrencyData.forEach((crypto) => {
+          imageUrls[crypto.slug] = crypto.image;
+        });
+        return imageUrls;
+      }
+    },
+  },
+  computed: {
+    paginationNumbers() {
+      return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+    },
+    ...mapGetters(['getFavorites']),
+  },
+  watch: {
+    activeFilter: {
+      handler(newValue, oldValue) {
+        if (typeof this.getCoinImageUrl === 'function') {
+          this.getCoinImageUrl();
+        }
+      },
+      immediate: true, // Ensure it's called immediately on component mount
     },
   },
 };
@@ -393,16 +461,91 @@ export default {
 
 <style scoped>
 /* Add your custom styles here */
+
+#highcharts-xx9ychm-387 {
+  border: none;
+}
+.highcharts-data-labels {
+  border: none;
+}
+.bubble-wrapper {
+}
+.bubble-wrapper img {
+}
+.bubble-wrapper .name {
+}
+.bubble-wrapper .change {
+  font-size: 10px;
+}
+
+.highcharts-data-labels span {
+}
 .filter-buttons {
-  margin-bottom: 20px;
+  display: table;
+  justify-content: center;
+  align-content: center;
+  margin: 20px auto;
+  border: 1px solid rgba(1, 183, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
 }
 
 .filter-buttons button {
-  margin-right: 10px;
+  background-color: rgba(1, 183, 255, 0.1);
+  font-size: 12px;
+  color: #444;
+  padding: 5px 12px;
+  border: none;
   cursor: pointer;
+}
+.filter-buttons button:not(:last-child) {
+  border-right: 1px solid rgba(1, 183, 255, 0.2);
+}
+
+.pagination button.active {
+  background-color: #007bff;
+  color: #fff;
+  border-color: #007bff;
 }
 
 .filter-buttons button.active {
+  background-color: rgba(1, 183, 255, 0.2);
+  color: #222;
   font-weight: bold;
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 10px;
+}
+.pagination > * {
+  background: transparent;
+  font-size: 14px;
+  padding: 0rem 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: center;
+  gap: 8px;
+  border: 2px solid transparent;
+  min-width: 2rem;
+  height: 2rem;
+  border-radius: 4px;
+  cursor: default;
+  transition: all 0.3s ease-in-out 0s;
+}
+.pagination > *:hover {
+  border-color: #bbb;
+}
+
+.pagination button {
+  cursor: pointer;
+}
+.pagination span {
+}
+.pagination button:disabled {
+  pointer-events: none;
 }
 </style>

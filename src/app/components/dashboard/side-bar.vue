@@ -143,6 +143,7 @@ export default {
             name: 'Bubble',
             icon: 'icon-calendar', // Use an appropriate icon
             active: true,
+            parent: 0
           },
           // Add more submenu items under "Home" here if necessary
         ],
