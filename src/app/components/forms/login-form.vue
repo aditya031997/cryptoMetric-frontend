@@ -107,7 +107,7 @@ export default {
         .post('/login', data)
         .then((data) => {
           accessToken.set(data.live.token, false);
-          accessToken.set(data.local.token, true);
+          accessToken.set(data.local.data.token, true);
           const userData = data.live.user;
           this.$store.commit('setUser', userData);
           window.location.reload();
