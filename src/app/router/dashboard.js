@@ -48,10 +48,10 @@ export default [
     meta: { requiresAuth: true, headerName: 'ICO Calendar' },
   },
   {
-    path: '/bubble',
-    name: 'bubble',
+    path: '/top-token-by-market-cap',
+    name: 'top-token-by-market-cap',
     component: DashboardBubble,
-    meta: { requiresAuth: true, headerName: 'Bubble' },
+    meta: { requiresAuth: true, headerName: 'Top Token By Market Cap' },
   },
   {
     path: '/alerts',

@@ -167,8 +167,8 @@ export default {
         },
         {
           id: 5,
-          to: '/bubble',
-          name: 'Bubble',
+          to: '/top-token-by-market-cap',
+          name: 'Top Token',
           icon: 'icon-calendar',
           active: true,
         },
@@ -223,4 +223,3 @@ export default {
   lang="scss"
   scoped
 ></style>
-  
