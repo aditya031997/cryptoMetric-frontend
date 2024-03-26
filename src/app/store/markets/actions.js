@@ -17,7 +17,6 @@ import configs from '../../../configs/configs';
 export default {
   getCoinsMarkets(context, data) {
     const dataSerialize = serialize(data);
-    console.log('dataSerialize', this._vm.$api);
     const token = localStorage.getItem('vue-authenticate.vueauth_token');
     const config = {
       headers: {
