@@ -106,18 +106,20 @@ export default {
       this.$api
         .post('/login', data)
         .then((data) => {
-          accessToken.set(data.token);
-          this.$store.commit('setUser', data.user);
-          this.$router.push({ name: 'dashboard-home' });
+          accessToken.set(data.live.token, false);
+          accessToken.set(data.local.data.token, true);
+          const userData = data.live.user;
+          this.$store.commit('setUser', userData);
+          window.location.reload();
         })
         .catch((errors) => {
-          if (typeof errors === 'string') {
+          if (typeof errors == 'string') {
             this.errorMessage = errors;
           } else {
             if (errors?.errors) {
               this.$refs.validator.setErrors({ ...errors.errors });
             } else {
-              this.$refs.validator.setErrors({ email: ['Unexpected error occured'] });
+              this.$refs.validator.setErrors({ email: ['Unexpected error occurred'] });
             }
           }
         })

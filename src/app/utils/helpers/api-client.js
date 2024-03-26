@@ -97,7 +97,20 @@ export default {
       .request(queryOptions)
       .then((response) => {
         document.dispatchEvent(new CustomEvent(queryOptions.listenerUUID, { detail: response.data }));
-        return response.data;
+        if (queryOptions.url == '/login') {
+          const localOptions = { ...queryOptions, baseURL: `${configs.LOCAL_API_URL}/api` };
+          return axiosInstance
+            .request(localOptions)
+            .then((localResponse) => {
+              return { live: response?.data, local: localResponse?.data };
+            })
+            .catch((localError) => {
+              delete this.queryStack[queryOptions.uuid];
+              return Promise.reject(localError);
+            });
+        } else {
+          return response.data;
+        }
       })
       .catch((errors) => {
         delete this.queryStack[queryOptions.uuid];

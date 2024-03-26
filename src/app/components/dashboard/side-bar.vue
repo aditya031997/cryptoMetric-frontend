@@ -136,17 +136,6 @@ export default {
           name: 'Home',
           icon: 'icon-home',
           active: true,
-             children: [
-          {
-            id: '0-1',
-            to: '/home/bubble',
-            name: 'Bubble',
-            icon: 'icon-calendar', // Use an appropriate icon
-            active: true,
-            parent: 0
-          },
-          // Add more submenu items under "Home" here if necessary
-        ],
         },
         {
           id: 1,
@@ -178,8 +167,8 @@ export default {
         },
         {
           id: 5,
-          to: '/bubble',
-          name: 'Bubble',
+          to: '/top-token-by-market-cap',
+          name: 'Top Token',
           icon: 'icon-calendar',
           active: true,
         },
@@ -234,4 +223,3 @@ export default {
   lang="scss"
   scoped
 ></style>
-  

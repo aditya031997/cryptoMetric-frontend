@@ -1,12 +1,14 @@
 const ACCESS_TOKEN_KEY = 'vue-authenticate.vueauth_token';
+const ACCESS_LOCAL_TOKEN_KEY = 'vue-authenticate.vueauth_local_token';
 
-// Get and store access_token in local storage
-function setAccessToken(accessToken) {
-  localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+function setAccessToken(accessToken, isLocal) {
+  const key = isLocal ? ACCESS_LOCAL_TOKEN_KEY : ACCESS_TOKEN_KEY;
+  localStorage.setItem(key, accessToken);
 }
 
 function getAccessToken() {
-  return localStorage.getItem(ACCESS_TOKEN_KEY);
+  const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+  return token;
 }
 
 function clearAccessToken() {
@@ -15,18 +17,18 @@ function clearAccessToken() {
 
 export default {
   token: null,
-  get() {
+  get(isLocal = false) {
     if (this.token) {
       return this.token;
     } else {
-      let token = getAccessToken();
+      let token = getAccessToken(isLocal);
       this.token = token;
       return token;
     }
   },
-  set(token) {
+  set(token, isLocal) {
     this.token = token;
-    return setAccessToken(token);
+    return setAccessToken(token, isLocal);
   },
   clear() {
     this.token = null;

@@ -74,15 +74,24 @@ function formatPrice(value, currency = '$', currencyPosition = true) {
     preFixedValue = value.substring(1);
   }
   const numValue = parseFloat(preFixedValue);
-  let fixedValue = getPriceByQuantity(numValue);
+  let formattedValue = getPriceByQuantity(numValue);
 
-  if (fixedValue.includes('.')) {
-    fixedValue = fixedValue.replace(/\.?0+$/, '');
+  if (formattedValue.includes('.')) {
+    formattedValue = formattedValue.replace(/\.?0+$/, '');
   }
+
+  // Abbreviate the formatted value if it's a large number
+  if (Math.abs(numValue) >= 1000) {
+    formattedValue = abbreviateNumber(numValue);
+  }
+
+  // Ensure formattedValue is not undefined before returning
+  formattedValue = formattedValue || 'No info';
+
   if (currencyPosition) {
-    return `${symbol}${fixedValue}`;
+    return `${symbol}${formattedValue}`;
   }
-  return `${fixedValue}${symbol}`;
+  return `${formattedValue}${symbol}`;
 }
 
 function formatPercent(value) {
@@ -101,6 +110,14 @@ function simpleFormatPercent(value) {
     fixedValue = fixedValue.replace(/\.?0+$/, '');
   }
   return `${numValue > 0 ? '+' : ''}${fixedValue}%`;
+}
+
+function abbreviateNumber(num) {
+  if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
+  if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+  if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+  if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
+  return num.toFixed(2);
 }
 
 export { formatPrice, formatPercent, simpleFormatPrice, simpleFormatPercent };

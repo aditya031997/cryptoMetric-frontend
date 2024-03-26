@@ -150,9 +150,9 @@ export default {
     onClickNextPage() {
       this.activePage = this.activePage + 1;
     },
-    onChangePage(page){
-      this.changePage(page)
-    }
+    onChangePage(page) {
+      this.changePage(page);
+    },
   },
 };
 </script>
