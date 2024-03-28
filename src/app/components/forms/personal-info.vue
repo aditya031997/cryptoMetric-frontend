@@ -2,7 +2,7 @@
   <validation-observer
     ref="validator"
     class="profile-forms"
-    v-slot="{ handleSubmit, invalid }"
+    v-slot="{ handleSubmit }"
   >
     <form @submit.prevent="handleSubmit(onSubmitForm)">
       <h2 class="m-0 pb-4 text text--title-3 profile-forms__title">Personal Info</h2>

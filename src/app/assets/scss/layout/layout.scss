@@ -5,7 +5,8 @@
 }
 .dashboard__main {
   padding: 78px 33px 23px 108px;
-  background: $grey-lighten;
+  // background: $grey-lighten;
+  background: $navy-blue-dark;
   transition: 0.15s padding ease-in-out;
   // -webkit-overflow-scrolling: touch;
   @media (max-width: breakpoint-max('sm')) {

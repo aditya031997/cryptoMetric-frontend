@@ -114,6 +114,10 @@ export default {
     this.$root.$off('onDndMode', this.onDndMode);
     this.$root.$off('offDndMode', this.offDndMode);
   },
+  watch: {
+    getOrderWidgets(newValue) {
+    }
+  },
 };
 </script>
 
