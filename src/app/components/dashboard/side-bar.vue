@@ -85,6 +85,7 @@ import IconCalendar from '../icons/icon-calendar.vue';
 import IconSupport from '../icons/icon-support.vue';
 import IconHealth from '../icons/icon-health.vue';
 import IconRadio from '../icons/icon-radio.vue';
+import IconToken from '../icons/icon-token.vue';
 import CmLogo from '../cm-logo.vue';
 import ButtonIcon from '../ui/button/button-icon.vue';
 import IconLink from '../icons/icon-link.vue';
@@ -101,6 +102,7 @@ export default {
     CmLink,
     IconAlarm,
     IconCalendar,
+    IconToken,
     IconSupport,
     IconHealth,
     IconRadio,
@@ -169,7 +171,7 @@ export default {
           id: 5,
           to: '/top-token-by-market-cap',
           name: 'Top Token',
-          icon: 'icon-calendar',
+          icon: 'icon-token',
           active: true,
         },
         {
