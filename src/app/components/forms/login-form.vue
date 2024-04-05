@@ -110,6 +110,7 @@ export default {
           accessToken.set(data.local.data.token, true);
           const userData = data.live.user;
           this.$store.commit('setUser', userData);
+          // this.$router.push({ name: 'dashboard-home' });
           window.location.reload();
         })
         .catch((errors) => {
