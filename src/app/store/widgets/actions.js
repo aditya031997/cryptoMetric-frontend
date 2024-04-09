@@ -1,11 +1,15 @@
+import { getCurrentInstance } from "vue";
+
+const api = getCurrentInstance().appContext.config.globalProperties.$api;
+
 export default {
   getOrderList(context) {
-    return this._vm.$api.get('/user/widgets').then(({ widgets }) => {
+    return api.get('/user/widgets').then(({ widgets }) => {
       context.commit('setWidgetsOrder', widgets);
     });
   },
   getWidgets(context) {
-    return this._vm.$api.get('/widgets').then(response => {
+    return api.get('/widgets').then(response => {
       // Logging the entire response object to the console
       console.log(response,"response");
       
@@ -26,7 +30,7 @@ export default {
   changePositionOrderWidgets(context, data) {
 
     const list = data.map((widget, index) => ({ widget_id: widget.widget_id, position: index + 1 }));
-    return this._vm.$api.post('/widgets/user', { widgets: list }).then(() => {
+    return api.post('/widgets/user', { widgets: list }).then(() => {
       context.commit('setWidgetsOrder', data);
     });
   },

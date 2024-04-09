@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import Vuex from 'vuex';
+import Vuex, { createStore } from 'vuex';
 
 import mutations from './mutations';
 import actions from './actions';
@@ -18,11 +18,9 @@ import coins from './coins';
 import admin from './admin';
 import coinTops from './coins-tops';
 
-Vue.use(Vuex);
-
 const state = getInitialState();
 
-export default new Vuex.Store({
+const store = createStore({
   state,
   modules: {
     user,
@@ -44,3 +42,5 @@ export default new Vuex.Store({
   mutations,
   plugins: [],
 });
+
+export default store;

@@ -11,7 +11,7 @@ const routes = [
   ...DashboardPages,
   ...UnsubscribePages,
   {
-    path: '*',
+    path: '/:pathMatch(.*)',
     name: 'not-found',
     redirect: '/home',
   },

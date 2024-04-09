@@ -1,15 +1,11 @@
 import Vue from 'vue';
-import VueRouter from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router';
 import routes from './routes';
 import accessToken from '../utils/helpers/access-token';
 import store from '../store';
 
-Vue.use(VueRouter);
-
-const router = new VueRouter({
-  mode: 'history',
-  linkActiveClass: 'active',
-  base: process.env.BASE_URL,
+const router = createRouter({
+  history: createWebHistory(),
   routes,
 });
 

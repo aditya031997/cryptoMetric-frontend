@@ -3,7 +3,7 @@ import { Decimal } from 'decimal.js';
 import '@/assets/scss/index.scss';
 import './rules/index.js';
 
-import Vue from 'vue';
+import Vue, { createApp } from 'vue';
 import Vuex from 'vuex';
 import uuid from 'vue-uuid';
 
@@ -21,12 +21,24 @@ Object.defineProperty(Vue.prototype, '$_', { value: _ });
 Vue.use(Vuex);
 Vue.use(uuid);
 
-Vue.prototype.$api = ApiClient;
+// Vue.prototype.$api = ApiClient;
 Vue.prototype.$configs = configs;
 
-const main = new Vue({
-  store,
-  router,
-  el: '#app',
-  render: (h) => h(App),
-});
+
+const app = createApp(App)
+
+app.config.globalProperties.$api = ApiClient;
+
+
+app.use(store);
+app.use(router)
+app.mount('#app');
+
+
+/** old vue syntax */
+// const main = new Vue({
+//   store,
+//   router,
+//   el: '#app',
+//   render: (h) => h(App),
+// });
