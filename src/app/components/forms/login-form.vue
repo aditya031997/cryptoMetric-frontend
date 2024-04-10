@@ -4,36 +4,35 @@
     <h1 class="auth-form__title text text--title-2">Sign In</h1>
     <validation-observer
       ref="validator"
-      v-slot="{ handleSubmit, invalid }"
     >
-      <form @submit.prevent="handleSubmit(onSubmit)">
-        <validation-provider
+      <form @submit.prevent="onSubmit">
+        <!-- <ValidationProvider
           name="email"
           rules="required|email"
           v-slot="{ errors }"
-        >
+        > -->
           <cm-input
             class-wrapper="mt-3"
             id="input-email"
             label="Email"
-            :error="errors[0]"
             v-model="emailValue"
           />
-        </validation-provider>
-        <validation-provider
+          <ErrorMessage name="email" />
+        <!-- </ValidationProvider>
+        <ValidationProvider
           name="password"
           rules="required"
           v-slot="{ errors }"
-        >
+        > -->
           <cm-input
             class-wrapper="mt-3"
             id="input-password"
             label="Password"
-            :error="errors[0]"
             type="password"
             v-model="passwordValue"
           />
-        </validation-provider>
+          <ErrorMessage name="password" />
+        <!-- </ValidationProvider> -->
         <cm-button
           custom-class="mt-4"
           is-block
@@ -65,8 +64,8 @@
 import cmInput from '../ui/input/cm-input.vue';
 import CmLink from '../ui/link/cm-link.vue';
 import CmButton from '../ui/button/cm-button.vue';
-import { ValidationObserver } from 'vee-validate';
-import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
+import { ValidationObserver, ErrorMessage } from 'vee-validate';
+// import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
 import CmLogo from '../cm-logo.vue';
 import accessToken from '../../utils/helpers/access-token';
 
@@ -75,7 +74,8 @@ export default {
     cmInput,
     CmLink,
     CmButton,
-    ValidationProvider,
+    // ValidationProvider,
+    ErrorMessage,
     ValidationObserver,
     CmLogo,
   },

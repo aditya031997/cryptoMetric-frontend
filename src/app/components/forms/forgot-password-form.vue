@@ -8,11 +8,11 @@
         v-slot="{ handleSubmit, invalid }"
       >
         <form @submit.prevent="handleSubmit(onSubmit)">
-          <validation-provider
+          <!-- <validation-provider
             name="email"
             rules="required|email"
             v-slot="{ errors }"
-          >
+          > -->
             <cm-input
               class-wrapper="mt-3"
               id="input-email"
@@ -21,7 +21,7 @@
               sub-text="Instructions for password recovery will be sent here"
               v-model="emailValue"
             />
-          </validation-provider>
+          <!-- </validation-provider> -->
           <cm-button
             custom-class="mt-4"
             is-block
@@ -60,7 +60,7 @@
 
 <script>
 import { ValidationObserver } from 'vee-validate';
-import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
+// import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
 import CmLink from '../ui/link/cm-link.vue';
 import CmButton from '../ui/button/cm-button.vue';
 import CmInput from '../ui/input/cm-input.vue';
@@ -68,7 +68,7 @@ import CmLogo from '../cm-logo.vue';
 export default {
   name: 'forgot-password-form',
   components: {
-    ValidationProvider,
+    // ValidationProvider,
     ValidationObserver,
     CmLink,
     CmButton,

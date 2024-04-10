@@ -4,7 +4,7 @@ export default {
   },
   getUserName(state) {
     if (state.data?.firstname) {
-      return state.data.firstname;
+      return state.data?.firstname;
     }
     return '';
   },

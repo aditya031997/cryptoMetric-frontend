@@ -144,7 +144,7 @@ export default {
           to: '/users',
           name: 'Users',
           icon: 'icon-users',
-          active: this.$store.state.user.data.is_admin,
+          active: this.$store.state.user.data?.is_admin,
         },
         {
           id: 2,

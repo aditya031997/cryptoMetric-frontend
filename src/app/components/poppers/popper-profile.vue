@@ -70,14 +70,14 @@ export default {
   },
   computed: {
     getUserName() {
-      let name = `${this.$store.state.user.data.firstname} ${this.$store.state.user.data.lastname}`;
+      let name = `${this.$store.state.user.data?.firstname} ${this.$store.state.user.data?.lastname}`;
       if (name.length > 15) {
         return `${name.substring(0, 15)}... `;
       }
       return `${name}`;
     },
     isAdmin() {
-      return this.$store.state.user.data.is_admin;
+      return this.$store.state.user.data?.is_admin;
     },
   },
   data: () => ({ isLoad: false, show: false, switchValue: false }),

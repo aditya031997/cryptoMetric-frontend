@@ -9,11 +9,11 @@
         v-slot="{ handleSubmit, invalid }"
       >
         <form @submit.prevent="handleSubmit(onSubmit)">
-          <validation-provider
+          <!-- <validation-provider
             name="first-name"
             rules="required"
             v-slot="{ errors }"
-          >
+          > -->
             <cm-input
               class-wrapper="mt-3"
               id="input-first-name"
@@ -21,12 +21,12 @@
               :error="errors[0]"
               v-model="firstNameValue"
             />
-          </validation-provider>
+          <!-- </validation-provider>
           <validation-provider
             name="last-name"
             rules="required"
             v-slot="{ errors }"
-          >
+          > -->
             <cm-input
               class-wrapper="mt-3"
               id="input-last-name"
@@ -34,12 +34,12 @@
               :error="errors[0]"
               v-model="lastNameValue"
             />
-          </validation-provider>
+          <!-- </validation-provider>
           <validation-provider
             name="email"
             rules="required|email"
             v-slot="{ errors }"
-          >
+          > -->
             <cm-input
               class-wrapper="mt-3"
               id="input-email"
@@ -47,13 +47,13 @@
               :error="errors[0]"
               v-model="emailValue"
             />
-          </validation-provider>
+          <!-- </validation-provider>
           <validation-provider
             name="password"
             rules="required|min:8"
             v-slot="{ errors }"
             vid="password"
-          >
+          > -->
             <cm-input
               class-wrapper="mt-3"
               id="input-password"
@@ -62,13 +62,13 @@
               type="password"
               v-model="passwordValue"
             />
-          </validation-provider>
+          <!-- </validation-provider>
           <validation-provider
             name="password"
             vid="password_confirmation"
             rules="required|confirmed:password"
             v-slot="{ errors }"
-          >
+          > -->
             <cm-input
               classWrapper="mt-3"
               id="input-confirm-password"
@@ -77,7 +77,7 @@
               type="password"
               v-model="passwordConfirmValue"
             />
-          </validation-provider>
+          <!-- </validation-provider> -->
           <cm-button
             custom-class="mt-4"
             :disabled="invalid || isLoad"
@@ -101,7 +101,7 @@
 import cmInput from '../ui/input/cm-input.vue';
 import CmButton from '../ui/button/cm-button.vue';
 import { ValidationObserver } from 'vee-validate';
-import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
+// import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
 import CmLogo from '../cm-logo.vue';
 import CmLink from '../ui/link/cm-link.vue';
 import accessToken from '../../utils/helpers/access-token';
@@ -111,7 +111,7 @@ export default {
   components: {
     cmInput,
     CmButton,
-    ValidationProvider,
+    // ValidationProvider,
     ValidationObserver,
     CmLogo,
     CmLink,

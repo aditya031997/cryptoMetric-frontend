@@ -79,7 +79,7 @@ export default {
       return generateGradient(this.nameColor) || {};
     },
     isAdmin() {
-      return this.$store.state.user.data.is_admin;
+      return this.$store.state.user.data?.is_admin;
     },
   },
   methods: {

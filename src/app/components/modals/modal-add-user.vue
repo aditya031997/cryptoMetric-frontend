@@ -7,18 +7,18 @@
       class="modal-user"
       @submit.prevent="handleSubmit(formSubmit)"
     >
-      <validation-provider
+      <!-- <validation-provider
         name="email"
         rules="required|email"
         v-slot="{ errors }"
-      >
+      > -->
         <cm-input
           class-wrapper="mt-4"
           label="Email"
           v-model="email"
           :error="errors[0]"
         />
-      </validation-provider>
+      <!-- </validation-provider> -->
       <cm-button
         type="submit"
         custom-class="mt-4"
@@ -41,14 +41,14 @@
 import cmButton from '../ui/button/cm-button.vue';
 import cmInput from '../ui/input/cm-input.vue';
 import { ValidationObserver } from 'vee-validate';
-import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
+// import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
 import CmLoader from '../ui/loader/cm-loader.vue';
 export default {
   components: {
     cmInput,
     cmButton,
     ValidationObserver,
-    ValidationProvider,
+    // ValidationProvider,
     CmLoader,
   },
   props: {

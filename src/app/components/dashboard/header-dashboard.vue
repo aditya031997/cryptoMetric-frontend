@@ -60,9 +60,9 @@ export default {
   computed: {
     getUserName() {
       if (this.$route.meta.isUserNameHeader) {
-        let name = this.$store.state.user.data.firstname;
-        if (name.length > 8) {
-          return `${name.substring(0, 8)}...`;
+        let name = this.$store.state.user.data?.firstname;
+        if (name?.length > 8) {
+          return `${name?.substring(0, 8)}...`;
         }
         return `${name}`;
       }

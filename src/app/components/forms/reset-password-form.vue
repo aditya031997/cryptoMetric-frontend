@@ -8,13 +8,13 @@
         v-slot="{ handleSubmit, invalid }"
       >
         <form @submit.prevent="handleSubmit(onSubmit)">
-          <validation-provider
+          <!-- <validation-provider
             ref="passwordProvider"
             name="password"
             rules="required|min:8"
             v-slot="{ errors }"
             vid="password"
-          >
+          > -->
             <cm-input
               class-wrapper="mt-3"
               id="input-password"
@@ -23,14 +23,14 @@
               type="password"
               v-model="passwordValue"
             />
-          </validation-provider>
+          <!-- </validation-provider>
           <validation-provider
             ref="confirmationProvider"
             name="password"
             vid="password_confirmation"
             rules="required|confirmed:password"
             v-slot="{ errors }"
-          >
+          > -->
             <cm-input
               classWrapper="mt-3"
               id="input-confirm-password"
@@ -39,7 +39,7 @@
               type="password"
               v-model="passwordConfirmValue"
             />
-          </validation-provider>
+          <!-- </validation-provider> -->
           <cm-button
             custom-class="mt-4"
             is-block
@@ -67,7 +67,7 @@
 
 <script>
 import { ValidationObserver } from 'vee-validate';
-import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
+// import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
 import CmLink from '../ui/link/cm-link.vue';
 import CmButton from '../ui/button/cm-button.vue';
 import CmInput from '../ui/input/cm-input.vue';
@@ -77,7 +77,7 @@ import { validatePassword } from '../../utils/helpers/validate-password';
 export default {
   name: 'reset-password-form',
   components: {
-    ValidationProvider,
+    // ValidationProvider,
     ValidationObserver,
     CmLink,
     CmButton,

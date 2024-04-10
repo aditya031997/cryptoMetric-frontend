@@ -11,7 +11,7 @@ import App from './App.vue';
 import store from './store/index';
 import router from './router/index';
 
-import ApiClient from '@/utils/helpers/api-client';
+import apiClient from './utils/helpers/api-client.js';
 import configs from '#/configs/configs';
 
 window._ = _;
@@ -27,7 +27,7 @@ Vue.prototype.$configs = configs;
 
 const app = createApp(App)
 
-app.config.globalProperties.$api = ApiClient;
+app.config.globalProperties.$api = apiClient;
 
 
 app.use(store);

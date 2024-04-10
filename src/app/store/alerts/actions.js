@@ -1,7 +1,10 @@
+import { apiInstance } from "@/utils/helpers/api-client";
+
+
 export default {
   getHistoryAlerts({ commit, state }, data) {
     const { isEcho, page, per_page } = data;
-    return this._vm.$api
+    return apiInstance()
       .get(
         '/alerts/history',
         isEcho
@@ -19,28 +22,28 @@ export default {
       });
   },
   getAlertsUser(context) {
-    return this._vm.$api.get('/alerts').then(({ alerts }) => {
+    return apiInstance().get('/alerts').then(({ alerts }) => {
       context.commit('setAlertsUser', alerts);
     });
   },
   postCreateAlert(context, data) {
-    return this._vm.$api.post('/alerts', data.data).then(({ alert }) => {
+    return apiInstance().post('/alerts', data.data).then(({ alert }) => {
       const alertCreated = { ...alert, ...data.coin };
       context.commit('setCreatedAlert', alertCreated);
     });
   },
   deleteAlertUser(context, id) {
-    return this._vm.$api.delete(`/alerts/${id}`).then(() => {
+    return apiInstance().delete(`/alerts/${id}`).then(() => {
       context.commit('deleteAlertUser', id);
     });
   },
   changeStatusAlertUser(context, data) {
-    return this._vm.$api.post('/alerts/toggle-status', data).then(() => {
+    return apiInstance().post('/alerts/toggle-status', data).then(() => {
       context.commit('changeStatusAlertUser', data);
     });
   },
   changeStatusAlertEmail(context, data) {
-    return this._vm.$api.post('/alerts/toggle-email-status', data).then(() => {
+    return apiInstance().post('/alerts/toggle-email-status', data).then(() => {
       context.commit('setStatusAlertEmail', data.status);
     });
   },

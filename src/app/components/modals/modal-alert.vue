@@ -8,11 +8,11 @@
       class="modal-alert"
       @submit.prevent="handleSubmit(onSubmit)"
     >
-      <validation-provider
+      <!-- <ValidationProvider
         name="coin"
         rules="required"
         v-slot="{ errors }"
-      >
+      > -->
         <search-select
           class-wrapper="mt-4"
           label="Coin name"
@@ -25,13 +25,13 @@
           is-full
         />
         <p v-if="errors">{{ errors[0] }}</p>
-      </validation-provider>
-      <validation-provider
+      <!-- </ValidationProvider> -->
+      <!-- <ValidationProvider
         name="currency"
         rules="required"
         v-slot="{ errors }"
         class="flex-grow-1"
-      >
+      > -->
         <cm-select
           class-wrapper="mt-4"
           label="Price Currency"
@@ -44,19 +44,19 @@
           :value="currency"
         />
         <p v-if="errors">{{ errors[0] }}</p>
-      </validation-provider>
-      <validation-provider
+      <!-- </ValidationProvider> -->
+      <!-- <ValidationProvider
         name="price"
         rules="required|double"
         v-slot="{ errors }"
-      >
+      > -->
         <cm-input
           class-wrapper="mt-4"
           label="Price Value"
           v-model="decimal"
           :error="errors[0]"
         />
-      </validation-provider>
+      <!-- </ValidationProvider> -->
       <p class="m-0 mt-4 mr-1 text text--caption">Alert Action:</p>
       <div class="mt-1 d-flex align-items-center">
         <cm-switch
@@ -103,7 +103,7 @@ import CmButton from '../ui/button/cm-button.vue';
 import cmInput from '../ui/input/cm-input.vue';
 import CmSelect from '../ui/select/cm-select.vue';
 import { ValidationObserver } from 'vee-validate';
-import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
+// import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
 import { mapGetters } from 'vuex';
 import CmLoader from '../ui/loader/cm-loader.vue';
 import SearchSelect from '../ui/select/search-select.vue';
@@ -117,7 +117,7 @@ export default {
     CmButton,
     CmSelect,
     ValidationObserver,
-    ValidationProvider,
+    // ValidationProvider,
     CmLoader,
     SearchSelect,
     CmSwitch,

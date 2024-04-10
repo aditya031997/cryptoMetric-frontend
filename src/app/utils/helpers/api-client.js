@@ -1,7 +1,14 @@
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
+import { getCurrentInstance } from "vue";
 import accessToken from './access-token';
 import configs from '#/configs/configs';
+
+
+export const apiInstance = function () {
+  const api = getCurrentInstance()?.appContext.config.globalProperties?.$api;
+  return api;
+};
 
 export default {
   accessToken: accessToken,

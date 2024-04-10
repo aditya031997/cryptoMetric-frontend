@@ -2,38 +2,37 @@
   <validation-observer
     ref="validator"
     class="profile-forms"
-    v-slot="{ handleSubmit }"
   >
-    <form @submit.prevent="handleSubmit(onSubmitForm)">
+    <form @submit.prevent="onSubmitForm">
       <h2 class="m-0 pb-4 text text--title-3 profile-forms__title">Personal Info</h2>
-      <validation-provider
+      <!-- <validation-provider
         name="email"
         rules="required"
         v-slot="{ errors }"
-      >
+      > -->
         <cm-input
           id="first_name"
           label="First Name"
           class-wrapper="mt-4"
           :is-error="!!firstName"
-          :error="errors[0]"
           v-model="firstName"
         />
-      </validation-provider>
+        <ErrorMessage name="first_name" />
+      <!-- </validation-provider>
       <validation-provider
         name="email"
         rules="required"
         v-slot="{ errors }"
-      >
+      > -->
         <cm-input
           id="last_name"
           label="Last Name"
           :class-wrapper="'mt-4'"
           :is-error="!!lastName"
-          :error="errors[0]"
           v-model="lastName"
         />
-      </validation-provider>
+        <ErrorMessage name="last_name" />
+      <!-- </validation-provider> -->
       <cm-input
         label="Email"
         class-wrapper="mt-4"
@@ -72,8 +71,8 @@
 </template>
 
 <script>
-import { ValidationObserver } from 'vee-validate';
-import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
+import { ValidationObserver, ErrorMessage } from 'vee-validate';
+// import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
 import CmButton from '../ui/button/cm-button.vue';
 import cmInput from '../ui/input/cm-input.vue';
 import CmLoader from '../ui/loader/cm-loader.vue';
@@ -82,7 +81,8 @@ export default {
     cmInput,
     CmButton,
     ValidationObserver,
-    ValidationProvider,
+    // ValidationProvider,
+    ErrorMessage,
     CmLoader,
   },
   props: {
@@ -104,8 +104,8 @@ export default {
         return true;
       }
       return (
-        this.$store.state.user.data.firstname === this.firstName &&
-        this.$store.state.user.data.lastname === this.lastName
+        this.$store.state.user.data?.firstname === this.firstName &&
+        this.$store.state.user.data?.lastname === this.lastName
       );
     },
   },
@@ -143,8 +143,8 @@ export default {
     },
   },
   mounted() {
-    this.firstName = this.$store.state.user.data.firstname;
-    this.lastName = this.$store.state.user.data.lastname;
+    this.firstName = this.$store.state.user.data?.firstname;
+    this.lastName = this.$store.state.user.data?.lastname;
   },
 };
 </script>

@@ -9,12 +9,12 @@
       v-slot="{ handleSubmit, invalid }"
     >
       <form @submit.prevent="handleSubmit(submitForm)">
-        <validation-provider
+        <!-- <validation-provider
           name="password"
           rules="required|min:8"
           v-slot="{ errors }"
           vid="password"
-        >
+        > -->
           <cm-input
             class-wrapper="mt-3"
             id="input-password"
@@ -24,13 +24,13 @@
             :value="password"
             @input="onChangePassword"
           />
-        </validation-provider>
-        <validation-provider
+        <!-- </validation-provider> -->
+        <!-- <validation-provider
           name="confirm password"
           vid="password_confirmation"
           rules="required|confirmed:password"
           v-slot="{ errors }"
-        >
+        > -->
           <cm-input
             class-wrapper="mt-4"
             id="input-confirm-password"
@@ -40,7 +40,7 @@
             :value="passwordConfirm"
             @input="onChangePasswordConfirm"
           />
-        </validation-provider>
+        <!-- </validation-provider> -->
         <cm-button
           :disabled="!!message || invalid"
           type="submit"
@@ -74,7 +74,7 @@
 
 <script>
 import { ValidationObserver } from 'vee-validate';
-import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
+// import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
 import iconSecurity from '../icons/icon-security.vue';
 import CmButton from '../ui/button/cm-button.vue';
 import CmInput from '../ui/input/cm-input.vue';
@@ -86,7 +86,7 @@ export default {
     CmInput,
     CmButton,
     ValidationObserver,
-    ValidationProvider,
+    // ValidationProvider,
     CmLoader,
   },
   data: () => ({
