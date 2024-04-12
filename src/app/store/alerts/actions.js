@@ -1,6 +1,4 @@
 import { apiInstance } from "@/utils/helpers/api-client";
-
-
 export default {
   getHistoryAlerts({ commit, state }, data) {
     const { isEcho, page, per_page } = data;

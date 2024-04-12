@@ -11,17 +11,17 @@ export default {
   getUserFullName(state) {
     let name = '';
     if (state.data?.firstname) {
-      name += state.data.firstname;
+      name += state.data?.firstname;
     }
     if (state.data?.lastname) {
-      name += ' ' + state.data.lastname;
+      name += ' ' + state.data?.lastname;
     }
     return name;
   },
   getTheme(state) {
-    return state.data.chart_theme;
+    return state?.data?.chart_theme;
   },
   getEmailUser(state) {
-    return state.data?.email || '';
+    return state?.data?.email || '';
   },
 };

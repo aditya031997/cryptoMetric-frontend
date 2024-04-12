@@ -4,49 +4,46 @@
     <h1 class="auth-form__title text text--title-2">Create Account</h1>
     <p class="auth-form__title text">Welcome to Cryptometric!</p>
     <div class="auth-form__wrapper">
-      <validation-observer
-        ref="validator"
-        v-slot="{ handleSubmit, invalid }"
-      >
-        <form @submit.prevent="handleSubmit(onSubmit)">
+      <validation-observer ref="validator">
+        <form @submit.prevent="onSubmit">
           <!-- <validation-provider
             name="first-name"
             rules="required"
             v-slot="{ errors }"
           > -->
-            <cm-input
-              class-wrapper="mt-3"
-              id="input-first-name"
-              label="First Name"
-              :error="errors[0]"
-              v-model="firstNameValue"
-            />
+          <cm-input
+            class-wrapper="mt-3"
+            id="input-first-name"
+            label="First Name"
+            v-model="firstNameValue"
+          />
+          <ErrorMessage name="first-name" />
           <!-- </validation-provider>
           <validation-provider
             name="last-name"
             rules="required"
             v-slot="{ errors }"
           > -->
-            <cm-input
-              class-wrapper="mt-3"
-              id="input-last-name"
-              label="Last Name"
-              :error="errors[0]"
-              v-model="lastNameValue"
-            />
+          <cm-input
+            class-wrapper="mt-3"
+            id="input-last-name"
+            label="Last Name"
+            v-model="lastNameValue"
+          />
+          <ErrorMessage name="last-name" />
           <!-- </validation-provider>
           <validation-provider
             name="email"
             rules="required|email"
             v-slot="{ errors }"
           > -->
-            <cm-input
-              class-wrapper="mt-3"
-              id="input-email"
-              label="Email"
-              :error="errors[0]"
-              v-model="emailValue"
-            />
+          <cm-input
+            class-wrapper="mt-3"
+            id="input-email"
+            label="Email"
+            v-model="emailValue"
+          />
+          <ErrorMessage name="email" />
           <!-- </validation-provider>
           <validation-provider
             name="password"
@@ -54,14 +51,14 @@
             v-slot="{ errors }"
             vid="password"
           > -->
-            <cm-input
-              class-wrapper="mt-3"
-              id="input-password"
-              label="Password"
-              :error="errors[0]"
-              type="password"
-              v-model="passwordValue"
-            />
+          <cm-input
+            class-wrapper="mt-3"
+            id="input-password"
+            label="Password"
+            type="password"
+            v-model="passwordValue"
+          />
+          <ErrorMessage name="password" />
           <!-- </validation-provider>
           <validation-provider
             name="password"
@@ -69,14 +66,15 @@
             rules="required|confirmed:password"
             v-slot="{ errors }"
           > -->
-            <cm-input
-              classWrapper="mt-3"
-              id="input-confirm-password"
-              label="Confirm Password"
-              :error="errors[0]"
-              type="password"
-              v-model="passwordConfirmValue"
-            />
+          <cm-input
+            classWrapper="mt-3"
+            id="input-confirm-password"
+            label="Confirm Password"
+            type="password"
+            v-model="passwordConfirmValue"
+          />
+          <ErrorMessage name="password" />
+
           <!-- </validation-provider> -->
           <cm-button
             custom-class="mt-4"
@@ -86,6 +84,12 @@
           >
             Submit
           </cm-button>
+          <p
+            v-if="errorMessage"
+            class="auth-form__response-message text--caption text text-danger"
+          >
+            {{ errorMessage }}
+          </p>
           <div class="mt-3">
             <p class="auth-form__link text--caption text">
               Already have an account?<cm-link :to="'/login'">Sign In</cm-link>
@@ -100,7 +104,7 @@
 <script>
 import cmInput from '../ui/input/cm-input.vue';
 import CmButton from '../ui/button/cm-button.vue';
-import { ValidationObserver } from 'vee-validate';
+import { ValidationObserver, ErrorMessage } from 'vee-validate';
 // import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
 import CmLogo from '../cm-logo.vue';
 import CmLink from '../ui/link/cm-link.vue';
@@ -113,6 +117,7 @@ export default {
     CmButton,
     // ValidationProvider,
     ValidationObserver,
+    ErrorMessage,
     CmLogo,
     CmLink,
   },
@@ -121,10 +126,26 @@ export default {
     firstNameValue: '',
     lastNameValue: '',
     emailValue: '',
+    errorMessage: '',
     passwordValue: '',
     passwordConfirmValue: '',
   }),
   watch: {
+    firstNameValue(value) {
+      this.errorMessage = '';
+    },
+    lastNameValue(value) {
+      this.errorMessage = '';
+    },
+    emailValue(value) {
+      this.errorMessage = '';
+    },
+    passwordValue(value) {
+      this.errorMessage = '';
+    },
+    passwordConfirmValue(value) {
+      this.errorMessage = '';
+    },
     isLoad() {
       this.$root.$emit('set-auth-loading', this.isLoad);
     },
@@ -132,9 +153,12 @@ export default {
   methods: {
     onSubmit() {
       if (validatePassword(this.passwordValue)) {
-        this.$refs.validator.setErrors({
-          password: ['Password must have digits, uppercase, lowercase and non-alphanumeric symbols'],
-        });
+        // this.$refs.validator.setErrors({
+        //   password: [
+        //     'Password must have digits, uppercase, lowercase and non-alphanumeric symbols',
+        //   ],
+        // });
+        this.errorMessage = "Password must have digits, uppercase, lowercase and non-alphanumeric symbols"
       } else {
         const data = {
           name: `${this.firstNameValue} ${this.lastNameValue}`,
@@ -152,9 +176,9 @@ export default {
           })
           .catch((errors) => {
             if (errors?.errors) {
-              this.$refs.validator.setErrors({ ...errors.errors });
+              this.errorMessage = errors.message;
             } else {
-              this.$refs.validator.setErrors({ email: ['Unexpected error occured'] });
+              this.errorMessage = errors.message;
             }
           })
           .finally(() => {

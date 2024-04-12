@@ -1,19 +1,19 @@
 import { getCurrentInstance } from "vue";
+import { apiInstance } from "@/utils/helpers/api-client";
 
 const api = getCurrentInstance()?.appContext.config.globalProperties?.$api;
 
 export default {
   getFavorites(context) {
-    return api?.get('/coins/favorites').then(({ coins }) => {
+    return apiInstance()?.get('/coins/favorites').then(({ coins }) => {
       context.commit('setFavorites', coins);
     });
   },
   postChangeFavorite(context, data) {
-    return api
-      .post('/coins/favorites', {
-        coin_id: data.coin.coin_id || data.coin.id,
-        in_favorite: !data.state,
-      })
+    return apiInstance()?.post('/coins/favorites', {
+      coin_id: data.coin.coin_id || data.coin.id,
+      in_favorite: !data.state,
+    })
       .then(() => {
         context.commit('changeFavorite', data);
       });
@@ -23,7 +23,7 @@ export default {
       value.position = index;
       return value;
     });
-    return api.post('/coins/favorites/positions', { favorites: coins }).then(() => {
+    return apiInstance()?.post('/coins/favorites/positions',{ favorites: coins }).then(() => {
       context.commit('updateFavorites', data);
     });
   },

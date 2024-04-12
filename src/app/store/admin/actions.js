@@ -1,16 +1,24 @@
+import { apiInstance } from "@/utils/helpers/api-client";
+
 export default {
   getUsers(context, data) {
-    return this._vm.$api.get('/admin/users', { ...data }).then((data) => {
-      context.commit('setUsers', data);
-    });
+    return apiInstance()?.get('/admin/users', { ...data })
+      .then(({ data }) => {
+        context.commit('setUsers', data);
+        return data;
+      })
+      .catch((error) => {
+        console.error('Error getting users:', error);
+        throw error;
+      });
   },
-  adminUpdatePassword(context, data) {
-    return this._vm.$api.post(`/admin/users/${data.id}/update-password`, data.passwords);
+  adminUpdatePassword(data) {
+    return apiInstance()?.get(`/admin/users/${data.id}/update-password`,data.passwords)
   },
-  getAdminUser(context, user) {
-    return this._vm.$api.get(`/admin/users/${user}`);
+  getAdminUser(user) {
+    return apiInstance()?.get(`/admin/users/${user}`)
   },
-  postInviteUser(context, email) {
-    return this._vm.$api.post('/admin/users', { email });
+  postInviteUser(email) {
+    return apiInstance()?.post('/admin/users', { email })
   },
 };

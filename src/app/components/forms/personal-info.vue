@@ -4,34 +4,36 @@
     class="profile-forms"
   >
     <form @submit.prevent="onSubmitForm">
-      <h2 class="m-0 pb-4 text text--title-3 profile-forms__title">Personal Info</h2>
+      <h2 class="m-0 pb-4 text text--title-3 profile-forms__title">
+        Personal Info
+      </h2>
       <!-- <validation-provider
         name="email"
         rules="required"
         v-slot="{ errors }"
       > -->
-        <cm-input
-          id="first_name"
-          label="First Name"
-          class-wrapper="mt-4"
-          :is-error="!!firstName"
-          v-model="firstName"
-        />
-        <ErrorMessage name="first_name" />
+      <cm-input
+        id="first_name"
+        label="First Name"
+        class-wrapper="mt-4"
+        :is-error="!!firstName"
+        v-model="firstName"
+      />
+      <ErrorMessage name="first_name" />
       <!-- </validation-provider>
       <validation-provider
         name="email"
         rules="required"
         v-slot="{ errors }"
       > -->
-        <cm-input
-          id="last_name"
-          label="Last Name"
-          :class-wrapper="'mt-4'"
-          :is-error="!!lastName"
-          v-model="lastName"
-        />
-        <ErrorMessage name="last_name" />
+      <cm-input
+        id="last_name"
+        label="Last Name"
+        :class-wrapper="'mt-4'"
+        :is-error="!!lastName"
+        v-model="lastName"
+      />
+      <ErrorMessage name="last_name" />
       <!-- </validation-provider> -->
       <cm-input
         label="Email"
@@ -125,17 +127,17 @@ export default {
           first_name: this.firstName,
           last_name: this.lastName,
         })
-        .then((value) => {
+        .then((response) => {
           this.message = 'Profile updated';
         })
         .catch((errors) => {
           if (typeof errors === 'string') {
-            this.error = errors;
+            this.error = errors.message;
           } else {
             if (errors?.errors) {
-              this.$refs.validator.setErrors({ ...errors.errors });
+              this.error = errors.message;
             } else {
-              this.$refs.validator.setErrors({ email: ['Unexpected error occured'] });
+              this.error = errors.message;
             }
           }
         })

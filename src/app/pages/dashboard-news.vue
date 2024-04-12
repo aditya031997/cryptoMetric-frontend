@@ -138,7 +138,7 @@ export default {
           this.isLoad = false;
           if (isGetStatus) {
             const status = this.statusOptions.find(
-              (status) => status.id === this.$store.state.user.data.email_news_notification_level
+              (status) => status.id === this.$store.state.user.data?.email_news_notification_level
             );
             if (status) {
               this.valueSelect = status;

@@ -67,6 +67,7 @@ export default {
       return format(parseISO(this.date), 'MMM dd, yyyy');
     },
   },
+  
 };
 </script>
 

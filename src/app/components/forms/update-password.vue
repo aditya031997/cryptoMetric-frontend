@@ -14,15 +14,15 @@
         v-slot="{ errors }"
         vid="password"
       > -->
-        <cm-input
-          class-wrapper="mt-3"
-          id="input-password"
-          label="Password"
-          :is-error="!!password"
-          type="password"
-          v-model="password"
-        />
-        <ErrorMessage name="password" />
+      <cm-input
+        class-wrapper="mt-3"
+        id="input-password"
+        label="Password"
+        :is-error="!!password"
+        type="password"
+        v-model="password"
+      />
+      <ErrorMessage name="password" />
 
       <!-- </validation-provider>
       <validation-provider
@@ -31,15 +31,15 @@
         rules="required|confirmed:password"
         v-slot="{ errors }"
       > -->
-        <cm-input
-          class-wrapper="mt-3"
-          id="input-confirm-password"
-          label="Confirm Password"
-          :is-error="!!passwordConfirm"
-          type="password"
-          v-model="passwordConfirm"
-        />
-        <ErrorMessage name="passwordConfirm" />
+      <cm-input
+        class-wrapper="mt-3"
+        id="input-confirm-password"
+        label="Confirm Password"
+        :is-error="!!passwordConfirm"
+        type="password"
+        v-model="passwordConfirm"
+      />
+      <ErrorMessage name="passwordConfirm" />
 
       <!-- </validation-provider> -->
       <cm-button
@@ -99,9 +99,7 @@ export default {
   methods: {
     onSubmitForm() {
       if (validatePassword(this.password)) {
-        this.$refs.validator.setErrors({
-          password: ['Password must have digits, uppercase, lowercase and non-alphanumeric symbols'],
-        });
+        this.error = "Password must have digits, uppercase, lowercase and non-alphanumeric symbols"
       } else {
         this.isLoad = true;
         this.$store
@@ -114,9 +112,9 @@ export default {
               this.error = errors;
             } else {
               if (errors?.errors) {
-                this.$refs.validator.setErrors({ ...errors.errors });
+                this.error = errors.message;
               } else {
-                this.$refs.validator.setErrors({ email: ['Unexpected error occured'] });
+                this.error = errors.message;
               }
             }
           })

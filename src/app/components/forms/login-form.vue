@@ -115,12 +115,12 @@ export default {
         })
         .catch((errors) => {
           if (typeof errors == 'string') {
-            this.errorMessage = errors;
+            this.errorMessage = errors.message;
           } else {
             if (errors?.errors) {
-              this.$refs.validator.setErrors({ ...errors.errors });
+              this.errorMessage = errors.message;
             } else {
-              this.$refs.validator.setErrors({ email: ['Unexpected error occurred'] });
+              this.errorMessage = errors.message;
             }
           }
         })

@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+// import * as _ from 'lodash';
 import { Decimal } from 'decimal.js';
 import '@/assets/scss/index.scss';
 import './rules/index.js';
@@ -13,10 +13,11 @@ import router from './router/index';
 
 import apiClient from './utils/helpers/api-client.js';
 import configs from '#/configs/configs';
+import lodash from 'lodash';
 
-window._ = _;
-Object.defineProperty(Vue.prototype, '$decimal', { value: Decimal });
-Object.defineProperty(Vue.prototype, '$_', { value: _ });
+// window._ = _;
+// Object.defineProperty(Vue.prototype, '$decimal', { value: Decimal });
+// Object.defineProperty(Vue.prototype, '$_', { value: lodash });
 
 Vue.use(Vuex);
 Vue.use(uuid);
@@ -28,6 +29,7 @@ Vue.prototype.$configs = configs;
 const app = createApp(App)
 
 app.config.globalProperties.$api = apiClient;
+
 
 
 app.use(store);

@@ -12,6 +12,6 @@ export default {
     return state.total;
   },
   getUsersLength(state) {
-    return state.users.length;
+    return state.users?.length;
   },
 };

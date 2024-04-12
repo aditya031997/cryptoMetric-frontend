@@ -34,8 +34,8 @@
         <modal-add-user :on-close="onCloseModal" />
       </cm-modal>
     </template>
-    <table-users
-      :options="getUsers"
+    <TableUsers
+      :options="userData"
       :change-page="changeTablePage"
       :page="tablePage"
     />
@@ -87,9 +87,32 @@ export default {
     rowsOptions: [10, 20, 30],
     search: '',
     getUsersDebounced: null,
+    userData: [],
   }),
   computed: {
     ...mapGetters(['getUsers', 'getLinksAdmin', 'getCurrent', 'getTotal', 'getUsersLength']),
+    
+  },
+  mounted() {
+    this.getUsersDebounced = _.debounce(this.getUsersAdmin, 300);
+    this.isLoad = true;
+    this.getUsersAdmin();
+    if (this.rowsOptions.find((row) => row === Number(this.$route.query.rows))) {
+      this.rows = Number(this.$route.query.rows);
+    } else {
+      this.rows = this.rowsOptions[0];
+      this.$router.replace({ query: { ...this.$route.query, rows: this.rowsOptions[0] } });
+    }
+    if (this.$route.query.search) {
+      this.search = this.$route.query.search;
+    }
+    this.$store
+      .dispatch('getUsers', {
+        page: this.$route.query.page,
+        perPage: this.$route.query.rows,
+        search: this.$route.query.search,
+      })
+      .finally(() => (this.isLoad = false));
   },
   methods: {
     changeTablePage(page) {
@@ -138,7 +161,8 @@ export default {
           perPage: this.rows,
           search: this.search,
         })
-        .then((value) => {
+        .then((response) => {
+          this.userData = response; 
           document.body.scrollIntoView(true);
         })
         .finally(() => (this.isLoad = false));
@@ -147,26 +171,7 @@ export default {
       return pagination(currentPage, maxPages);
     },
   },
-  mounted() {
-    this.getUsersDebounced = _.debounce(this.getUsersAdmin, 300);
-    this.isLoad = true;
-    if (this.rowsOptions.find((row) => row === Number(this.$route.query.rows))) {
-      this.rows = Number(this.$route.query.rows);
-    } else {
-      this.rows = this.rowsOptions[0];
-      this.$router.replace({ query: { ...this.$route.query, rows: this.rowsOptions[0] } });
-    }
-    if (this.$route.query.search) {
-      this.search = this.$route.query.search;
-    }
-    this.$store
-      .dispatch('getUsers', {
-        page: this.$route.query.page,
-        perPage: this.$route.query.rows,
-        search: this.$route.query.search,
-      })
-      .finally(() => (this.isLoad = false));
-  },
+ 
 };
 </script>
 

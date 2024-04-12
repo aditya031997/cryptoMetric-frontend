@@ -5,9 +5,8 @@
       <h1 class="auth-form__title text text--title-2 text-cod-grey">Password Recovery</h1>
       <validation-observer
         ref="validator"
-        v-slot="{ handleSubmit, invalid }"
       >
-        <form @submit.prevent="handleSubmit(onSubmit)">
+        <form @submit.prevent="onSubmit">
           <!-- <validation-provider
             name="email"
             rules="required|email"
@@ -17,10 +16,10 @@
               class-wrapper="mt-3"
               id="input-email"
               label="Email"
-              :error="errors[0]"
               sub-text="Instructions for password recovery will be sent here"
               v-model="emailValue"
             />
+            <ErrorMessage name="email" />
           <!-- </validation-provider> -->
           <cm-button
             custom-class="mt-4"
@@ -59,7 +58,7 @@
 </template>
 
 <script>
-import { ValidationObserver } from 'vee-validate';
+import { ValidationObserver,ErrorMessage } from 'vee-validate';
 // import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
 import CmLink from '../ui/link/cm-link.vue';
 import CmButton from '../ui/button/cm-button.vue';
@@ -70,6 +69,7 @@ export default {
   components: {
     // ValidationProvider,
     ValidationObserver,
+    ErrorMessage,
     CmLink,
     CmButton,
     CmInput,
@@ -107,13 +107,13 @@ export default {
             if (errors.status) {
               this.errorMessage = errors.status;
             } else {
-              this.errorMessage = errors;
+              this.errorMessage = errors.message;
             }
           } else {
             if (errors?.errors) {
-              this.$refs.validator.setErrors({ ...errors.errors });
+              this.errorMessage = errors.message;
             } else {
-              this.errorMessage = 'Unexpected error occured';
+              this.errorMessage = errors.message;
             }
           }
         })

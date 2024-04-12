@@ -1,11 +1,10 @@
 <template>
   <validation-observer
     ref="validator"
-    v-slot="{ handleSubmit, invalid }"
   >
     <form
       class="modal-user"
-      @submit.prevent="handleSubmit(formSubmit)"
+      @submit.prevent="formSubmit"
     >
       <!-- <validation-provider
         name="email"
@@ -16,8 +15,8 @@
           class-wrapper="mt-4"
           label="Email"
           v-model="email"
-          :error="errors[0]"
         />
+        <ErrorMessage name="email" />
       <!-- </validation-provider> -->
       <cm-button
         type="submit"
@@ -40,7 +39,7 @@
 <script>
 import cmButton from '../ui/button/cm-button.vue';
 import cmInput from '../ui/input/cm-input.vue';
-import { ValidationObserver } from 'vee-validate';
+import { ValidationObserver,ErrorMessage } from 'vee-validate';
 // import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
 import CmLoader from '../ui/loader/cm-loader.vue';
 export default {
@@ -49,6 +48,7 @@ export default {
     cmButton,
     ValidationObserver,
     // ValidationProvider,
+    ErrorMessage,
     CmLoader,
   },
   props: {
@@ -57,7 +57,13 @@ export default {
   data: () => ({
     isLoad: false,
     email: '',
+    errorMessage: '',
   }),
+  watch:{
+    eamil(){
+      this.errorMessage = '';
+    }
+  },
   methods: {
     formSubmit() {
       this.isLoad = true;
@@ -68,9 +74,9 @@ export default {
         })
         .catch((errors) => {
           if (errors?.errors) {
-            this.$refs.validator.setErrors({ ...errors.errors });
+            this.errorMessage = errors.message;
           } else {
-            this.$refs.validator.setErrors({ email: ['Unexpected error occured'] });
+            this.errorMessage = errors.message;
           }
         })
         .finally(() => {

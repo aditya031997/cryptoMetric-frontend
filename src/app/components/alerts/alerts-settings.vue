@@ -70,10 +70,10 @@ export default {
     },
   },
   mounted() {
-    this.listSettings[0].value = this.$store.state.user.data.is_new_coin_alert_enabled
-    this.listSettings[1].value = this.$store.state.user.data.is_increase_alert_enabled
-    this.listSettings[2].value = this.$store.state.user.data.is_decrease_alert_enabled
-    this.emailSwitch = this.$store.state.user.data.email_alert_status
+    this.listSettings[0].value = this?.$store?.state?.user?.data?.is_new_coin_alert_enabled
+    this.listSettings[1].value = this.$store.state.user.data?.is_increase_alert_enabled
+    this.listSettings[2].value = this.$store.state.user.data?.is_decrease_alert_enabled
+    this.emailSwitch = this.$store.state.user.data?.email_alert_status
   },
 };
 </script>

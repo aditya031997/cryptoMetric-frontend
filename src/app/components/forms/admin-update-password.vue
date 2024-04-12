@@ -6,9 +6,8 @@
     </div>
     <validation-observer
       ref="validator"
-      v-slot="{ handleSubmit, invalid }"
     >
-      <form @submit.prevent="handleSubmit(submitForm)">
+      <form @submit.prevent="submitForm">
         <!-- <validation-provider
           name="password"
           rules="required|min:8"
@@ -19,11 +18,11 @@
             class-wrapper="mt-3"
             id="input-password"
             label="Password"
-            :error="errors[0]"
             type="password"
             :value="password"
             @input="onChangePassword"
           />
+          <ErrorMessage name="password"/>
         <!-- </validation-provider> -->
         <!-- <validation-provider
           name="confirm password"
@@ -35,11 +34,11 @@
             class-wrapper="mt-4"
             id="input-confirm-password"
             label="Confirm Password"
-            :error="errors[0]"
             type="password"
             :value="passwordConfirm"
             @input="onChangePasswordConfirm"
           />
+          <ErrorMessage name="confirm password"/>
         <!-- </validation-provider> -->
         <cm-button
           :disabled="!!message || invalid"
@@ -73,7 +72,7 @@
 </template>
 
 <script>
-import { ValidationObserver } from 'vee-validate';
+import { ValidationObserver,ErrorMessage } from 'vee-validate';
 // import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
 import iconSecurity from '../icons/icon-security.vue';
 import CmButton from '../ui/button/cm-button.vue';
@@ -86,6 +85,7 @@ export default {
     CmInput,
     CmButton,
     ValidationObserver,
+    ErrorMessage,
     // ValidationProvider,
     CmLoader,
   },
@@ -100,9 +100,10 @@ export default {
     submitForm() {
       this.message = '';
       if (validatePassword(this.password)) {
-        this.$refs.validator.setErrors({
-          password: ['Password must have digits, uppercase, lowercase and non-alphanumeric symbols'],
-        });
+        // this.$refs.validator.setErrors({
+        //   password: ['Password must have digits, uppercase, lowercase and non-alphanumeric symbols'],
+        // });
+        this.error = "Password must have digits, uppercase, lowercase and non-alphanumeric symbols"
       } else {
         this.isLoad = true;
         this.$store
@@ -121,12 +122,12 @@ export default {
           })
           .catch((errors) => {
             if (typeof errors === 'string') {
-              this.error = errors;
+              this.error = errors.message;
             } else {
               if (errors?.errors) {
-                this.$refs.validator.setErrors({ ...errors.errors });
+                this.error = errors.message;
               } else {
-                this.$refs.validator.setErrors({ email: ['Unexpected error occured'] });
+                this.error = errors.message;
               }
             }
           })

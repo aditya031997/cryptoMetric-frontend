@@ -1,6 +1,8 @@
+import { apiInstance } from "@/utils/helpers/api-client";
+
 export default {
-  getCoinsNames(context, page) {
-    return this._vm.$api.get('/coins/names').then((data) => {
+  getCoinsNames(context) {
+    return apiInstance()?.get('/coins/names').then(({ data }) => {
       context.commit('setCoinsNames', data);
     });
   },

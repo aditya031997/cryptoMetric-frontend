@@ -5,9 +5,8 @@
       <h1 class="auth-form__title text text--title-2 text-cod-grey">Password Recovery</h1>
       <validation-observer
         ref="validator"
-        v-slot="{ handleSubmit, invalid }"
       >
-        <form @submit.prevent="handleSubmit(onSubmit)">
+        <form @submit.prevent="onSubmit">
           <!-- <validation-provider
             ref="passwordProvider"
             name="password"
@@ -23,6 +22,7 @@
               type="password"
               v-model="passwordValue"
             />
+            <ErrorMessage name="password" />
           <!-- </validation-provider>
           <validation-provider
             ref="confirmationProvider"
@@ -35,10 +35,10 @@
               classWrapper="mt-3"
               id="input-confirm-password"
               label="Confirm Password"
-              :error="errors[0]"
               type="password"
               v-model="passwordConfirmValue"
             />
+            <ErrorMessage name="password" />
           <!-- </validation-provider> -->
           <cm-button
             custom-class="mt-4"
@@ -54,6 +54,12 @@
           >
             {{ responseMessage }}
           </p>
+          <p
+            v-if="errorMessage"
+            class="auth-form__response-message text--caption text text-danger"
+          >
+            {{ errorMessage }}
+          </p>
           <div class="mt-3">
             <p class="auth-form__link text--caption text">
               Already have an account?<cm-link :to="'/login'">Sign In</cm-link>
@@ -66,7 +72,7 @@
 </template>
 
 <script>
-import { ValidationObserver } from 'vee-validate';
+import { ValidationObserver,ErrorMessage } from 'vee-validate';
 // import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
 import CmLink from '../ui/link/cm-link.vue';
 import CmButton from '../ui/button/cm-button.vue';
@@ -79,6 +85,7 @@ export default {
   components: {
     // ValidationProvider,
     ValidationObserver,
+    ErrorMessage,
     CmLink,
     CmButton,
     CmInput,
@@ -87,6 +94,7 @@ export default {
   data: () => ({
     isLoad: false,
     responseMessage: '',
+    errorMessage: '',
     email: '',
     token: '',
     passwordValue: '',
@@ -98,9 +106,11 @@ export default {
     },
     passwordValue() {
       this.responseMessage = '';
+      this.errorMessage = '';
     },
     passwordConfirmValue() {
       this.responseMessage = '';
+      this.errorMessage = '';
     },
   },
   beforeMount() {
@@ -161,10 +171,10 @@ export default {
                 if (password_confirmation) {
                   errors.password_confirmation = password_confirmation;
                 }
-                this.$refs.validator.setErrors(errors);
+                this.errorMessage = errors.message;
               }
             } else {
-              this.$refs.validator.setErrors({ password: ['Unexpected error occured'] });
+              this.errorMessage = errors.message;
             }
           })
           .finally(() => {

@@ -1,12 +1,11 @@
 <template>
   <validation-observer
     ref="validator"
-    v-slot="{ handleSubmit, invalid }"
     v-if="!isLoad"
   >
     <form
       class="modal-alert"
-      @submit.prevent="handleSubmit(onSubmit)"
+      @submit.prevent="onSubmit"
     >
       <!-- <ValidationProvider
         name="coin"

@@ -1,11 +1,12 @@
+import { apiInstance } from "@/utils/helpers/api-client";
 export default {
-  getTopLosers(context, data) {
-    return this._vm.$api.get('/coins/top-losers').then(({ losers }) => {
+  getTopLosers(context) {
+    return apiInstance()?.get('/coins/top-losers').then(({ losers }) => {
       context.commit('setTopLosers', losers);
     });
   },
-  getTopGainers(context, data) {
-    return this._vm.$api.get('/coins/top-gainers').then(({ gainers }) => {
+  getTopGainers(context) {
+    return apiInstance()?.get('/coins/top-gainers').then(({ gainers }) => {
       context.commit('setTopGainers', gainers);
     });
   },

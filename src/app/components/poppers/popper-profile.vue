@@ -81,17 +81,17 @@ export default {
     },
   },
   data: () => ({ isLoad: false, show: false, switchValue: false }),
-  watch: {
-    switchValue(value) {
-      if (value) {
-        this.isLoad = true;
-        this.$store.dispatch('changeTheme', 2).finally(() => (this.isLoad = false));
-      } else {
-        this.isLoad = true;
-        this.$store.dispatch('changeTheme', 1).finally(() => (this.isLoad = false));
-      }
-    },
-  },
+  // watch: {
+  //   switchValue(value) {
+  //     if (value) {
+  //       this.isLoad = true;
+  //       this.$store.dispatch('changeTheme', 2).finally(() => (this.isLoad = false));
+  //     } else {
+  //       this.isLoad = true;
+  //       this.$store.dispatch('changeTheme', 1).finally(() => (this.isLoad = false));
+  //     }
+  //   },
+  // },
   methods: {
     openPopper() {
       this.show = true;

@@ -91,6 +91,9 @@ export default {
       this.changePage(page);
     },
   },
+  mounted() {
+    console.log('options prop:', this.page);
+  }
 };
 </script>
 

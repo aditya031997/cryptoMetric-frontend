@@ -12,6 +12,7 @@
 
 import axios from 'axios';
 import { serialize } from '@/utils/helpers/serialize';
+import { apiInstance } from "@/utils/helpers/api-client";
 import configs from '../../../configs/configs';
 
 export default {
@@ -34,8 +35,7 @@ export default {
         context.commit('setCoinsMarkets', data.data);
       });
     } else {
-      // Use default
-      return this._vm.$api.get(`/crypto-markets?${dataSerialize}`, {}).then((data) => {
+      return apiInstance()?.get(`/crypto-markets?${dataSerialize}`,{}).then((data) => {
         context.commit('setCoinsMarkets', data);
       });
     }
