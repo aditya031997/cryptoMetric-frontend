@@ -1,5 +1,6 @@
 <template>
-  <header
+  <div>
+    <header
     class="header-dashboard"
     :class="{ 'is-sidebar': isSideBar }"
   >
@@ -27,12 +28,19 @@
         {{ titleHeader }}
       </h1>
     </div>
+    <div>
+      <button @click="toggleWalletModal">Connect</button>
+    </div>
     <div class="header-dashboard__section">
       <dashboard-settings v-if="this.$route.meta.headerName === 'Home'" />
       <user-notify />
       <user-profile />
     </div>
   </header>
+  <wallet-modal :is-visible="isWalletModalVisible" @hide-modal="toggleWalletModal" />
+  </div>
+ 
+  
 </template>
 
 <script>
@@ -42,6 +50,7 @@ import UserProfile from './user-profile.vue';
 import UserNotify from './user-notify.vue';
 import DashboardSettings from './dashboard-settings.vue';
 import IconBurger from '../icons/icon-burger.vue';
+import WalletModal from '../modals/web3-modal.vue';
 
 export default {
   components: {
@@ -51,6 +60,12 @@ export default {
     UserNotify,
     DashboardSettings,
     IconBurger,
+    WalletModal
+  },
+  data() {
+    return {
+      isWalletModalVisible: false,
+    };
   },
   props: {
     isSideBar: {
@@ -76,11 +91,14 @@ export default {
     onClickBack() {
       this.$router.go(-1);
     },
-    onOpenSideBar(){
-      this.$emit('on-open-side-bar')
+    onOpenSideBar() {
+      this.$emit('on-open-side-bar');
     },
     onClickOpenSideBar() {
       this.$emit('on-hide-side-bar');
+    },
+    toggleWalletModal() {
+      this.isWalletModalVisible = true;
     },
   },
 };

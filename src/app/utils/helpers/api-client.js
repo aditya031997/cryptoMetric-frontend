@@ -145,8 +145,8 @@ export default {
 
   tryResolveErrors(errors, url, data = {}, params = {}, type) {
     const accessToken = this.accessToken.get();
-    // TODO replace auth refresh url when API will be ready
-    if (!!accessToken && errors && errors.response.status === 401 && url !== '/auth/refresh') {
+    // TODO replace auth refresh url when API will be ready8
+    if (!!accessToken && errors && errors?.response?.status === 401 && url !== '/auth/refresh') {
       const options = this.options;
       options.url = '/auth/refresh';
       options.method = 'POST';

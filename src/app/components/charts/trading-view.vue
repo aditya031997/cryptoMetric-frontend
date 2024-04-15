@@ -370,7 +370,7 @@ export default {
       });
     },
     initSimpleWidget() {
-      const container = document.querySelector(`#${this.containerId}`);
+      const container = document.querySelector(`${this.containerId}`);
       if (!container) {
         this.initTimeout = setTimeout(() => {
           this.initSimpleWidget();
