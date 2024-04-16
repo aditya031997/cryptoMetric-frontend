@@ -1,8 +1,8 @@
 const configs = {
-    API_URL: 'https://api.cryptometric.com/api',
-    COIN_IMG_URL: 'https://api.cryptometric.com/storage/coin-icons/32x32/_slug_.png',
-    COIN_BIG_IMG_URL: 'https://api.cryptometric.com/storage/coin-icons/32x32/_slug_.png',
-    LOCAL_API_URL:'http://localhost:5000',
+    API_URL: 'http://stg-api.cryptometric.com/api',
+    COIN_IMG_URL: 'http://stg-api.cryptometric.com/storage/coin-icons/32x32/_slug_.png',
+    COIN_BIG_IMG_URL: 'http://stg-api.cryptometric.com/storage/coin-icons/32x32/_slug_.png',
+    LOCAL_API_URL:'http://stg-node-api.cryptomretric.com',
     NEWS_IMG_URL: '',
     LARAVEL_API_URL: 'http://localhost:8000/api',
     ICO_IMG_URL: '',
