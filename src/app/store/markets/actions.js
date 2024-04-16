@@ -1,14 +1,3 @@
-// import { serialize } from '@/utils/helpers/serialize';
-
-// export default {
-//   getCoinsMarkets(context, data) {
-//     const dataSerialize = serialize(data);
-//     console.log('dataSerialize', dataSerialize.includes('category'));
-//     return this._vm.$api.get(`/crypto-markets?${dataSerialize}`, {}).then((data) => {
-//       context.commit('setCoinsMarkets', data);
-//     });
-//   },
-// };
 
 import axios from 'axios';
 import { serialize } from '@/utils/helpers/serialize';
@@ -35,8 +24,8 @@ export default {
         context.commit('setCoinsMarkets', data.data);
       });
     } else {
-      return apiInstance()?.get(`/crypto-markets?${dataSerialize}`,{}).then((data) => {
-        context.commit('setCoinsMarkets', data);
+      return axios.get(`${configs.API_URL}/crypto-markets?${dataSerialize}`, config).then((data) => {
+        context.commit('setCoinsMarkets', data.data);
       });
     }
   },
