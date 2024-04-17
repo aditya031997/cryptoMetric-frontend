@@ -533,7 +533,7 @@ export default {
       } else {
         const imageUrls = {};
         this.cryptocurrencyData.forEach((crypto) => {
-          imageUrls[crypto.slug] = crypto.image;
+          imageUrls[crypto.slug] = getBigImageCoin(crypto.slug);
         });
         return imageUrls;
       }
