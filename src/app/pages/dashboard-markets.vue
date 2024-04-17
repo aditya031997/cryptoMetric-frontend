@@ -209,13 +209,15 @@ export default {
   methods: {
     async fetchCategories() {
       try {
-        const response = await axios.get(`${configs.LIVE_API_URL}/api/coins/category`);
+          this.initializeFilters();
+
+        const response = await axios.get(`${configs.LOCAL_API_URL}/api/coins/category`);
         if (response.data && response.data.data && Array.isArray(response.data.data)) {
           this.categories = response.data.data.map((category) => ({
             name: category.name,
             value: category.categoryId,
           }));
-          this.initializeFilters();
+          // this.initializeFilters();
         } else {
           console.error('Categories data is undefined or empty');
         }
@@ -365,6 +367,7 @@ export default {
       this.isFilter = false;
     },
     changeRowsValue(value) {
+
       if (value) {
         this.rows = value;
       } else {
@@ -374,10 +377,10 @@ export default {
       const totalPages = Math.ceil(this.$store.state.markets.allCoins / this.rows);
       this.filterApi.start = 0;
       this.changePage(1, false);
+
       if (Number(this.$route.query.row) !== this.rows) {
         this.$router.replace({ query: { ...this.$route.query, rows: this.rows } });
       }
-
       this.getCoins();
     },
     changePage(page, isLoad = true) {
@@ -475,16 +478,19 @@ export default {
       this.getCoins();
     },
     getCoins() {
-      this.isLoad = true;
-      this.$store
-        .dispatch('getCoinsMarkets', this.filterApi)
-        .finally(() => {
-          this.isLoad = false;
-        })
-        .then((value) => {
-          document.body.scrollIntoView(true);
-        });
-    },
+  this.isLoad = true;
+  this.$store
+    .dispatch('getCoinsMarkets', this.filterApi)
+    .then((value) => {
+      document.body.scrollIntoView(true);
+    })
+    .catch((error) => {
+      console.error(error);
+    })
+    .finally(() => {
+      this.isLoad = false;
+    });
+}
   },
   mounted() {
     this.fetchCategories();
