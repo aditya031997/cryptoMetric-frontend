@@ -4,7 +4,8 @@
     <td class="table-col">
       <cm-link
         :custom-class="'d-flex align-items-center table__link table__link--alternative'"
-        :to="getLink"
+        :to="getLink(id)"
+        @click="navigateToLink(getLink(id))"
       >
         <span class="m-0 text">{{ firstName }} {{ lastName }}</span>
       </cm-link>
@@ -35,6 +36,8 @@
 <script>
 import { format, parseISO } from 'date-fns';
 import CmLink from '../../ui/link/cm-link.vue';
+import { useRouter } from 'vue-router';
+
 export default {
   components: {
     CmLink,
@@ -59,15 +62,32 @@ export default {
       type: String,
     },
   },
+  setup() {
+    const router = useRouter();
+
+    const getLink = (id) => {
+      return `/users/${id}`;
+    };
+    const navigateToLink = (link) => {
+      router
+        .push(link)
+        .then(() => {
+        })
+        .catch((error) => {
+          console.error('Navigation error:', error);
+        });
+    };
+
+    return {
+      getLink,
+      navigateToLink,
+    };
+  },
   computed: {
-    getLink() {
-      return `users/${this.id}`;
-    },
     getDate() {
       return format(parseISO(this.date), 'MMM dd, yyyy');
     },
   },
-  
 };
 </script>
 

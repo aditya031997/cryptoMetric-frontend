@@ -57,7 +57,6 @@ export default {
     const route = useRoute()
 
     const getLink = (slug) => {
-      console.log('Slug:', slug)
       return `/crypto-markets/${slug}`
     }
 
