@@ -3,6 +3,9 @@ const appPath = `${__dirname}/app`;
 const outputPath = `${__dirname}/dist`;
 
 module.exports = {
+  devServer: {
+    https: true,
+  },
   lintOnSave: false,
   outputDir: outputPath,
   configureWebpack: {
