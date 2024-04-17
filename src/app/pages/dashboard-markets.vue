@@ -209,7 +209,7 @@ export default {
   methods: {
     async fetchCategories() {
       try {
-        const response = await axios.get(`${configs.API_URL}/api/coins/category`);
+        const response = await axios.get(`${configs.API_URL}/coins/category`);
         if (response.data && response.data.data && Array.isArray(response.data.data)) {
           this.categories = response.data.data.map((category) => ({
             name: category.name,
