@@ -4,4 +4,4 @@ node_modules
 .cache/
 
 # Configs
-/configs/configs.js
+# /configs/configs.js
