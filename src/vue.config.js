@@ -1,3 +1,5 @@
+const path = require('path');
+
 const srcPath = __dirname;
 const appPath = `${__dirname}/app`;
 const outputPath = `${__dirname}/dist`;
@@ -5,7 +7,16 @@ const outputPath = `${__dirname}/dist`;
 module.exports = {
   devServer: {
     https: true,
- 
+    client: {
+      overlay: false,
+    },
+    onListening: (devServer) => {
+      if (!devServer) {
+        throw new Error('webpack-dev-server is not defined');
+      }
+      const { port } = devServer.options;
+      console.log(`Dev server is running on port ${port}`);
+    },
   },
   lintOnSave: false,
   outputDir: outputPath,
@@ -17,7 +28,9 @@ module.exports = {
       },
       symlinks: false,
     },
-    entry: { app: `${appPath}/main.js` },
+    entry: {
+      app: `${appPath}/main.js`,
+    },
     module: {
       rules: [
         {
@@ -28,18 +41,14 @@ module.exports = {
       ],
     },
     output: {
-      // filename: 'js/script.js',
       filename: 'js/script.[hash:8].js',
       chunkFilename: 'js/[id].[hash:8].js',
     },
     plugins: [],
   },
   chainWebpack: (config) => {
-
-    /** below is the loader code as required in vue3 */
-
-    config.resolve.alias.set('vue', '@vue/compat')
-
+    // Set up the compatibility mode for Vue 3
+    config.resolve.alias.set('vue', '@vue/compat');
     config.module
       .rule('vue')
       .use('vue-loader')
@@ -48,21 +57,22 @@ module.exports = {
           ...options,
           compilerOptions: {
             compatConfig: {
-              MODE: 2
-            }
-          }
-        }
-      })
+              MODE: 2,
+            },
+          },
+        };
+      });
 
-      /** */
-
+    // Update the HTML plugin configuration
     config.plugin('html').tap((args) => {
       args[0].hash = false;
       return args;
     });
 
-    config.output.filename('[name].[hash].js').end(); // Update the output filename
+    // Update the output filename
+    config.output.filename('[name].[hash].js').end();
 
+    // Configure the code splitting
     config.optimization.splitChunks({
       chunks: 'all',
       name: 'vendors',
@@ -75,18 +85,18 @@ module.exports = {
         vendors: {
           test: /[\\/]node_modules[\\/]/,
           priority: -10,
-          filename: 'vendors.[hash].js'
+          filename: 'vendors.[hash].js',
         },
         default: {
           minChunks: 2,
           priority: -20,
           reuseExistingChunk: true,
-          filename: 'common.[hash].js'
-        }
-      }
+          filename: 'common.[hash].js',
+        },
+      },
     });
 
-    // pathConfigs unshift was crashing
+    // Copy the .htaccess file
     config.plugin('copy').tap(([pathConfigs]) => {
       if (Array.isArray(pathConfigs)) {
         pathConfigs.unshift({
