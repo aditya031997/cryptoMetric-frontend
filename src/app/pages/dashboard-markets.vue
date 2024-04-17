@@ -224,7 +224,6 @@ export default {
         const response = await axios.get(
           `${configs.LOCAL_API_URL}/api/coins/category`
         );
-        console.log(response, 'response');
         if (
           response.data &&
           response.data.data &&
@@ -234,7 +233,6 @@ export default {
             name: category.name,
             value: category.categoryId,
           }));
-          console.log('categories', this.categories);
           this.initializeFilters();
         } else {
           console.error('Categories data is undefined or empty');
@@ -244,7 +242,6 @@ export default {
       }
     },
     initializeFilters() {
-        console.log('this.categories:', this.categories);
 
       this.filters = [
         {
