@@ -4,7 +4,7 @@ const configs = {
     COIN_BIG_IMG_URL: 'https://stg-api.cryptometric.com/storage/coin-icons/32x32/_slug_.png',
     LOCAL_API_URL:'https://stg-node-api.cryptometric.com',
     NEWS_IMG_URL: '',
-    LARAVEL_API_URL: 'http://localhost:8000/api',
+    LARAVEL_API_URL: 'https://stg-api.cryptometric.com/api',
     ICO_IMG_URL: '',
     EXCHANGES_IMG_URL: '',
     PUSHER_APP_ID: '',
