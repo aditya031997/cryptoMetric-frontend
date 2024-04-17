@@ -560,7 +560,9 @@ export default {
 
 <style scoped>
 .highchart-wrapper {
+  background-color: #06111d;
   margin: 0px -20px;
+  box-shadow: 0px 0px 0px 100vw #06111d;
 }
 
 #highcharts-xx9ychm-387 {

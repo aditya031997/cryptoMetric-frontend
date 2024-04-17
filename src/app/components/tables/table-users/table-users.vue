@@ -92,7 +92,7 @@ export default {
     },
   },
   mounted() {
-    console.log('options prop:', this.page);
+    console.log('options prop:', this.options);
   }
 };
 </script>

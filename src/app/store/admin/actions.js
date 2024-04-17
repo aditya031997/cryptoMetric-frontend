@@ -1,24 +1,70 @@
 import { apiInstance } from "@/utils/helpers/api-client";
+import axios from 'axios';
+import configs from '../../../configs/configs';
 
 export default {
   getUsers(context, data) {
-    return apiInstance()?.get('/admin/users', { ...data })
-      .then(({ data }) => {
-        context.commit('setUsers', data);
-        return data;
+    return axios.get(`${configs.API_URL}/admin/users`, {
+      params: {
+        ...data,
+      },
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('vue-authenticate.vueauth_token')}`,
+      },
+    })
+    .then((response) => {
+      context.commit('setUsers', response.data);
+      return response.data;
+    })
+    .catch((error) => {
+      console.error('Error getting users:', error);
+      throw error;
+    });
+  },
+  adminUpdatePassword(context, data) {
+    const { id, passwords } = data;
+    return axios.post(`${configs.API_URL}/admin/users/${id}/update-password`, passwords, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('vue-authenticate.vueauth_token')}`,
+      },
+    })
+      .then((response) => {
+        return response.data;
       })
       .catch((error) => {
-        console.error('Error getting users:', error);
+        console.error('Error updating admin password:', error);
         throw error;
       });
   },
-  adminUpdatePassword(data) {
-    return apiInstance()?.get(`/admin/users/${data.id}/update-password`,data.passwords)
+  getAdminUser(context, userId) {
+    return axios.get(`${configs.API_URL}/admin/users/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('vue-authenticate.vueauth_token')}`,
+      },
+    })
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      console.error('Error getting admin user:', error);
+      throw error;
+    });
   },
-  getAdminUser(user) {
-    return apiInstance()?.get(`/admin/users/${user}`)
-  },
-  postInviteUser(email) {
-    return apiInstance()?.post('/admin/users', { email })
-  },
+  postInviteUser(context, email) {
+    // return console.log(email,"email")
+    const token = localStorage.getItem('vue-authenticate.vueauth_token');
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+    return axios.post(`${configs.API_URL}/admin/users`, { email }, config)
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        console.error('Error posting invite user:', error);
+        throw error;
+      });
+  }
 };

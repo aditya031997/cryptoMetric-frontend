@@ -1,23 +1,28 @@
 import { apiInstance } from "@/utils/helpers/api-client";
+import axios from 'axios';
+import configs from '../../../configs/configs';
+
 export default {
   getHistoryAlerts({ commit, state }, data) {
+    const token = localStorage.getItem('vue-authenticate.vueauth_token');
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+  
     const { isEcho, page, per_page } = data;
-    return apiInstance()
-      .get(
-        '/alerts/history',
-        isEcho
-          ? {
-              page: state.current,
-              per_page,
-            }
-          : {
-              page,
-              per_page,
-            }
-      )
-      .then(({ alerts }) => {
-        commit('setHistoryAlerts', alerts);
-      });
+    return axios.get(`${configs.API_URL}/alerts/history`, {
+      headers: config.headers,
+      params: isEcho ? { page: state.current, per_page } : { page, per_page },
+    })
+    .then(response => {
+      commit('setHistoryAlerts', response.data.alerts);
+    })
+    .catch(error => {
+      console.error('Error fetching history alerts:', error);
+      throw error;
+    });
   },
   getAlertsUser(context) {
     return apiInstance().get('/alerts').then(({ alerts }) => {
@@ -25,7 +30,7 @@ export default {
     });
   },
   postCreateAlert(context, data) {
-    return apiInstance().post('/alerts', data.data).then(({ alert }) => {
+    return apiInstance()?.post('/alerts', data.data).then(({ alert }) => {
       const alertCreated = { ...alert, ...data.coin };
       context.commit('setCreatedAlert', alertCreated);
     });
@@ -35,13 +40,25 @@ export default {
       context.commit('deleteAlertUser', id);
     });
   },
-  changeStatusAlertUser(context, data) {
-    return apiInstance().post('/alerts/toggle-status', data).then(() => {
-      context.commit('changeStatusAlertUser', data);
-    });
+  changeStatusAlertUser({ commit }, data) {
+    const token = localStorage.getItem('vue-authenticate.vueauth_token');
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+  
+    return axios.post(`${configs.API_URL}/alerts/toggle-status`, data, { headers: config.headers })
+      .then(() => {
+        commit('changeStatusAlertUser', data);
+      })
+      .catch((error) => {
+        console.error('Error changing status of alert user:', error);
+        throw error;
+      });
   },
   changeStatusAlertEmail(context, data) {
-    return apiInstance().post('/alerts/toggle-email-status', data).then(() => {
+    return apiInstance()?.post('/alerts/toggle-email-status', data).then(() => {
       context.commit('setStatusAlertEmail', data.status);
     });
   },

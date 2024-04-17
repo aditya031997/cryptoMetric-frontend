@@ -100,9 +100,6 @@ export default {
     submitForm() {
       this.message = '';
       if (validatePassword(this.password)) {
-        // this.$refs.validator.setErrors({
-        //   password: ['Password must have digits, uppercase, lowercase and non-alphanumeric symbols'],
-        // });
         this.error = "Password must have digits, uppercase, lowercase and non-alphanumeric symbols"
       } else {
         this.isLoad = true;
@@ -115,7 +112,7 @@ export default {
             },
           })
           .then((value) => {
-            this.$refs.validator.reset();
+            // this.$refs.validator.reset();
             this.password = '';
             this.passwordConfirm = '';
             this.message = value;

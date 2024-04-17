@@ -162,7 +162,7 @@ export default {
           search: this.search,
         })
         .then((response) => {
-          this.userData = response; 
+          this.userData = response?.data; 
           document.body.scrollIntoView(true);
         })
         .finally(() => (this.isLoad = false));

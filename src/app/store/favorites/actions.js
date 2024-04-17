@@ -1,6 +1,7 @@
 import { getCurrentInstance } from "vue";
 import { apiInstance } from "@/utils/helpers/api-client";
-
+import axios from 'axios';
+import configs from '../../../configs/configs';
 const api = getCurrentInstance()?.appContext.config.globalProperties?.$api;
 
 export default {
@@ -9,13 +10,24 @@ export default {
       context.commit('setFavorites', coins);
     });
   },
-  postChangeFavorite(context, data) {
-    return apiInstance()?.post('/coins/favorites', {
+  postChangeFavorite({ commit }, data) {
+    const token = localStorage.getItem('vue-authenticate.vueauth_token');
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    return axios.post(`${configs.API_URL}/coins/favorites`, {
       coin_id: data.coin.coin_id || data.coin.id,
       in_favorite: !data.state,
-    })
+    }, { headers: config.headers })
       .then(() => {
-        context.commit('changeFavorite', data);
+        commit('changeFavorite', data);
+      })
+      .catch((error) => {
+        console.error('Error changing favorite coin:', error);
+        throw error;
       });
   },
   postFavoritesDND(context, data) {
@@ -23,7 +35,7 @@ export default {
       value.position = index;
       return value;
     });
-    return apiInstance()?.post('/coins/favorites/positions',{ favorites: coins }).then(() => {
+    return apiInstance()?.post('/coins/favorites/positions', { favorites: coins }).then(() => {
       context.commit('updateFavorites', data);
     });
   },
