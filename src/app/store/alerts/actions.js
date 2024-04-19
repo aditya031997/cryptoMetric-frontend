@@ -24,16 +24,40 @@ export default {
       throw error;
     });
   },
-  getAlertsUser(context) {
-    return apiInstance().get('/alerts').then(({ alerts }) => {
-      context.commit('setAlertsUser', alerts);
-    });
+  getAlertsUser({ commit }) {
+    const token = localStorage.getItem('vue-authenticate.vueauth_token');
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+  
+    return axios.get(`${configs.API_URL}/alerts`, config)
+      .then(({ data }) => {
+        commit('setAlertsUser', data.alerts);
+      })
+      .catch(error => {
+        console.error('Error fetching alerts:', error);
+        throw error;
+      });
   },
-  postCreateAlert(context, data) {
-    return apiInstance()?.post('/alerts', data.data).then(({ alert }) => {
-      const alertCreated = { ...alert, ...data.coin };
-      context.commit('setCreatedAlert', alertCreated);
-    });
+  postCreateAlert({ commit }, { data, coin }) {
+    const token = localStorage.getItem('vue-authenticate.vueauth_token');
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+  
+    return axios.post(`${configs.API_URL}/alerts`, data, config)
+      .then(({ data }) => {
+        const alertCreated = { ...data.alert, ...coin };
+        commit('setCreatedAlert', alertCreated);
+      })
+      .catch(error => {
+        console.error('Error creating alert:', error);
+        throw error;
+      });
   },
   deleteAlertUser(context, id) {
     return apiInstance().delete(`/alerts/${id}`).then(() => {
@@ -57,9 +81,21 @@ export default {
         throw error;
       });
   },
-  changeStatusAlertEmail(context, data) {
-    return apiInstance()?.post('/alerts/toggle-email-status', data).then(() => {
-      context.commit('setStatusAlertEmail', data.status);
-    });
+  changeStatusAlertEmail({ commit }, data) {
+    const token = localStorage.getItem('vue-authenticate.vueauth_token');
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+  
+    return axios.post(`${configs.API_URL}/alerts/toggle-email-status`, data, config)
+      .then(() => {
+        commit('setStatusAlertEmail', data.status);
+      })
+      .catch(error => {
+        console.error('Error changing alert email status:', error);
+        throw error;
+      });
   },
 };

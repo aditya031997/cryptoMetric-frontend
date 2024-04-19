@@ -18,7 +18,7 @@
         >
           <icon-back />
         </button-icon>
-        <h1 class="header-dashboard__title">
+        <h1 :title="titleHeader" class="header-dashboard__title">
           <span
             v-if="!!getUserName"
             class="header-dashboard__title--name"
@@ -34,10 +34,16 @@
       >
         <button @click="connectWallet">Connect</button>
       </div>
-      <div v-else>
-        <p class="header-dashboard__connected-address">
+      <div v-else class="header-dashboard__connected-address">
+        <figure>
+          <img src="../../assets/images/img-avatar.png" alt="">
+        </figure>
+        <div class="content">
+          <p class="wallet-address">
           {{ formatAddress(userAddress) }}
         </p>
+        <p class="wallet-name">MetaMask</p>
+        </div>
       </div>
       <div class="header-dashboard__section">
         <dashboard-settings v-if="this.$route.meta.headerName === 'Home'" />

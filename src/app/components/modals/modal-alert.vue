@@ -23,14 +23,7 @@
           is-big-select
           is-full
         />
-        <p v-if="errors">{{ errors[0] }}</p>
-      <!-- </ValidationProvider> -->
-      <!-- <ValidationProvider
-        name="currency"
-        rules="required"
-        v-slot="{ errors }"
-        class="flex-grow-1"
-      > -->
+     
         <cm-select
           class-wrapper="mt-4"
           label="Price Currency"
@@ -42,20 +35,12 @@
           is-full
           :value="currency"
         />
-        <p v-if="errors">{{ errors[0] }}</p>
-      <!-- </ValidationProvider> -->
-      <!-- <ValidationProvider
-        name="price"
-        rules="required|double"
-        v-slot="{ errors }"
-      > -->
+   
         <cm-input
           class-wrapper="mt-4"
           label="Price Value"
           v-model="decimal"
-          :error="errors[0]"
         />
-      <!-- </ValidationProvider> -->
       <p class="m-0 mt-4 mr-1 text text--caption">Alert Action:</p>
       <div class="mt-1 d-flex align-items-center">
         <cm-switch
@@ -116,7 +101,6 @@ export default {
     CmButton,
     CmSelect,
     ValidationObserver,
-    // ValidationProvider,
     CmLoader,
     SearchSelect,
     CmSwitch,
