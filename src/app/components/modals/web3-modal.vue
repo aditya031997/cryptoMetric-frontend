@@ -85,17 +85,18 @@ export default {
         enableOnramp: true,
       });
       const provider = await web3Modal.open();
+      const address = web3Modal.getWalletInfo()
 
-      if (window.ethereum) {
-        try {
-          const accounts = await window.ethereum.request({
-            method: 'eth_requestAccounts',
-          });
-          // console.log('Connected account:', accounts[0]);
-        } catch (error) {
-          console.error('Error connecting to wallet:', error);
-        }
-      }
+      // if (window.ethereum) {
+      //   try {
+      //     const accounts = await window.ethereum.request({
+      //       method: 'eth_requestAccounts',
+      //     });
+      //     // console.log('Connected account:', accounts[0]);
+      //   } catch (error) {
+      //     console.error('Error connecting to wallet:', error);
+      //   }
+      // }
     },
   },
 };

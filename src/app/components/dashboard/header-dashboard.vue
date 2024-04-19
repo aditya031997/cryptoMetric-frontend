@@ -28,6 +28,9 @@
           {{ titleHeader }}
         </h1>
       </div>
+      <div>
+        <button @click="Swap">Swap</button>
+      </div>
       <div
         v-if="!userAddress"
         class="header-dashboard__connect-button"
@@ -49,6 +52,10 @@
       :is-visible="isWalletModalVisible"
       @hide-modal="toggleWalletModal"
     />
+    <Web3Exchange
+      :is-visible="isWebExchangeModalVisible"
+      @hide-modal="isWebExchangeModalVisible = false"
+    />
   </div>
 </template>
 
@@ -60,6 +67,10 @@ import UserNotify from './user-notify.vue';
 import DashboardSettings from './dashboard-settings.vue';
 import IconBurger from '../icons/icon-burger.vue';
 import WalletModal from '../modals/web3-modal.vue';
+import Web3 from 'web3';
+import Web3Exchange from '../modals/web3-exchange.vue';
+
+// import { useSendTransaction, useWaitForTransaction } from "wagmi";
 
 export default {
   components: {
@@ -70,11 +81,13 @@ export default {
     DashboardSettings,
     IconBurger,
     WalletModal,
+    Web3Exchange,
   },
   data() {
     return {
       isWalletModalVisible: false,
       userAddress: null,
+      isWebExchangeModalVisible: false,
     };
   },
   props: {
@@ -121,6 +134,46 @@ export default {
         console.error('MetaMask not detected');
       }
     },
+    Swap() {
+      this.isWebExchangeModalVisible = true;
+    },
+    // async Swap() {
+    //   console.log("before")
+    //   if (window.ethereum) {
+    //     console.log("after")
+    //     // Use MetaMask's provider
+    //     const web3 = new Web3(window.ethereum);
+
+    //     try {
+    //       // Request account access if needed
+    //       await window.ethereum.request({ method: 'eth_requestAccounts' });
+    //       // Get the selected account
+    //       const accounts = await web3.eth.getAccounts();
+    //        console.log(accounts,"accounts")
+    //       const senderAddress = accounts[0];
+
+    //       // Transaction details
+    //       const transaction = {
+    //         from: senderAddress,
+    //         to: '0x461B71cff4d4334BbA09489acE4b5Dc1A1813445', // Recipient address
+    //         value: '0', // Value to send (in wei)
+    //         data: '0x095ea7b3000000000000000000000000111111125421ca6dc452d289314280a0f8842a65ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', // Transaction data
+    //       };
+    //       console.log(transaction,"transaction")
+    //       // Send transaction
+    //       const txHash = await web3.eth.sendTransaction(transaction);
+    //       console.log('Transaction sent:', txHash);
+    //       alert('Transaction sent! Check your MetaMask.');
+
+    //     } catch (error) {
+    //       console.error('Error sending transaction:', error);
+    //       alert('Transaction failed. See console for error.');
+    //     }
+
+    //   } else {
+    //     alert('Please install MetaMask to use this feature.');
+    //   }
+    // },
     async toggleWalletModal() {
       if (!this.userAddress && window.ethereum) {
         await this.connectWallet();
