@@ -28,13 +28,15 @@
           {{ titleHeader }}
         </h1>
       </div>
-      <div
+    
+      <div class="header-dashboard__connected-address">
+        <div
         v-if="!userAddress"
-        class="header-dashboard__connect-button"
+        class="border-none bg-none"
       >
         <button @click="connectWallet">Connect</button>
       </div>
-      <div v-else class="header-dashboard__connected-address">
+      <div v-else>
         <figure>
           <img src="../../assets/images/img-avatar.png" alt="">
         </figure>
@@ -44,6 +46,8 @@
         </p>
         <p class="wallet-name">MetaMask</p>
         </div>
+      </div>
+      
       </div>
       <div class="header-dashboard__section">
         <dashboard-settings v-if="this.$route.meta.headerName === 'Home'" />
