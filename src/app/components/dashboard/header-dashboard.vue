@@ -18,7 +18,7 @@
         >
           <icon-back />
         </button-icon>
-        <h1 :title="titleHeader" class="header-dashboard__title">
+        <h1 class="header-dashboard__title">
           <span
             v-if="!!getUserName"
             class="header-dashboard__title--name"
@@ -28,10 +28,9 @@
           {{ titleHeader }}
         </h1>
       </div>
-    
       <div class="header-dashboard__connected-address">
         <div
-        v-if="!userAddress"
+        v-if="!walletAddress"
         class="border-none bg-none"
       >
         <button @click="connectWallet">Connect</button>
@@ -42,7 +41,7 @@
         </figure>
         <div class="content">
           <p class="wallet-address">
-          {{ formatAddress(userAddress) }}
+          {{ formatAddress(walletAddress) }}
         </p>
         <p class="wallet-name">MetaMask</p>
         </div>
@@ -57,7 +56,8 @@
     </header>
     <wallet-modal
       :is-visible="isWalletModalVisible"
-      @hide-modal="toggleWalletModal"
+      @hide-modal="connectWallet"
+      @account-changed="handleAccountChanged"
     />
   </div>
 </template>
@@ -84,7 +84,7 @@ export default {
   data() {
     return {
       isWalletModalVisible: false,
-      userAddress: null,
+      walletAddress: null,
     };
   },
   props: {
@@ -108,6 +108,9 @@ export default {
     },
   },
   methods: {
+    handleAccountChanged(newAddress) {
+      this.walletAddress = newAddress;
+    },
     onClickBack() {
       this.$router.go(-1);
     },
@@ -117,24 +120,7 @@ export default {
     onClickOpenSideBar() {
       this.$emit('on-hide-side-bar');
     },
-    async connectWallet() {
-      if (window.ethereum) {
-        try {
-          const accounts = await window.ethereum.request({
-            method: 'eth_requestAccounts',
-          });
-          this.userAddress = accounts[0];
-        } catch (error) {
-          console.error('Error connecting to wallet:', error);
-        }
-      } else {
-        console.error('MetaMask not detected');
-      }
-    },
-    async toggleWalletModal() {
-      if (!this.userAddress && window.ethereum) {
-        await this.connectWallet();
-      }
+    connectWallet() {
       this.isWalletModalVisible = !this.isWalletModalVisible;
     },
     formatAddress(address) {
@@ -145,9 +131,6 @@ export default {
       }
       return '';
     },
-  },
-  mounted() {
-    this.connectWallet();
   },
 };
 </script>

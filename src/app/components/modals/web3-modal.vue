@@ -2,7 +2,7 @@
   <div
     v-if="isVisible"
     class="modal-overlay"
-    @click.self="hideModal"
+    @click="hideModal"
   >
     <div
       class="modal"
@@ -27,14 +27,6 @@
         >
           Connect Wallet
         </button>
-        <!-- <div class="divider">OR LOGIN</div>
-            <input type="email" placeholder="Enter your email..." class="email-input"/>
-            <button class="modal-button email-login">Email Login</button>
-            <div class="social-logins">
-              <button class="social-button google">G</button>
-              <button class="social-button twitter">T</button>
-              <button class="social-button discord">D</button>
-            </div> -->
       </div>
     </div>
   </div>
@@ -45,10 +37,17 @@ import { createWeb3Modal } from '@web3modal/wagmi';
 import { reconnect, http, createConfig } from '@wagmi/core';
 import { mainnet, sepolia } from '@wagmi/core/chains';
 import { coinbaseWallet, walletConnect, injected } from '@wagmi/connectors';
+import { watchAccount } from '@wagmi/core';
+
 export default {
   name: 'WalletModal',
   props: {
     isVisible: Boolean,
+  },
+  data() {
+    return {
+      walletAddress: null,
+    };
   },
   methods: {
     hideModal() {
@@ -85,17 +84,16 @@ export default {
         enableOnramp: true,
       });
       const provider = await web3Modal.open();
+      const address = web3Modal.getWalletInfo();
+      const handleAccountChange = (data) => {
+        this.walletAddress = data.address;
+        this.$emit('account-changed', data.address); 
+        this.hideModal();
+      };
 
-      if (window.ethereum) {
-        try {
-          const accounts = await window.ethereum.request({
-            method: 'eth_requestAccounts',
-          });
-          // console.log('Connected account:', accounts[0]);
-        } catch (error) {
-          console.error('Error connecting to wallet:', error);
-        }
-      }
+      watchAccount(config, {
+        onChange: handleAccountChange.bind(this),
+      });
     },
   },
 };
