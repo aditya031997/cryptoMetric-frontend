@@ -43,6 +43,7 @@
         <cm-select
           v-for="(filter, index) in filters"
           :key="filter.id"
+          ref="cmSelect"
           :index="index"
           is-filter
           :default-value="{ name: 'All', value: null }"
@@ -242,7 +243,6 @@ export default {
       }
     },
     initializeFilters() {
-
       this.filters = [
         {
           id: 0,
@@ -451,7 +451,6 @@ export default {
           value: { name: 'All', value: null },
         },
       ];
-      
     },
     changeTablePage(page) {
       this.tablePage = page;
@@ -548,8 +547,9 @@ export default {
           }
         });
       this.changePage(1, false);
-
       this.getCoins();
+      this.search = '';
+      this.filterApi.search = '';
     },
     changeFilterValue(data, index) {
       this.filters[index].value = data;
@@ -578,29 +578,21 @@ export default {
       this.getCoins();
     },
     clearAllFilters() {
-      this.filters.map((filter) => {
-        filter.value = { name: 'All', value: null };
-      });
-      this.presets.map((preset) => {
-        preset.isActive = false;
-      });
-      this.presets[0].isActive = true;
-      this.filters.map((filter) => {
-        this.$router
-          .replace({
-            query: {
-              ...this.$route.query,
-              [`${filter.filterName}`]: undefined,
-            },
-          })
-          .catch((error) => {
-            if (error.name != 'NavigationDuplicated') {
-              throw error;
-            }
-          });
+      this.$refs.cmSelect.forEach((select) => {
+        if (select.resetValue) {
+          select.resetValue();
+        }
       });
       this.filterApi.filters = {};
+      this.$router.replace({ query: {} }).catch((error) => {
+        if (error.name != 'NavigationDuplicated') {
+          throw error;
+        }
+      });
+      this.changePage(1, false);
       this.getCoins();
+      this.search = '';
+      this.filterApi.search = '';
     },
     getCoins() {
       this.isLoad = true;

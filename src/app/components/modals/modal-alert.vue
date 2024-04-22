@@ -7,24 +7,19 @@
       class="modal-alert"
       @submit.prevent="onSubmit"
     >
-      <!-- <ValidationProvider
-        name="coin"
-        rules="required"
-        v-slot="{ errors }"
-      > -->
-        <search-select
-          class-wrapper="mt-4"
-          label="Coin name"
-          :options="getCoinsNames"
-          :on-change="onChangeName"
-          placeholder="Search coin name..."
-          :value="name"
-          :index="1"
-          is-big-select
-          is-full
-        />
-     
-        <cm-select
+      <search-select
+        class-wrapper="mt-4"
+        label="Coin name"
+        :options="getCoinsNames"
+        :on-change="onChangeName"
+        placeholder="Search coin name..."
+        :value="name"
+        :index="1"
+        is-big-select
+        is-full
+      />
+
+      <cm-select
           class-wrapper="mt-4"
           label="Price Currency"
           placeholder="Currency"
@@ -35,12 +30,12 @@
           is-full
           :value="currency"
         />
-   
-        <cm-input
-          class-wrapper="mt-4"
-          label="Price Value"
-          v-model="decimal"
-        />
+
+      <cm-input
+        class-wrapper="mt-4"
+        label="Price Value"
+        v-model="decimal"
+      />
       <p class="m-0 mt-4 mr-1 text text--caption">Alert Action:</p>
       <div class="mt-1 d-flex align-items-center">
         <cm-switch
@@ -177,7 +172,9 @@ export default {
           .finally(() => (this.isLoad = false));
       } else {
         this.$refs.validator.setErrors({
-          price: ['The number of characters after the decimal point exceeds the limit. Max - 12'],
+          price: [
+            'The number of characters after the decimal point exceeds the limit. Max - 12',
+          ],
         });
       }
     },
@@ -185,7 +182,17 @@ export default {
   mounted() {
     if (this.$store.state.coins.names.length === 0) {
       this.isLoad = true;
-      this.$store.dispatch('getCoinsNames').finally(() => (this.isLoad = false));
+      this.$store
+        .dispatch('getCoinsNames')
+        .then((response) => {
+          console.log('API Response:', response);
+        })
+        .catch((error) => {
+          console.error('API Error:', error);
+        })
+        .finally(() => {
+          this.isLoad = false;
+        });
     }
   },
 };

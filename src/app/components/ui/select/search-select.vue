@@ -157,6 +157,8 @@ export default {
   },
   mounted() {
     this.default = this.value;
+    console.log('Options:', this.options.slug);
+
   },
 };
 </script>

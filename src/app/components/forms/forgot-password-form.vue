@@ -107,10 +107,8 @@ export default {
         this.emailError = '';
       }
       this.validation();
-      console.log('Email Error:', this.emailError);
     },
     validation() {
-      console.log(this.passwordError, 'validation');
       if (
         !this.emailError &&
         this.emailValue
@@ -121,36 +119,31 @@ export default {
       }
     },
     onSubmit() {
-      if (!this.emailError && this.emailValue) {
-        const data = {
-          email: this.emailValue,
-        };
-        this.isLoad = true;
-        this.$api
-          .post('/forgot-password', data)
-          .then(() => {
-            this.responseMessage = 'The letter has been mailed';
-          })
-          .catch((errors) => {
-            if (typeof errors === 'string' || errors.status) {
-              if (errors.status) {
-                this.errorMessage = errors.status;
-              } else {
-                this.errorMessage = errors.message;
-              }
-            } else {
-              if (errors?.errors) {
-                this.errorMessage = errors.message;
-              } else {
-                this.errorMessage = errors.message;
-              }
-            }
-          })
-          .finally(() => {
-            this.isLoad = false;
-          });
-      }
-    },
+  if (!this.emailError && this.emailValue) {
+    const data = {
+      email: this.emailValue,
+    };
+    this.isLoad = true;
+    this.$api
+      .post('/forgot-password', data)
+      .then((response) => {
+        this.responseMessage = 'The letter has been mailed';
+      })
+      .catch((error) => {
+        console.log('API Error:', error);
+        if (error) {
+          this.errorMessage = error|| 'Something went wrong';
+        } else if (error.request) {
+          this.errorMessage = 'No response received from the server';
+        } else {
+          this.errorMessage = error;
+        }
+      })
+      .finally(() => {
+        this.isLoad = false;
+      });
+  }
+},
   },
 };
 </script>

@@ -36,6 +36,7 @@
         <button @click="connectWallet">Connect</button>
       </div>
       <div v-else>
+        <button @click="disconnectAccount">Disconnect</button>
         <figure>
           <img src="../../assets/images/img-avatar.png" alt="">
         </figure>
@@ -110,6 +111,9 @@ export default {
   methods: {
     handleAccountChanged(newAddress) {
       this.walletAddress = newAddress;
+    },
+    disconnectAccount() {
+      this.walletAddress = "";
     },
     onClickBack() {
       this.$router.go(-1);

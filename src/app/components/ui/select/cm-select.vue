@@ -1,6 +1,13 @@
 <template>
-  <div class="cm-select" :class="[classWrapper]">
-    <label v-if="label" class="cm-select__label">{{ label }}</label>
+  <div
+    class="cm-select"
+    :class="[classWrapper]"
+  >
+    <label
+      v-if="label"
+      class="cm-select__label"
+      >{{ label }}</label
+    >
     <div
       class="cm-select__select"
       :class="{
@@ -11,15 +18,19 @@
         'is-big': isBigSelect,
         'is-primary': isPrimary,
         'is-full': isFull,
-        'is-selected--default': modelValue && modelValue.name === 'All' && isFilter,
+        'is-selected--default':
+          modelValue && modelValue.name === 'All' && isFilter,
       }"
     >
-      <span v-if="isIcons" class="cm-select__icon">
+      <span
+        v-if="isIcons"
+        class="cm-select__icon"
+      >
         <slot />
       </span>
       <button-icon
         custom-class="cm-select__icon-close"
-        :on-click="resetValue"
+        @click="resetValue"
         v-if="modelValue && isFilter"
       >
         <icon-close-circle />
@@ -32,25 +43,43 @@
         :options="options"
         :searchable="isSearch"
         @update:modelValue="handlerChangeSelect"
+        :clearOnSelect="isFilter"
       >
         <template #singleLabel="{ option }">
-          <p v-if="!isFilter" class="cm-select__label-option cm-select__label-option--label">
+          <p
+            v-if="!isFilter"
+            class="cm-select__label-option cm-select__label-option--label"
+          >
             {{ typeof option === 'object' ? option.name : option }}
           </p>
-          <p v-else class="cm-select__label-option cm-select__label-option--label">
+          <p
+            v-else
+            class="cm-select__label-option cm-select__label-option--label"
+          >
             {{ option.name !== 'All' ? option.name : placeholder }}
           </p>
         </template>
         <template #option="{ option }">
           <div
             class="cm-select__option"
-            :class="{ 'multiselect__option--selected': option.name === 'All' && modelValue && modelValue.name === 'All' }"
+            :class="{
+              'multiselect__option--selected':
+                option.name === 'All' &&
+                modelValue &&
+                modelValue.name === 'All',
+            }"
           >
             <span class="cm-select__option-icon"><icon-selected /></span>
-            <p v-if="!isFilter" class="cm-select__label-option">
+            <p
+              v-if="!isFilter"
+              class="cm-select__label-option"
+            >
               {{ typeof option === 'object' ? option.name : option }}
             </p>
-            <p v-else class="cm-select__label-option">
+            <p
+              v-else
+              class="cm-select__label-option"
+            >
               {{ option.name }}
             </p>
           </div>
@@ -101,7 +130,11 @@ export default {
   methods: {
     resetValue() {
       if (this.isFilter) {
+        this.modelValue = { name: 'All', value: null };
         this.onChange(this.defaultValue, this.index);
+        if (this.resetOption) {
+          this.resetOption();
+        }
       }
     },
     getImageCoin(slug) {
@@ -117,5 +150,3 @@ export default {
   },
 };
 </script>
-
-<style lang="scss" scoped></style>
