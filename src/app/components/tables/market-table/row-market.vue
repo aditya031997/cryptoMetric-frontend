@@ -17,8 +17,9 @@
         :placement="popperPlacement"
       >
         <router-link
-          :to="getLink"
+          :to="getLink(slug)"
           class="d-flex justify-content-space-between table__link"
+          @click="navigateToLink(getLink(slug))"
         >
           <default-image
             class="table__image"
@@ -122,12 +123,18 @@
 
 <script>
 import { getImageCoin } from '@/utils/helpers/formatter-images';
-import { formatPrice, formatPercent, simpleFormatPrice, simpleFormatPercent } from '@/utils/helpers/formatter';
+import {
+  formatPrice,
+  formatPercent,
+  simpleFormatPrice,
+  simpleFormatPercent,
+} from '@/utils/helpers/formatter';
 import buttonFavorite from '@/components/ui/button/button-favorite.vue';
 import PopperTooltip from '@/components/poppers/popper-tooltip.vue';
 import PopperChart from '@/components/poppers/popper-chart.vue';
 import MobileCheckMixin from '@/utils/mixins/mobile-check';
 import DefaultImage from '@/components/default-image.vue';
+import { useRouter } from 'vue-router';
 
 export default {
   components: {
@@ -175,10 +182,26 @@ export default {
     },
   },
   mixins: [MobileCheckMixin],
+  setup() {
+    const router = useRouter();
+    const getLink = (slug) => {
+      return `/crypto-markets/${slug}`;
+    };
+    const navigateToLink = (link) => {
+      router
+        .push(link)
+        .then(() => {})
+        .catch((error) => {
+          console.error('Navigation error:', error);
+        });
+    };
+
+    return {
+      getLink,
+      navigateToLink,
+    };
+  },
   computed: {
-    getLink() {
-      return `crypto-markets/${this.slug}`;
-    },
     volumeValue() {
       if (this.volume === null) {
         return 'No info';

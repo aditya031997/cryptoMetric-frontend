@@ -21,7 +21,9 @@ import UserThemeMixin from '@/utils/mixins/user-theme';
 function getLanguageFromURL() {
   const regex = new RegExp('[\\?&]lang=([^&#]*)');
   const results = regex.exec(window.location.search);
-  return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, ' '));
+  return results === null
+    ? null
+    : decodeURIComponent(results[1].replace(/\+/g, ' '));
 }
 
 let apiClient = null;
@@ -43,7 +45,11 @@ Requester.prototype.sendRequest = function (datafeedUrl, urlPath, params) {
     }
     urlPath += paramKeys
       .map(function (key) {
-        return encodeURIComponent(key) + '=' + encodeURIComponent(params[key].toString());
+        return (
+          encodeURIComponent(key) +
+          '=' +
+          encodeURIComponent(params[key].toString())
+        );
       })
       .join('&');
   }
@@ -307,7 +313,9 @@ export default {
       let widgetOptions = {
         ...options,
         ...{
-          symbol: this.platformName ? this.platformName + ':' + this.symbol + 'USD' : this.symbol,
+          symbol: this.platformName
+            ? this.platformName + ':' + this.symbol + 'USD'
+            : this.symbol,
           datafeed: new Datafeed(this.datafeedUrl),
           interval: this.interval,
           container_id: this.containerId,
@@ -327,7 +335,9 @@ export default {
         widgetOptions.overrides['mainSeriesProperties.style'] = 3;
         widgetOptions.disabled_features.push('control_bar');
         widgetOptions.disabled_features.push('timezone_menu');
-        widgetOptions.disabled_features.push('chart_property_page_timezone_sessions');
+        widgetOptions.disabled_features.push(
+          'chart_property_page_timezone_sessions'
+        );
         widgetOptions.disabled_features.push('main_series_scale_menu');
         widgetOptions.disabled_features.push('scales_context_menu');
         widgetOptions.time_frames = [];
@@ -344,9 +354,12 @@ export default {
       }
 
       if (this.themeId == '2') {
-        widgetOptions.overrides['mainSeriesProperties.areaStyle.color1'] = '#0c2947';
-        widgetOptions.overrides['mainSeriesProperties.areaStyle.color2'] = '#0c2947';
-        widgetOptions.overrides['mainSeriesProperties.areaStyle.linecolor'] = '#3399FF';
+        widgetOptions.overrides['mainSeriesProperties.areaStyle.color1'] =
+          '#0c2947';
+        widgetOptions.overrides['mainSeriesProperties.areaStyle.color2'] =
+          '#0c2947';
+        widgetOptions.overrides['mainSeriesProperties.areaStyle.linecolor'] =
+          '#3399FF';
       }
 
       return widgetOptions;
@@ -355,7 +368,14 @@ export default {
       const container = document.querySelector(`#${this.containerId}`);
       if (!container) {
         this.initTimeout = setTimeout(() => {
-          this.initWidget();
+          this.$api.get(`/coins/${this.slug}`).then(({ coin }) => {
+            this.platformName = coin.tradingview_trading_platform_name;
+            if (coin.tradingview_trading_platform_name) {
+              this.initWithWebsockets();
+            } else {
+              this.initWithOurAPI();
+            }
+          });
         });
         return;
       }
@@ -373,7 +393,12 @@ export default {
       const container = document.querySelector(`${this.containerId}`);
       if (!container) {
         this.initTimeout = setTimeout(() => {
-          this.initSimpleWidget();
+          this.$api.get(`/coins/${this.slug}`).then(({ coin }) => {
+            this.platformName = coin.tradingview_trading_platform_name;
+            this.initSimpleTradingview(
+              !!coin.tradingview_trading_platform_name
+            );
+          });
         });
         return;
       }
