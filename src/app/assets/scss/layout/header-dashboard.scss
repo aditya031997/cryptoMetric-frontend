@@ -31,7 +31,23 @@
       width: 100%;
     }
   }
-
+    .connect-btn{
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      margin-right: 20px;
+      margin-left: 10px;
+      button {
+        background: none;
+        font-size: 0.75rem;
+        border: none;
+      }
+    }
+    .address-box{
+      display: flex;
+      align-items: center;
+    }
   .header-dashboard__connected-address {
     background-color: $grey-lighten;
     display: flex;

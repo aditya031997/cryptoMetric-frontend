@@ -20,21 +20,23 @@
       />
 
       <cm-select
-          class-wrapper="mt-4"
-          label="Price Currency"
-          placeholder="Currency"
-          :options="optionsCurrency"
-          :on-change="onChangeCurrency"
-          :index="2"
-          is-big-select
-          is-full
-          :value="currency"
-        />
+        class-wrapper="mt-4"
+        label="Price Currency"
+        placeholder="Currency"
+        :options="optionsCurrency"
+        :on-change="onChangeCurrency"
+        :index="2"
+        is-big-select
+        is-full
+        :value="currency"
+      />
 
       <cm-input
         class-wrapper="mt-4"
         label="Price Value"
-        v-model="decimal"
+        v-model="priceValue"
+        @input="priceValidation"
+        :error="priceError"
       />
       <p class="m-0 mt-4 mr-1 text text--caption">Alert Action:</p>
       <div class="mt-1 d-flex align-items-center">
@@ -57,7 +59,7 @@
         custom-class="mt-4"
         is-block
         type="submit"
-        :disabled="invalid"
+        :disabled="isValid"
       >
         Create Alert
       </cm-button>
@@ -114,6 +116,9 @@ export default {
     options: [1, 2, 3, 4, 5, 6],
     name: null,
     currency: null,
+    priceValue: '',
+    isValid: true,
+    priceError: '',
     decimal: '',
     errorMessage: '',
   }),
@@ -130,11 +135,34 @@ export default {
     decimal() {
       this.errorMessage = '';
     },
+    passwordValue() {
+      this.errorMessage = '';
+    },
   },
   computed: {
     ...mapGetters(['getCoinsNames']),
   },
   methods: {
+    priceValidation(event) {
+      this.priceValue = event;
+
+      if (event === '') {
+        this.priceError = 'The price field is required';
+      } else if (!/^\d*\.?\d+$/.test(event)) {
+        this.priceError = 'The price field must be a valid decimal';
+      } else {
+        this.priceError = '';
+      }
+
+      this.validation();
+    },
+    validation() {
+      if (!this.priceError && this.priceValue) {
+        this.isValid = false;
+      } else {
+        this.isValid = true;
+      }
+    },
     onChangeName(value) {
       this.name = value;
     },
@@ -142,13 +170,14 @@ export default {
       this.currency = value;
     },
     onSubmit() {
-      const decimalFloatLength = this.decimal.toString().includes('.')
-        ? this.decimal.toString().split('.').pop().length
+      const decimalFloatLength = this.priceValue.toString().includes('.')
+        ? this.priceValue.toString().split('.').pop().length
         : 0;
-      if (Number(this.decimal) <= 0) {
-        this.$refs.validator.setErrors({
-          price: ['Number cannot be negative or equal to zero'],
-        });
+      if (Number(this.priceValue) <= 0) {
+        // this.$refs.validator.setErrors({
+        //   price: ['Number cannot be negative or equal to zero'],
+        // })
+        this.priceError = "Number cannot be negative or equal to zero"
         return;
       }
       if (decimalFloatLength <= 12) {
@@ -159,7 +188,7 @@ export default {
             data: {
               coin_id: this.name.coin_id,
               price_currency: this.currency === 'USD' ? 0 : 1,
-              price: this.decimal,
+              price: this.priceValue,
               alert_type: !this.actionSwitch ? 1 : 2,
             },
           })

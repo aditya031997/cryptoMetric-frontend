@@ -83,11 +83,13 @@ export default {
         enableAnalytics: true,
         enableOnramp: true,
       });
-      const provider = await web3Modal.open();
-      const address = web3Modal.getWalletInfo();
+      await web3Modal.open();
+      
+      web3Modal.getWalletInfo();
       const handleAccountChange = (data) => {
         this.walletAddress = data.address;
-        this.$emit('account-changed', data.address); 
+        localStorage.setItem('walletAddress', data.address);
+        this.$emit('account-changed', data.address);
         this.hideModal();
       };
 
@@ -111,7 +113,11 @@ export default {
   justify-content: center;
   z-index: 9;
 }
-
+.close{
+  cursor: pointer;
+  color:#ffffff;
+  
+}
 .modal {
   width: 30%;
   min-width: 320px;

@@ -310,7 +310,7 @@ export default {
           plotOptions: {
             packedbubble: {
               minSize: '60%',
-              maxSize: '132',
+              maxSize: '149',
               layoutAlgorithm: {
                 gravitationalConstant: 0.01,
                 splitSeries: false,

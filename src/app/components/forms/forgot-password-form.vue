@@ -109,41 +109,38 @@ export default {
       this.validation();
     },
     validation() {
-      if (
-        !this.emailError &&
-        this.emailValue
-      ) {
+      if (!this.emailError && this.emailValue) {
         this.isValid = false;
       } else {
         this.isValid = true;
       }
     },
     onSubmit() {
-  if (!this.emailError && this.emailValue) {
-    const data = {
-      email: this.emailValue,
-    };
-    this.isLoad = true;
-    this.$api
-      .post('/forgot-password', data)
-      .then((response) => {
-        this.responseMessage = 'The letter has been mailed';
-      })
-      .catch((error) => {
-        console.log('API Error:', error);
-        if (error) {
-          this.errorMessage = error|| 'Something went wrong';
-        } else if (error.request) {
-          this.errorMessage = 'No response received from the server';
-        } else {
-          this.errorMessage = error;
-        }
-      })
-      .finally(() => {
-        this.isLoad = false;
-      });
-  }
-},
+      if (!this.emailError && this.emailValue) {
+        const data = {
+          email: this.emailValue,
+        };
+        this.isLoad = true;
+        this.$api
+          .post('/forgot-password', data)
+          .then((response) => {
+            this.responseMessage = 'The letter has been mailed';
+          })
+          .catch((error) => {
+            console.log(error, 'error');
+            if (error) {
+              this.errorMessage = error.status || 'Something went wrong';
+            } else if (error.request) {
+              this.errorMessage = 'No response received from the server';
+            } else {
+              this.errorMessage = error;
+            }
+          })
+          .finally(() => {
+            this.isLoad = false;
+          });
+      }
+    },
   },
 };
 </script>

@@ -28,26 +28,38 @@
           {{ titleHeader }}
         </h1>
       </div>
-      <div class="header-dashboard__connected-address">
         <div
-        v-if="!walletAddress"
-        class="border-none bg-none"
-      >
-        <button @click="connectWallet">Connect</button>
-      </div>
-      <div v-else>
-        <button @click="disconnectAccount">Disconnect</button>
-        <figure>
-          <img src="../../assets/images/img-avatar.png" alt="">
-        </figure>
-        <div class="content">
-          <p class="wallet-address">
-          {{ formatAddress(walletAddress) }}
-        </p>
-        <p class="wallet-name">MetaMask</p>
-        </div>
-      </div>
+         
+          class="border-none bg-none connect-btn"
+        >
+          <button  v-if="!walletAddress" @click="connectWallet">Connect</button>
+          <button v-else @click="disconnectAccount"> <popper-tooltip
+            custom-class="coin-stats__coin-name text ml-2"
+            placement="top"
+            :disabled="isDnd || poppersOff"
+          >
+          <iconSwitch/>
+            <template v-slot:popper>Disconnect</template>
+          </popper-tooltip></button>
+         
       
+        </div>
+      <div v-if="walletAddress" class="header-dashboard__connected-address">
+        
+        <div class="address-box">
+         
+          <figure>
+            <img
+              src="../../assets/images/img-avatar.png"
+              alt=""
+            />
+          </figure>
+          <div class="content">
+            <p class="wallet-address">
+              {{ formatAddress(walletAddress) }}
+            </p>
+          </div>
+        </div>
       </div>
       <div class="header-dashboard__section">
         <dashboard-settings v-if="this.$route.meta.headerName === 'Home'" />
@@ -65,16 +77,20 @@
 
 <script>
 import iconBack from '../icons/icon-back.vue';
+import iconSwitch from '../icons/icon-switch.vue'
 import ButtonIcon from '../ui/button/button-icon.vue';
 import UserProfile from './user-profile.vue';
+
+import PopperTooltip from '@/components/poppers/popper-tooltip.vue';
 import UserNotify from './user-notify.vue';
 import DashboardSettings from './dashboard-settings.vue';
 import IconBurger from '../icons/icon-burger.vue';
 import WalletModal from '../modals/web3-modal.vue';
-
 export default {
   components: {
     iconBack,
+    PopperTooltip,
+    iconSwitch,
     ButtonIcon,
     UserProfile,
     UserNotify,
@@ -85,7 +101,7 @@ export default {
   data() {
     return {
       isWalletModalVisible: false,
-      walletAddress: null,
+      walletAddress: localStorage.getItem('walletAddress') || null,
     };
   },
   props: {
@@ -113,7 +129,8 @@ export default {
       this.walletAddress = newAddress;
     },
     disconnectAccount() {
-      this.walletAddress = "";
+      this.walletAddress = '';
+      localStorage.removeItem('walletAddress');
     },
     onClickBack() {
       this.$router.go(-1);

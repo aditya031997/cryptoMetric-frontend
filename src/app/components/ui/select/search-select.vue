@@ -25,52 +25,16 @@
         <slot />
       </span>
       <multiselect
-        :value="value"
-        @input="handlerChangeSelect"
+        v-model="selected"
+        :options="formattedOptions"
         :placeholder="placeholder"
-        :label="'name'"
         :show-labels="false"
-        :options="options"
         :searchable="true"
+        track-by="name"
+        @select="handleSelect"
       >
-        <template
-          slot="singleLabel"
-          slot-scope="props"
-        >
-          <div
-            class="d-flex align-items-center"
-            :key="props.option.slug"
-          >
-            <default-image
-              class="cm-select__icon"
-              v-if="props.option.slug"
-              :src="getImageCoin(props.option.slug)"
-              :alt="`${props.option.name} icon`"
-            />
-            <p class="m-0 ml-2">
-              {{ props.option.name }}<span class="ml-1">{{ props.option.symbol }}</span>
-            </p>
-          </div>
-        </template>
-        <template
-          slot="option"
-          slot-scope="props"
-        >
-          <div
-            class="cm-select__option"
-            :key="props.option.slug"
-          >
-            <span class="cm-select__option-icon"><icon-selected /></span>
-            <default-image
-              class="cm-select__icon"
-              v-if="props.option.slug"
-              :src="getImageCoin(props.option.slug)"
-              :alt="`${props.option.name} icon`"
-            />
-            <p class="m-0 ml-2">
-              {{ props.option.name }}<span class="ml-1">{{ props.option.symbol }}</span>
-            </p>
-          </div>
+        <template #option="{ option }">
+          <div v-html="customLabel(option)"></div>
         </template>
       </multiselect>
     </div>
@@ -82,6 +46,7 @@ import Multiselect from 'vue-multiselect';
 import IconSelected from '../../icons/icon-selected.vue';
 import { getImageCoin } from '@/utils/helpers/formatter-images';
 import DefaultImage from '../../default-image.vue';
+
 export default {
   name: 'cm-select',
   components: {
@@ -90,22 +55,17 @@ export default {
     DefaultImage,
   },
   props: {
-    label: { type: String, default: '' },
-    classWrapper: { type: String },
-    isSearch: {
-      type: Boolean,
-      default: false,
+    label: {
+      type: String,
+      default: '',
     },
-    defaultValue: {
-      type: [String, Number, Object],
-      default: null,
+    classWrapper: {
+      type: String,
     },
-
     isFull: {
       type: Boolean,
       default: false,
     },
-    index: { type: Number },
     placeholder: {
       type: String,
       default: 'Select',
@@ -124,46 +84,53 @@ export default {
     },
     options: {
       type: Array,
+      required: true,
     },
     onChange: {
       type: Function,
-    },
-    resetOption: {
-      type: Function,
-      default: null,
+      required: true,
     },
     value: {
-      type: [String, Number, Object],
+      type: Object,
       default: null,
     },
   },
-  data: () => ({
-    default: null,
-  }),
-  methods: {
-    resetValue() {
-      if (this.isFilter) {
-        this.onChange(this.defaultValue, this.index);
-      }
+  data() {
+    return {
+      selected: this.value,
+    };
+  },
+  computed: {
+    formattedOptions() {
+      return this.options.map((option) => ({
+        name: option.name,
+        symbol: option.symbol,
+        slug: option.slug,
+        value: option,
+      }));
     },
+  },
+  methods: {
     getImageCoin(slug) {
       if (slug) {
         return getImageCoin(slug);
       }
+      return null;
     },
-    handlerChangeSelect(value) {
-      this.onChange(value, this.index);
+    handleSelect(selectedOption) {
+      this.selected = selectedOption;
+      this.onChange(selectedOption.value);
+    },
+    customLabel(option) {
+      const imageUrl = option.slug ? this.getImageCoin(option.slug) : '';
+      const imageTag = imageUrl
+        ? `<img src="${imageUrl}" alt="${option.name} icon" class="cm-select__icon" />`
+        : '';
+      return `${imageTag} ${option.name} - ${option.symbol}`;
     },
   },
-  mounted() {
-    this.default = this.value;
-    console.log('Options:', this.options.slug);
-
+  created() {
+    console.log('Options:', this.options);
   },
 };
 </script>
-
-<style
-  lang="scss"
-  scoped
-></style>
