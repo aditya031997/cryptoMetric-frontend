@@ -31,23 +31,32 @@
       width: 100%;
     }
   }
-    .connect-btn{
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      margin-right: 20px;
-      margin-left: 10px;
-      button {
-        background: none;
-        font-size: 0.75rem;
-        border: none;
-      }
+
+  .connect-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-right: 20px;
+    margin-left: 10px;
+
+    button {
+      padding: 5px;
+      border: none;
+      border-radius: 5px;
+      color: #fff;
+      background-color: #01b7ff;
+      font-weight: 600;
+      cursor: pointer;
+      display: block;
     }
-    .address-box{
-      display: flex;
-      align-items: center;
-    }
+  }
+
+  .address-box {
+    display: flex;
+    align-items: center;
+  }
+
   .header-dashboard__connected-address {
     background-color: $grey-lighten;
     display: flex;
@@ -118,6 +127,7 @@
     @media (max-width: breakpoint-max('lg')) {
       width: 205px;
     }
+
     @media (max-width: breakpoint-max('sm')) {
       width: 120px;
     }
@@ -161,4 +171,17 @@
   @media (min-width: breakpoint-min('md')) {
     display: none;
   }
+}
+
+
+.header-logout {
+  margin-bottom: 0px;
+}
+
+.header-logout+#app .popper-tooltip {
+  padding: 0px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 12px;
+  background-color: #585858;
 }

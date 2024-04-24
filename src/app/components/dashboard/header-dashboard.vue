@@ -28,26 +28,32 @@
           {{ titleHeader }}
         </h1>
       </div>
-        <div
-         
-          class="border-none bg-none connect-btn"
+      <div class="border-none bg-none connect-btn">
+        <button
+          v-if="!walletAddress"
+          @click="connectWallet"
         >
-          <button  v-if="!walletAddress" @click="connectWallet">Connect</button>
-          <button v-else @click="disconnectAccount"> <popper-tooltip
-            custom-class="coin-stats__coin-name text ml-2"
-            placement="top"
+          Connect
+        </button>
+        <button
+          v-else
+          @click="disconnectAccount"
+        >
+          <popper-tooltip
+            custom-class="header-logout"
+            placement="bottom"
             :disabled="isDnd || poppersOff"
           >
-          <iconSwitch/>
+            <iconSwitch />
             <template v-slot:popper>Disconnect</template>
-          </popper-tooltip></button>
-         
-      
-        </div>
-      <div v-if="walletAddress" class="header-dashboard__connected-address">
-        
+          </popper-tooltip>
+        </button>
+      </div>
+      <div
+        v-if="walletAddress"
+        class="header-dashboard__connected-address"
+      >
         <div class="address-box">
-         
           <figure>
             <img
               src="../../assets/images/img-avatar.png"
@@ -77,7 +83,7 @@
 
 <script>
 import iconBack from '../icons/icon-back.vue';
-import iconSwitch from '../icons/icon-switch.vue'
+import iconSwitch from '../icons/icon-switch.vue';
 import ButtonIcon from '../ui/button/button-icon.vue';
 import UserProfile from './user-profile.vue';
 
@@ -86,6 +92,8 @@ import UserNotify from './user-notify.vue';
 import DashboardSettings from './dashboard-settings.vue';
 import IconBurger from '../icons/icon-burger.vue';
 import WalletModal from '../modals/web3-modal.vue';
+import Web3 from 'web3';
+
 export default {
   components: {
     iconBack,
@@ -101,7 +109,7 @@ export default {
   data() {
     return {
       isWalletModalVisible: false,
-      walletAddress: localStorage.getItem('walletAddress') || null,
+      walletAddress: localStorage.getItem('walletAddress') || '',
     };
   },
   props: {
@@ -127,6 +135,7 @@ export default {
   methods: {
     handleAccountChanged(newAddress) {
       this.walletAddress = newAddress;
+      this.walletAddress1 = newAddress;
     },
     disconnectAccount() {
       this.walletAddress = '';
@@ -141,8 +150,20 @@ export default {
     onClickOpenSideBar() {
       this.$emit('on-hide-side-bar');
     },
-    connectWallet() {
-      this.isWalletModalVisible = !this.isWalletModalVisible;
+    async connectWallet() {
+      if (window.ethereum) {
+        try {
+          const account = await window.ethereum.request({
+            method: 'eth_accounts',
+          });
+          if (account.length > 0) {
+            this.walletAddress = account[0]
+            this.isWalletModalVisible = false; 
+          } else {
+            this.isWalletModalVisible = !this.isWalletModalVisible;
+          }
+        } catch (error) {}
+      }
     },
     formatAddress(address) {
       if (address) {
@@ -159,4 +180,9 @@ export default {
 <style
   lang="scss"
   scoped
-></style>
+>
+/* .popper-tooltip .is-active {
+  position: absolute !important;
+  top: 21px !important;
+} */
+</style>

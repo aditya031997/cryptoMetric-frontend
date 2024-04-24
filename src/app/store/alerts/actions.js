@@ -10,19 +10,19 @@ export default {
         Authorization: `Bearer ${token}`,
       },
     };
-  
+
     const { isEcho, page, per_page } = data;
     return axios.get(`${configs.API_URL}/alerts/history`, {
       headers: config.headers,
       params: isEcho ? { page: state.current, per_page } : { page, per_page },
     })
-    .then(response => {
-      commit('setHistoryAlerts', response.data.alerts);
-    })
-    .catch(error => {
-      console.error('Error fetching history alerts:', error);
-      throw error;
-    });
+      .then(response => {
+        commit('setHistoryAlerts', response.data.alerts);
+      })
+      .catch(error => {
+        console.error('Error fetching history alerts:', error);
+        throw error;
+      });
   },
   getAlertsUser({ commit }) {
     const token = localStorage.getItem('vue-authenticate.vueauth_token');
@@ -31,7 +31,7 @@ export default {
         Authorization: `Bearer ${token}`,
       },
     };
-  
+
     return axios.get(`${configs.API_URL}/alerts`, config)
       .then(({ data }) => {
         commit('setAlertsUser', data.alerts);
@@ -48,7 +48,7 @@ export default {
         Authorization: `Bearer ${token}`,
       },
     };
-  
+
     return axios.post(`${configs.API_URL}/alerts`, data, config)
       .then(({ data }) => {
         const alertCreated = { ...data.alert, ...coin };
@@ -59,11 +59,24 @@ export default {
         throw error;
       });
   },
-  deleteAlertUser(context, id) {
-    return apiInstance().delete(`/alerts/${id}`).then(() => {
-      context.commit('deleteAlertUser', id);
-    });
+  deleteAlertUser({ commit }, id) {
+    const token = localStorage.getItem('vue-authenticate.vueauth_token');
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    return axios.delete(`${configs.API_URL}/alerts/${id}`, config)
+      .then(() => {
+        commit('deleteAlertUser', id);
+      })
+      .catch(error => {
+        console.error('Error deleting alert:', error);
+        throw error;
+      });
   },
+
   changeStatusAlertUser({ commit }, data) {
     const token = localStorage.getItem('vue-authenticate.vueauth_token');
     const config = {
@@ -71,7 +84,7 @@ export default {
         Authorization: `Bearer ${token}`,
       },
     };
-  
+
     return axios.post(`${configs.API_URL}/alerts/toggle-status`, data, { headers: config.headers })
       .then(() => {
         commit('changeStatusAlertUser', data);
@@ -88,7 +101,7 @@ export default {
         Authorization: `Bearer ${token}`,
       },
     };
-  
+
     return axios.post(`${configs.API_URL}/alerts/toggle-email-status`, data, config)
       .then(() => {
         commit('setStatusAlertEmail', data.status);

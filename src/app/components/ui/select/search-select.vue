@@ -31,10 +31,31 @@
         :show-labels="false"
         :searchable="true"
         track-by="name"
+        :custom-label="customLabel"
+        @input="handleInput"
         @select="handleSelect"
       >
+        <template #selected-option="{ option }">
+          <div class="selected-option">
+            <img
+              v-if="option.slug"
+              :src="getImageCoin(option.slug)"
+              :alt="option.name"
+              class="coin-icon"
+            />
+            <span>{{ option.name }} {{ option.symbol }}</span>
+          </div>
+        </template>
         <template #option="{ option }">
-          <div v-html="customLabel(option)"></div>
+          <div class="option-template">
+            <img
+              v-if="option.slug"
+              :src="getImageCoin(option.slug)"
+              :alt="option.name"
+              class="coin-icon"
+            />
+            <span>{{ option.name }} {{ option.symbol }}</span>
+          </div>
         </template>
       </multiselect>
     </div>
@@ -122,15 +143,22 @@ export default {
       this.onChange(selectedOption.value);
     },
     customLabel(option) {
-      const imageUrl = option.slug ? this.getImageCoin(option.slug) : '';
-      const imageTag = imageUrl
-        ? `<img src="${imageUrl}" alt="${option.name} icon" class="cm-select__icon" />`
-        : '';
-      return `${imageTag} ${option.name} - ${option.symbol}`;
+      return `${option.name} ${option.symbol}`;
     },
   },
-  created() {
-    console.log('Options:', this.options);
-  },
+ 
 };
 </script>
+
+<style>
+.coin-icon {
+  width: 32px; /* Maintain the size of the icon */
+  height: 32px; /* Maintain the size of the icon */
+  margin-right: 10px; /* Adjust the right margin to create space between the icon and the text */
+}
+.selected-option,
+.option-template {
+  display: flex;
+  align-items: center;
+}
+</style>

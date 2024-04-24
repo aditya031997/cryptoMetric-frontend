@@ -21,12 +21,17 @@
           Connect with your web3 wallet to trade instantly, then verify or login
           with your email or social account for full access.
         </p>
-        <button
-          class="modal-button connect-wallet"
-          @click="connectWallet"
+        <div
+          class=""
+          style="width: 100%"
         >
-          Connect Wallet
-        </button>
+          <button
+            class="modal-button connect-wallet"
+            @click="connectWallet"
+          >
+            Connect Wallet
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -35,7 +40,7 @@
   <script>
 import { createWeb3Modal } from '@web3modal/wagmi';
 import { reconnect, http, createConfig } from '@wagmi/core';
-import { mainnet, sepolia } from '@wagmi/core/chains';
+import { mainnet, polygon, bsc, sepolia } from '@wagmi/core/chains';
 import { coinbaseWallet, walletConnect, injected } from '@wagmi/connectors';
 import { watchAccount } from '@wagmi/core';
 
@@ -62,10 +67,12 @@ export default {
         icons: ['https://avatars.githubusercontent.com/u/37784886'],
       };
       const config = createConfig({
-        chains: [mainnet, sepolia],
+        chains: [mainnet, sepolia, bsc, polygon],
         transports: {
           [mainnet.id]: http(),
           [sepolia.id]: http(),
+          [polygon.id]: http(),
+          [bsc.id]: http(),
         },
         connectors: [
           walletConnect({ projectId, metadata, showQrModal: false }),
@@ -84,7 +91,7 @@ export default {
         enableOnramp: true,
       });
       await web3Modal.open();
-      
+
       web3Modal.getWalletInfo();
       const handleAccountChange = (data) => {
         this.walletAddress = data.address;
@@ -113,13 +120,19 @@ export default {
   justify-content: center;
   z-index: 9;
 }
-.close{
+.close {
   cursor: pointer;
-  color:#ffffff;
-  
+  color: #000;
+  font-size: 30px;
+  font-weight: 400;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  top: 15px;
+  right: 15px;
 }
 .modal {
-  width: 30%;
+  width: 35%;
   min-width: 320px;
   background-color: #fff;
   border-radius: 10px;
@@ -127,18 +140,26 @@ export default {
 }
 
 .modal-header {
-  background-color: #4b4b4b; /* A placeholder color, adjust as needed */
-  color: #fff;
+  color: #000;
   padding: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 1px solid transparent;
+  padding: 0;
+  margin-bottom: 15px;
+
+  h2 {
+    font-size: 28px;
+    margin-bottom: 0;
+  }
 }
 
 .modal-description {
   color: #666;
-  text-align: center;
-  padding: 20px 0;
+  font-size: 15px;
+  // text-align: center;
+  // padding: 20px 0;
 }
 
 .modal-body {
@@ -146,18 +167,19 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 0;
 }
 
 .modal-button {
   margin: 10px 0;
   padding: 10px 20px;
   border: none;
-  border-radius: 20px;
+  border-radius: 5px;
   color: #fff;
-  background-color: #6258e6; /* A placeholder color, adjust as needed */
+  background-color: #01b7ff;
+  font-weight: 600;
   cursor: pointer;
-  width: 80%;
-  text-align: center;
+  display: block;
 }
 </style>
   
