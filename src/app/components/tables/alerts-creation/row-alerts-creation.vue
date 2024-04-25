@@ -2,8 +2,9 @@
   <tr class="table__row">
     <td>
       <cm-link
-        :to="getLink"
+        :to="getLink(slug)"
         custom-class="table__row-alert--link"
+        @click="navigateToLink(getLink(slug))"
       >
         <default-image
           class="table__image table__image--alerts"
@@ -31,8 +32,12 @@
     </td>
     <td class="text">
       <p class="m-0 d-flex d-sm-block justify-content-around">
-        <component :is="action === 2 ? 'icon-percent-down' : 'icon-percent-up'" />
-        <span class="ml-1 d-none d-sm-inline">{{ action === 2 ? 'Decrease' : 'Increase' }}</span>
+        <component
+          :is="action === 2 ? 'icon-percent-down' : 'icon-percent-up'"
+        />
+        <span class="ml-1 d-none d-sm-inline">{{
+          action === 2 ? 'Decrease' : 'Increase'
+        }}</span>
         <span></span>
       </p>
     </td>
@@ -57,6 +62,7 @@ import IconPercentUp from '../../icons/icon-percent-up.vue';
 import { simpleFormatPrice } from '../../../utils/helpers/formatter';
 import CmLink from '../../ui/link/cm-link.vue';
 import DefaultImage from '../../default-image.vue';
+import { useRouter } from 'vue-router';
 
 export default {
   components: {
@@ -77,12 +83,35 @@ export default {
     action: { type: Number },
     currency: { type: Number },
   },
+  setup() {
+    const router = useRouter();
+    const getLink = (slug) => {
+      return `/crypto-markets/${slug}`;
+    };
+    const navigateToLink = (link) => {
+      router
+        .push(link)
+        .then(() => {})
+        .catch((error) => {
+          console.error('Navigation error:', error);
+        });
+    };
+
+    return {
+      getLink,
+      navigateToLink,
+    };
+  },
   computed: {
-    getLink() {
-      return `crypto-markets/${this.slug}`;
-    },
+    // getLink() {
+    //   return `crypto-markets/${this.slug}`;
+    // },
     priceValue() {
-      return simpleFormatPrice(this.price, this.currency ? ' BTC' : '$', !this.currency);
+      return simpleFormatPrice(
+        this.price,
+        this.currency ? ' BTC' : '$',
+        !this.currency
+      );
     },
     getCoinImageUrl() {
       return getImageCoin(this.slug);
