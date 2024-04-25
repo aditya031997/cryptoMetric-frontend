@@ -167,13 +167,13 @@ export default {
           icon: 'icon-health',
           active: true,
         },
-        {
-          id: 5,
-          to: '/ico-calendar',
-          name: 'ICO Calendar',
-          icon: 'icon-calendar',
-          active: true,
-        },
+        // {
+        //   id: 5,
+        //   to: '/ico-calendar',
+        //   name: 'ICO Calendar',
+        //   icon: 'icon-calendar',
+        //   active: true,
+        // },
       
         {
           id: 6,

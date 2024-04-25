@@ -1,27 +1,8 @@
 <template>
-  <div
-    class="cm-select"
-    :class="[classWrapper]"
-  >
-    <label
-      v-if="label"
-      class="cm-select__label"
-      >{{ label }}</label
-    >
-    <div
-      class="cm-select__select"
-      :class="{
-        'is-search': true,
-        'is-icons': isIcons,
-        'is-big': isBigSelect,
-        'is-primary': isPrimary,
-        'is-full': isFull,
-      }"
-    >
-      <span
-        v-if="isIcons"
-        class="cm-select__icon"
-      >
+  <div class="cm-select" :class="[classWrapper]">
+    <label v-if="label" class="cm-select__label">{{ label }}</label>
+    <div class="cm-select__select" :class="{'is-search': true, 'is-icons': isIcons, 'is-big': isBigSelect, 'is-primary': isPrimary, 'is-full': isFull,}">
+      <span v-if="isIcons" class="cm-select__icon">
         <slot />
       </span>
       <multiselect
@@ -35,25 +16,15 @@
         @input="handleInput"
         @select="handleSelect"
       >
-        <template #selected-option="{ option }">
-          <div class="selected-option">
-            <img
-              v-if="option.slug"
-              :src="getImageCoin(option.slug)"
-              :alt="option.name"
-              class="coin-icon"
-            />
+        <template #option="{ option }">
+          <div class="option-template">
+            <img v-if="option.slug" :src="getImageCoin(option.slug)" :alt="option.name" class="coin-icon" />
             <span>{{ option.name }} {{ option.symbol }}</span>
           </div>
         </template>
-        <template #option="{ option }">
-          <div class="option-template">
-            <img
-              v-if="option.slug"
-              :src="getImageCoin(option.slug)"
-              :alt="option.name"
-              class="coin-icon"
-            />
+        <template #singleLabel="{ option }">
+          <div class="selected-option">
+            <img v-if="option.slug" :src="getImageCoin(option.slug)" :alt="option.name" class="coin-icon" />
             <span>{{ option.name }} {{ option.symbol }}</span>
           </div>
         </template>
@@ -61,6 +32,7 @@
     </div>
   </div>
 </template>
+
 
 <script>
 import Multiselect from 'vue-multiselect';
@@ -141,20 +113,26 @@ export default {
     handleSelect(selectedOption) {
       this.selected = selectedOption;
       this.onChange(selectedOption.value);
+      this.$nextTick(() => {
+      });
     },
     customLabel(option) {
       return `${option.name} ${option.symbol}`;
     },
   },
- 
+
+  watch: {
+    selected(newValue) {
+    },
+  },
 };
 </script>
 
 <style>
 .coin-icon {
-  width: 32px; /* Maintain the size of the icon */
-  height: 32px; /* Maintain the size of the icon */
-  margin-right: 10px; /* Adjust the right margin to create space between the icon and the text */
+  width: 32px;
+  height: 32px;
+  margin-right: 10px;
 }
 .selected-option,
 .option-template {

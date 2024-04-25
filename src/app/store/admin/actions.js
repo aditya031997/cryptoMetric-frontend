@@ -51,7 +51,6 @@ export default {
     });
   },
   postInviteUser(context, email) {
-    // return console.log(email,"email")
     const token = localStorage.getItem('vue-authenticate.vueauth_token');
     const config = {
       headers: {

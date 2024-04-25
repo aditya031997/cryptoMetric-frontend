@@ -214,7 +214,6 @@ export default {
       this.$store
         .dispatch('getCoinsNames')
         .then((response) => {
-          console.log('API Response:', response);
         })
         .catch((error) => {
           console.error('API Error:', error);
