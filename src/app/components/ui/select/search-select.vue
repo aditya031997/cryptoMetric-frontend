@@ -1,75 +1,31 @@
 <template>
-  <div
-    class="cm-select"
-    :class="[classWrapper]"
-  >
-    <label
-      v-if="label"
-      class="cm-select__label"
-      >{{ label }}</label
-    >
-    <div
-      class="cm-select__select"
-      :class="{
-        'is-search': true,
-        'is-icons': isIcons,
-        'is-big': isBigSelect,
-        'is-primary': isPrimary,
-        'is-full': isFull,
-      }"
-    >
-      <span
-        v-if="isIcons"
-        class="cm-select__icon"
-      >
+  <div class="cm-select" :class="[classWrapper]">
+    <label v-if="label" class="cm-select__label">{{ label }}</label>
+    <div class="cm-select__select" :class="{'is-search': true, 'is-icons': isIcons, 'is-big': isBigSelect, 'is-primary': isPrimary, 'is-full': isFull,}">
+      <span v-if="isIcons" class="cm-select__icon">
         <slot />
       </span>
       <multiselect
-        :value="value"
-        @input="handlerChangeSelect"
+        v-model="selected"
+        :options="formattedOptions"
         :placeholder="placeholder"
-        :label="'name'"
         :show-labels="false"
-        :options="options"
         :searchable="true"
+        track-by="name"
+        :custom-label="customLabel"
+        @input="handleInput"
+        @select="handleSelect"
       >
-        <template
-          slot="singleLabel"
-          slot-scope="props"
-        >
-          <div
-            class="d-flex align-items-center"
-            :key="props.option.slug"
-          >
-            <default-image
-              class="cm-select__icon"
-              v-if="props.option.slug"
-              :src="getImageCoin(props.option.slug)"
-              :alt="`${props.option.name} icon`"
-            />
-            <p class="m-0 ml-2">
-              {{ props.option.name }}<span class="ml-1">{{ props.option.symbol }}</span>
-            </p>
+        <template #option="{ option }">
+          <div class="option-template">
+            <img v-if="option.slug" :src="getImageCoin(option.slug)" :alt="option.name" class="coin-icon" />
+            <span>{{ option.name }} {{ option.symbol }}</span>
           </div>
         </template>
-        <template
-          slot="option"
-          slot-scope="props"
-        >
-          <div
-            class="cm-select__option"
-            :key="props.option.slug"
-          >
-            <span class="cm-select__option-icon"><icon-selected /></span>
-            <default-image
-              class="cm-select__icon"
-              v-if="props.option.slug"
-              :src="getImageCoin(props.option.slug)"
-              :alt="`${props.option.name} icon`"
-            />
-            <p class="m-0 ml-2">
-              {{ props.option.name }}<span class="ml-1">{{ props.option.symbol }}</span>
-            </p>
+        <template #singleLabel="{ option }">
+          <div class="selected-option">
+            <img v-if="option.slug" :src="getImageCoin(option.slug)" :alt="option.name" class="coin-icon" />
+            <span>{{ option.name }} {{ option.symbol }}</span>
           </div>
         </template>
       </multiselect>
@@ -77,11 +33,13 @@
   </div>
 </template>
 
+
 <script>
 import Multiselect from 'vue-multiselect';
 import IconSelected from '../../icons/icon-selected.vue';
 import { getImageCoin } from '@/utils/helpers/formatter-images';
 import DefaultImage from '../../default-image.vue';
+
 export default {
   name: 'cm-select',
   components: {
@@ -90,22 +48,17 @@ export default {
     DefaultImage,
   },
   props: {
-    label: { type: String, default: '' },
-    classWrapper: { type: String },
-    isSearch: {
-      type: Boolean,
-      default: false,
+    label: {
+      type: String,
+      default: '',
     },
-    defaultValue: {
-      type: [String, Number, Object],
-      default: null,
+    classWrapper: {
+      type: String,
     },
-
     isFull: {
       type: Boolean,
       default: false,
     },
-    index: { type: Number },
     placeholder: {
       type: String,
       default: 'Select',
@@ -124,44 +77,66 @@ export default {
     },
     options: {
       type: Array,
+      required: true,
     },
     onChange: {
       type: Function,
-    },
-    resetOption: {
-      type: Function,
-      default: null,
+      required: true,
     },
     value: {
-      type: [String, Number, Object],
+      type: Object,
       default: null,
     },
   },
-  data: () => ({
-    default: null,
-  }),
-  methods: {
-    resetValue() {
-      if (this.isFilter) {
-        this.onChange(this.defaultValue, this.index);
-      }
+  data() {
+    return {
+      selected: this.value,
+    };
+  },
+  computed: {
+    formattedOptions() {
+      return this.options.map((option) => ({
+        name: option.name,
+        symbol: option.symbol,
+        slug: option.slug,
+        value: option,
+      }));
     },
+  },
+  methods: {
     getImageCoin(slug) {
       if (slug) {
         return getImageCoin(slug);
       }
+      return null;
     },
-    handlerChangeSelect(value) {
-      this.onChange(value, this.index);
+    handleSelect(selectedOption) {
+      this.selected = selectedOption;
+      this.onChange(selectedOption.value);
+      this.$nextTick(() => {
+      });
+    },
+    customLabel(option) {
+      return `${option.name} ${option.symbol}`;
     },
   },
-  mounted() {
-    this.default = this.value;
+
+  watch: {
+    selected(newValue) {
+    },
   },
 };
 </script>
 
-<style
-  lang="scss"
-  scoped
-></style>
+<style>
+.coin-icon {
+  width: 32px;
+  height: 32px;
+  margin-right: 10px;
+}
+.selected-option,
+.option-template {
+  display: flex;
+  align-items: center;
+}
+</style>

@@ -6,90 +6,75 @@
     <div class="auth-form__wrapper">
       <validation-observer ref="validator">
         <form @submit.prevent="onSubmit">
-          <!-- <validation-provider
-            name="first-name"
-            rules="required"
-            v-slot="{ errors }"
-          > -->
           <cm-input
             class-wrapper="mt-3"
             id="input-first-name"
             label="First Name"
             v-model="firstNameValue"
+            @input="firstNameValidation"
+            :error="firstNameError"
           />
           <ErrorMessage name="first-name" />
-          <!-- </validation-provider>
-          <validation-provider
-            name="last-name"
-            rules="required"
-            v-slot="{ errors }"
-          > -->
+
           <cm-input
             class-wrapper="mt-3"
             id="input-last-name"
             label="Last Name"
             v-model="lastNameValue"
+            @input="lastNameValidation"
+            :error="lastNameError"
           />
           <ErrorMessage name="last-name" />
-          <!-- </validation-provider>
-          <validation-provider
-            name="email"
-            rules="required|email"
-            v-slot="{ errors }"
-          > -->
+
           <cm-input
             class-wrapper="mt-3"
             id="input-email"
             label="Email"
             v-model="emailValue"
+            @input="emailValidation"
+            @change="emailValidation"
+            :error="emailError"
           />
           <ErrorMessage name="email" />
-          <!-- </validation-provider>
-          <validation-provider
-            name="password"
-            rules="required|min:8"
-            v-slot="{ errors }"
-            vid="password"
-          > -->
+
           <cm-input
             class-wrapper="mt-3"
             id="input-password"
             label="Password"
             type="password"
             v-model="passwordValue"
+            @input="passwordValidation"
+            :error="passwordError"
           />
           <ErrorMessage name="password" />
-          <!-- </validation-provider>
-          <validation-provider
-            name="password"
-            vid="password_confirmation"
-            rules="required|confirmed:password"
-            v-slot="{ errors }"
-          > -->
+
           <cm-input
-            classWrapper="mt-3"
+            class-wrapper="mt-3"
             id="input-confirm-password"
             label="Confirm Password"
             type="password"
             v-model="passwordConfirmValue"
+            @input="passwordConfirmValidation"
+            :error="passwordConfirmError"
           />
-          <ErrorMessage name="password" />
+          <ErrorMessage name="passwordConfirm" />
 
-          <!-- </validation-provider> -->
           <cm-button
             custom-class="mt-4"
-            :disabled="invalid || isLoad"
+            :disabled="isValid"
             is-block
             type="submit"
           >
             Submit
           </cm-button>
+
           <p
             v-if="errorMessage"
             class="auth-form__response-message text--caption text text-danger"
           >
             {{ errorMessage }}
           </p>
+
           <div class="mt-3">
             <p class="auth-form__link text--caption text">
               Already have an account?<cm-link :to="'/login'">Sign In</cm-link>
@@ -105,7 +90,6 @@
 import cmInput from '../ui/input/cm-input.vue';
 import CmButton from '../ui/button/cm-button.vue';
 import { ValidationObserver, ErrorMessage } from 'vee-validate';
-// import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
 import CmLogo from '../cm-logo.vue';
 import CmLink from '../ui/link/cm-link.vue';
 import accessToken from '../../utils/helpers/access-token';
@@ -115,7 +99,6 @@ export default {
   components: {
     cmInput,
     CmButton,
-    // ValidationProvider,
     ValidationObserver,
     ErrorMessage,
     CmLogo,
@@ -126,40 +109,113 @@ export default {
     firstNameValue: '',
     lastNameValue: '',
     emailValue: '',
-    errorMessage: '',
     passwordValue: '',
     passwordConfirmValue: '',
+    errorMessage: '',
+    emailError: '',
+    passwordError: '',
+    firstNameError: '',
+    lastNameError: '',
+    passwordConfirmError: '',
+    isValid: true,
   }),
-  watch: {
-    firstNameValue(value) {
-      this.errorMessage = '';
-    },
-    lastNameValue(value) {
-      this.errorMessage = '';
-    },
-    emailValue(value) {
-      this.errorMessage = '';
-    },
-    passwordValue(value) {
-      this.errorMessage = '';
-    },
-    passwordConfirmValue(value) {
-      this.errorMessage = '';
-    },
-    isLoad() {
-      this.$root.$emit('set-auth-loading', this.isLoad);
-    },
-  },
   methods: {
-    onSubmit() {
-      if (validatePassword(this.passwordValue)) {
-        // this.$refs.validator.setErrors({
-        //   password: [
-        //     'Password must have digits, uppercase, lowercase and non-alphanumeric symbols',
-        //   ],
-        // });
-        this.errorMessage = "Password must have digits, uppercase, lowercase and non-alphanumeric symbols"
+    emailValidation(event) {
+      if (event !== '') {
+        this.emailValue = event;
+      }
+      if (event === '') {
+        this.emailError = 'The email field is required';
+        return;
+      }
+      const regex =
+        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}[a-zA-Z0-9]*$/;
+      if (!regex.test(event)) {
+        this.emailError = 'The email field must be a valid email';
       } else {
+        this.emailError = '';
+      }
+      this.validation();
+    },
+    passwordValidation(event) {
+      if (event !== '') {
+        this.passwordValue = event;
+      }
+      if (event === '') {
+        this.passwordError = 'The password field is required';
+        return;
+      }
+      this.passwordError = '';
+      this.validation();
+    },
+    firstNameValidation(event) {
+      if (event !== '') {
+        this.firstNameValue = event;
+      }
+      if (event === '') {
+        this.firstNameError = 'The first name field is required';
+        return;
+      }
+      this.firstNameError = '';
+      this.validation();
+    },
+    lastNameValidation(event) {
+      if (event !== '') {
+        this.lastNameValue = event;
+      }
+      if (event === '') {
+        this.lastNameError = 'The last name field is required';
+        return;
+      }
+      this.lastNameError = '';
+      this.validation();
+    },
+    passwordConfirmValidation(event) {
+      if (event !== '') {
+        this.passwordConfirmValue = event;
+      }
+      if (event === '') {
+        this.passwordConfirmError = 'The password field is required';
+        return;
+      }
+      if (event !== this.passwordValue) {
+        this.passwordConfirmError = 'The passwords do not match';
+      } else {
+        this.passwordConfirmError = '';
+      }
+      this.validation();
+    },
+    validation() {
+      if (
+        !this.passwordError &&
+        !this.emailError &&
+        !this.lastNameError &&
+        !this.firstNameError &&
+        !this.passwordConfirmError &&
+        this.passwordValue &&
+        this.emailValue &&
+        this.firstNameValue &&
+        this.lastNameValue &&
+        this.passwordConfirmValue
+      ) {
+        this.isValid = false;
+      } else {
+        this.isValid = true;
+      }
+    },
+    onSubmit() {
+      if (
+        !this.firstNameError &&
+        !this.lastNameError &&
+        !this.emailError &&
+        !this.passwordError &&
+        !this.passwordConfirmError &&
+        this.firstNameValue &&
+        this.lastNameValue &&
+        this.emailValue &&
+        this.passwordValue &&
+        this.passwordConfirmValue
+      ) {
         const data = {
           name: `${this.firstNameValue} ${this.lastNameValue}`,
           email: this.emailValue,
@@ -190,7 +246,4 @@ export default {
 };
 </script>
 
-<style
-  lang="scss"
-  scoped
-></style>
+<style lang="scss" scoped></style>

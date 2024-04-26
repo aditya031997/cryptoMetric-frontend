@@ -2,8 +2,8 @@
   <button
     class="col-11 widget-watchlist__card"
     :class="{ 'is-dnd': isDnd, 'is-hover': !isDnd }"
-    @click="onClickCoin"
-  >
+    :to="getLink(slug)"
+    @click="navigateToLink(getLink(slug))"  >
     <coin-stats
       :id="id"
       :name="coinName"
@@ -24,6 +24,7 @@
 <script>
 import CoinStats from '@/components/coin/coin-stats.vue';
 import GoogleTrendsCard from './google-trends-card.vue';
+import { useRouter } from 'vue-router';
 
 export default {
   components: {
@@ -65,18 +66,41 @@ export default {
       const favorites = this.$store.state.favorites.coins;
       const coinActive = favorites.find(
         (favorite) =>
-          favorite.coin_id === this.coin.id || favorite.coin?.coin_id === this.coin?.id || favorite.id === this.coin?.id
+          favorite.coin_id === this.coin.id ||
+          favorite.coin?.coin_id === this.coin?.id ||
+          favorite.id === this.coin?.id
       );
       return !!coinActive;
     },
   },
-  methods: {
-    onClickCoin() {
-      if (!this.isDnd) {
-        this.$router.push(`crypto-markets/${this.slug}`);
-      }
-    },
+  setup() {
+    const router = useRouter();
+
+    const getLink = (slug) => {
+      return `/crypto-markets/${slug}`
+    }
+    const navigateToLink = (link) => {
+      router
+        .push(link)
+        .then(() => {
+        })
+        .catch((error) => {
+          console.error('Navigation error:', error);
+        });
+    };
+
+    return {
+      getLink,
+      navigateToLink,
+    };
   },
+  // methods: {
+  //   onClickCoin() {
+  //     if (!this.isDnd) {
+  //       this.$router.push(`crypto-markets/${this.slug}`);
+  //     }
+  //   },
+  // },
 };
 </script>
 

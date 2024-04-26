@@ -1,20 +1,42 @@
 import { apiInstance } from "@/utils/helpers/api-client";
+import axios from 'axios';
+import accessToken from '../../utils/helpers/access-token'
+import configs from '../../../configs/configs';
 
 export default {
-  getOrderList(context) {
-    return apiInstance()?.get('/user/widgets').then(({ widgets }) => {
-      context.commit('setWidgetsOrder', widgets);
-    });
+  getOrderList({ commit }) {
+    const token = localStorage.getItem('vue-authenticate.vueauth_token');
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+  
+    return axios.get(`${configs.API_URL}/user/widgets`, config)
+      .then(({ data }) => {
+        commit('setWidgetsOrder', data.widgets);
+      })
+      .catch(error => {
+        console.error('Error fetching order list:', error);
+        throw error;
+      });
   },
-  getWidgets(context) {
-    return apiInstance()?.get('/widgets').then(response => {
-      const { widgets } = response;
-
-      context.commit('setWidgetsList', widgets);
-    }).catch(error => {
-      // It's good practice to handle potential errors as well
-      console.error('Failed to fetch widgets:', error);
-    });
+  getWidgets({ commit }) {
+    const token = localStorage.getItem('vue-authenticate.vueauth_token');
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+  
+    return axios.get(`${configs.API_URL}/widgets`, config)
+      .then(({ data }) => {
+        commit('setWidgetsList', data.widgets);
+      })
+      .catch(error => {
+        console.error('Failed to fetch widgets:', error);
+        throw error;
+      });
   },
 
   changePositionOrderWidgets(context, data) {

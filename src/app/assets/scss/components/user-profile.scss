@@ -10,6 +10,9 @@
   @media (max-width: breakpoint-max('xs')) {
     margin-left: 5px;
   }
+  .username{
+    white-space: nowrap;
+  }
 }
 .user-profile__image {
   width: 48px;

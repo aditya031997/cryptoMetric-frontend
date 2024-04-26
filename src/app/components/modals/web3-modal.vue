@@ -2,7 +2,7 @@
   <div
     v-if="isVisible"
     class="modal-overlay"
-    @click.self="hideModal"
+    @click="hideModal"
   >
     <div
       class="modal"
@@ -21,20 +21,17 @@
           Connect with your web3 wallet to trade instantly, then verify or login
           with your email or social account for full access.
         </p>
-        <button
-          class="modal-button connect-wallet"
-          @click="connectWallet"
+        <div
+          class=""
+          style="width: 100%"
         >
-          Connect Wallet
-        </button>
-        <!-- <div class="divider">OR LOGIN</div>
-            <input type="email" placeholder="Enter your email..." class="email-input"/>
-            <button class="modal-button email-login">Email Login</button>
-            <div class="social-logins">
-              <button class="social-button google">G</button>
-              <button class="social-button twitter">T</button>
-              <button class="social-button discord">D</button>
-            </div> -->
+          <button
+            class="modal-button connect-wallet"
+            @click="connectWallet"
+          >
+            Connect Wallet
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -43,12 +40,19 @@
   <script>
 import { createWeb3Modal } from '@web3modal/wagmi';
 import { reconnect, http, createConfig } from '@wagmi/core';
-import { mainnet, sepolia } from '@wagmi/core/chains';
+import { mainnet, polygon, bsc, sepolia } from '@wagmi/core/chains';
 import { coinbaseWallet, walletConnect, injected } from '@wagmi/connectors';
+import { watchAccount } from '@wagmi/core';
+
 export default {
   name: 'WalletModal',
   props: {
     isVisible: Boolean,
+  },
+  data() {
+    return {
+      walletAddress: null,
+    };
   },
   methods: {
     hideModal() {
@@ -63,10 +67,12 @@ export default {
         icons: ['https://avatars.githubusercontent.com/u/37784886'],
       };
       const config = createConfig({
-        chains: [mainnet, sepolia],
+        chains: [mainnet, sepolia, bsc, polygon],
         transports: {
           [mainnet.id]: http(),
           [sepolia.id]: http(),
+          [polygon.id]: http(),
+          [bsc.id]: http(),
         },
         connectors: [
           walletConnect({ projectId, metadata, showQrModal: false }),
@@ -84,19 +90,19 @@ export default {
         enableAnalytics: true,
         enableOnramp: true,
       });
-      const provider = await web3Modal.open();
-      const address = web3Modal.getWalletInfo()
+      await web3Modal.open();
 
-      // if (window.ethereum) {
-      //   try {
-      //     const accounts = await window.ethereum.request({
-      //       method: 'eth_requestAccounts',
-      //     });
-      //     // console.log('Connected account:', accounts[0]);
-      //   } catch (error) {
-      //     console.error('Error connecting to wallet:', error);
-      //   }
-      // }
+      web3Modal.getWalletInfo();
+      const handleAccountChange = (data) => {
+        this.walletAddress = data.address;
+        localStorage.setItem('walletAddress', data.address);
+        this.$emit('account-changed', data.address);
+        this.hideModal();
+      };
+
+      watchAccount(config, {
+        onChange: handleAccountChange.bind(this),
+      });
     },
   },
 };
@@ -112,10 +118,21 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 9;
 }
-
+.close {
+  cursor: pointer;
+  color: #000;
+  font-size: 30px;
+  font-weight: 400;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  top: 15px;
+  right: 15px;
+}
 .modal {
-  width: 30%;
+  width: 35%;
   min-width: 320px;
   background-color: #fff;
   border-radius: 10px;
@@ -123,18 +140,26 @@ export default {
 }
 
 .modal-header {
-  background-color: #4b4b4b; /* A placeholder color, adjust as needed */
-  color: #fff;
+  color: #000;
   padding: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 1px solid transparent;
+  padding: 0;
+  margin-bottom: 15px;
+
+  h2 {
+    font-size: 28px;
+    margin-bottom: 0;
+  }
 }
 
 .modal-description {
   color: #666;
-  text-align: center;
-  padding: 20px 0;
+  font-size: 15px;
+  // text-align: center;
+  // padding: 20px 0;
 }
 
 .modal-body {
@@ -142,18 +167,19 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 0;
 }
 
 .modal-button {
   margin: 10px 0;
   padding: 10px 20px;
   border: none;
-  border-radius: 20px;
+  border-radius: 5px;
   color: #fff;
-  background-color: #6258e6; /* A placeholder color, adjust as needed */
+  background-color: #01b7ff;
+  font-weight: 600;
   cursor: pointer;
-  width: 80%;
-  text-align: center;
+  display: block;
 }
 </style>
   

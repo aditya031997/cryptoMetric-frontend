@@ -41,12 +41,12 @@ export default [
     component: DashboardCoin,
     meta: { requiresAuth: true, headerName: 'Crypto Markets', isButtonBack: true },
   },
-  {
-    path: '/ico-calendar',
-    name: 'ico-calendar',
-    component: DashboardIco,
-    meta: { requiresAuth: true, headerName: 'ICO Calendar' },
-  },
+  // {
+  //   path: '/ico-calendar',
+  //   name: 'ico-calendar',
+  //   component: DashboardIco,
+  //   meta: { requiresAuth: true, headerName: 'ICO Calendar' },
+  // },
   {
     path: '/top-token-by-market-cap',
     name: 'top-token-by-market-cap',

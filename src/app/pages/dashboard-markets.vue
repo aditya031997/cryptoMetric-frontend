@@ -43,6 +43,7 @@
         <cm-select
           v-for="(filter, index) in filters"
           :key="filter.id"
+          ref="cmSelect"
           :index="index"
           is-filter
           :default-value="{ name: 'All', value: null }"
@@ -153,7 +154,11 @@ export default {
         isActive: false,
         value: {
           price: { name: 'Under $5', value: { f: 5, o: '<' }, slug: '<5' },
-          percent_change_1h: { name: 'Less than 0%', value: { f: 0, o: '<' }, slug: '<0' },
+          percent_change_1h: {
+            name: 'Less than 0%',
+            value: { f: 0, o: '<' },
+            slug: '<0',
+          },
           volume_24h: { name: '$100К +', value: { f: 100000 }, slug: '>100k' },
         },
       },
@@ -163,7 +168,11 @@ export default {
         isActive: false,
         value: {
           price: { name: '$10+', value: { f: 10, o: '>' }, slug: '>10' },
-          percent_change_24h: { name: 'Over 10%', value: { f: 10, o: '>' }, slug: '>10' },
+          percent_change_24h: {
+            name: 'Over 10%',
+            value: { f: 10, o: '>' },
+            slug: '>10',
+          },
           volume_24h: { name: '$10М +', value: { f: 10000000 }, slug: '>10m' },
         },
       },
@@ -196,7 +205,9 @@ export default {
       });
     },
     getPagesOptions() {
-      const totalPage = Math.ceil(this.$store.state.markets.allCoins / this.rows);
+      const totalPage = Math.ceil(
+        this.$store.state.markets.allCoins / this.rows
+      );
       if (totalPage < this.currentPage) {
         return pagination(totalPage, totalPage);
       }
@@ -209,10 +220,16 @@ export default {
   methods: {
     async fetchCategories() {
       try {
-          this.initializeFilters();
+        this.initializeFilters();
 
-        const response = await axios.get(`${configs.LOCAL_API_URL}/api/coins/category`);
-        if (response.data && response.data.data && Array.isArray(response.data.data)) {
+        const response = await axios.get(
+          `${configs.LOCAL_API_URL}/api/coins/category`
+        );
+        if (
+          response.data &&
+          response.data.data &&
+          Array.isArray(response.data.data)
+        ) {
           this.categories = response.data.data.map((category) => ({
             name: category.name,
             value: category.categoryId,
@@ -234,11 +251,13 @@ export default {
           options: [
             { name: 'All', value: null },
             ...(this.categories && Array.isArray(this.categories)
-              ? this.categories.map((category) => ({
-                  name: category.name,
-                  value: category.value, // Assuming category value is categoryId
-                  slug: category.value.toString(), // Convert categoryId to string
-                }))
+              ? this.categories.map((category) => {
+                  return {
+                    name: category.name,
+                    value: category.value,
+                    slug: category.value.toString(),
+                  };
+                })
               : []),
           ],
           value: { name: 'All', value: null },
@@ -252,9 +271,21 @@ export default {
             { name: 'Under $1', value: { f: 1, o: '<' }, slug: '1' },
             { name: 'Under $5', value: { f: 5, o: '<' }, slug: '<5' },
             { name: '$1-$5', value: { f: 1, s: 5, o: 'between' }, slug: '1-5' },
-            { name: '$5-$10', value: { f: 5, s: 10, o: 'between' }, slug: '5-10' },
-            { name: '$10-$15', value: { f: 10, s: 15, o: 'between' }, slug: '10-15' },
-            { name: '$15-$50', value: { f: 15, s: 50, o: 'between' }, slug: '15-20' },
+            {
+              name: '$5-$10',
+              value: { f: 5, s: 10, o: 'between' },
+              slug: '5-10',
+            },
+            {
+              name: '$10-$15',
+              value: { f: 10, s: 15, o: 'between' },
+              slug: '10-15',
+            },
+            {
+              name: '$15-$50',
+              value: { f: 15, s: 50, o: 'between' },
+              slug: '15-20',
+            },
             { name: '$10+', value: { f: 10, o: '>' }, slug: '>10' },
             { name: '$100+', value: { f: 100, o: '>' }, slug: '>100' },
           ],
@@ -281,11 +312,31 @@ export default {
           options: [
             { name: 'All', value: null },
             { name: 'Over $10k', value: { f: 10000, o: '>' }, slug: '>10k' },
-            { name: 'Under $10М', value: { f: 10000000, o: '<' }, slug: '>10m' },
-            { name: '$10M-$100M', value: { f: 10000000, s: 1000000000, o: 'between' }, slug: '10m-100m' },
-            { name: 'Over $100M', value: { f: 1000000000, o: '>' }, slug: '>100m' },
-            { name: 'Over $500M', value: { f: 5000000000, o: '>' }, slug: '>500m' },
-            { name: 'Over $1B', value: { f: 10000000000, o: '>' }, slug: '>1b' },
+            {
+              name: 'Under $10М',
+              value: { f: 10000000, o: '<' },
+              slug: '>10m',
+            },
+            {
+              name: '$10M-$100M',
+              value: { f: 10000000, s: 1000000000, o: 'between' },
+              slug: '10m-100m',
+            },
+            {
+              name: 'Over $100M',
+              value: { f: 1000000000, o: '>' },
+              slug: '>100m',
+            },
+            {
+              name: 'Over $500M',
+              value: { f: 5000000000, o: '>' },
+              slug: '>500m',
+            },
+            {
+              name: 'Over $1B',
+              value: { f: 10000000000, o: '>' },
+              slug: '>1b',
+            },
           ],
           value: { name: 'All', value: null },
         },
@@ -296,9 +347,21 @@ export default {
           options: [
             { name: 'All', value: null },
             { name: 'Less than 0%', value: { f: 0, o: '<' }, slug: '<0' },
-            { name: '1% - 5%', value: { f: 1, s: 5, o: 'between' }, slug: '1-5' },
-            { name: '5% - 10%', value: { f: 5, s: 10, o: 'between' }, slug: '5-10' },
-            { name: '1% - 10%', value: { f: 1, s: 10, o: 'between' }, slug: '1-10' },
+            {
+              name: '1% - 5%',
+              value: { f: 1, s: 5, o: 'between' },
+              slug: '1-5',
+            },
+            {
+              name: '5% - 10%',
+              value: { f: 5, s: 10, o: 'between' },
+              slug: '5-10',
+            },
+            {
+              name: '1% - 10%',
+              value: { f: 1, s: 10, o: 'between' },
+              slug: '1-10',
+            },
             { name: 'Over 10%', value: { f: 10, o: '>' }, slug: '>10' },
             { name: 'Over 20%', value: { f: 20, o: '>' }, slug: '>20' },
             { name: 'Over 50%', value: { f: 50, o: '>' }, slug: '>50' },
@@ -314,9 +377,21 @@ export default {
           options: [
             { name: 'All', value: null },
             { name: 'Less than 0%', value: { f: 0, o: '<' }, slug: '<0' },
-            { name: '1% - 5%', value: { f: 1, s: 5, o: 'between' }, slug: '1-5' },
-            { name: '5% - 10%', value: { f: 5, s: 10, o: 'between' }, slug: '5-10' },
-            { name: '1% - 10%', value: { f: 1, s: 10, o: 'between' }, slug: '1-10' },
+            {
+              name: '1% - 5%',
+              value: { f: 1, s: 5, o: 'between' },
+              slug: '1-5',
+            },
+            {
+              name: '5% - 10%',
+              value: { f: 5, s: 10, o: 'between' },
+              slug: '5-10',
+            },
+            {
+              name: '1% - 10%',
+              value: { f: 1, s: 10, o: 'between' },
+              slug: '1-10',
+            },
             { name: 'Over 10%', value: { f: 10, o: '>' }, slug: '>10' },
             { name: 'Over 20%', value: { f: 20, o: '>' }, slug: '>20' },
             { name: 'Over 50%', value: { f: 50, o: '>' }, slug: '>50' },
@@ -347,11 +422,31 @@ export default {
             { name: 'All', value: null },
             { name: 'Under $10k', value: { f: 10000, o: '<' }, slug: '<10k' },
             { name: 'Over $10k', value: { f: 10000, o: '>' }, slug: '>10k' },
-            { name: 'Under $10М', value: { f: 10000000, o: '<' }, slug: '>10m' },
-            { name: '$10M-$100M', value: { f: 10000000, s: 1000000000, o: 'between' }, slug: '10m-100m' },
-            { name: 'Over $100M', value: { f: 1000000000, o: '>' }, slug: '>100m' },
-            { name: 'Over $500M', value: { f: 5000000000, o: '>' }, slug: '>500m' },
-            { name: 'Over $1B', value: { f: 10000000000, o: '>' }, slug: '>1b' },
+            {
+              name: 'Under $10М',
+              value: { f: 10000000, o: '<' },
+              slug: '>10m',
+            },
+            {
+              name: '$10M-$100M',
+              value: { f: 10000000, s: 1000000000, o: 'between' },
+              slug: '10m-100m',
+            },
+            {
+              name: 'Over $100M',
+              value: { f: 1000000000, o: '>' },
+              slug: '>100m',
+            },
+            {
+              name: 'Over $500M',
+              value: { f: 5000000000, o: '>' },
+              slug: '>500m',
+            },
+            {
+              name: 'Over $1B',
+              value: { f: 10000000000, o: '>' },
+              slug: '>1b',
+            },
           ],
           value: { name: 'All', value: null },
         },
@@ -374,12 +469,16 @@ export default {
         this.rows = this.rowsOptions[0];
       }
       this.filterApi.length = this.rows;
-      const totalPages = Math.ceil(this.$store.state.markets.allCoins / this.rows);
+      const totalPages = Math.ceil(
+        this.$store.state.markets.allCoins / this.rows
+      );
       this.filterApi.start = 0;
       this.changePage(1, false);
 
       if (Number(this.$route.query.row) !== this.rows) {
-        this.$router.replace({ query: { ...this.$route.query, rows: this.rows } });
+        this.$router.replace({
+          query: { ...this.$route.query, rows: this.rows },
+        });
       }
       this.getCoins();
     },
@@ -387,7 +486,9 @@ export default {
       if (page !== this.currentPage) {
         this.currentPage = page;
         this.filterApi.start = this.rows * (this.currentPage - 1);
-        this.$router.replace({ query: { ...this.$route.query, page: this.currentPage } });
+        this.$router.replace({
+          query: { ...this.$route.query, page: this.currentPage },
+        });
         if (isLoad) {
           this.getCoins();
         }
@@ -395,7 +496,9 @@ export default {
     },
     onChangeOrder(value) {
       this.order = value;
-      this.$router.replace({ query: { ...this.$route.query, order: `${value.column}-${value.dir}` } });
+      this.$router.replace({
+        query: { ...this.$route.query, order: `${value.column}-${value.dir}` },
+      });
       this.filterApi.order = value;
       this.getCoins();
     },
@@ -403,9 +506,13 @@ export default {
       this.search = value.trim();
       this.filterApi.search = value.trim();
       if (value.trim()) {
-        this.$router.replace({ query: { ...this.$route.query, search: this.filterApi.search } });
+        this.$router.replace({
+          query: { ...this.$route.query, search: this.filterApi.search },
+        });
       } else {
-        this.$router.replace({ query: { ...this.$route.query, search: undefined } });
+        this.$router.replace({
+          query: { ...this.$route.query, search: undefined },
+        });
       }
       this.changePage(1, false);
       this.getSearchDebounced();
@@ -424,31 +531,45 @@ export default {
       this.filterApi.filters = {};
       this.filters.map((filter) => {
         filter.value = { name: 'All', value: null };
-        if (this.presets[index].value !== null && this.presets[index].value[filter.filterName]) {
+        if (
+          this.presets[index].value !== null &&
+          this.presets[index].value[filter.filterName]
+        ) {
           filter.value = this.presets[index].value[filter.filterName];
           this.filterApi.filters[filter.filterName] = filter.value.value;
           query[`${filter.filterName}`] = filter.value.slug;
         }
       });
-      this.$router.replace({ query: { ...this.$route.query, ...query } }).catch((error) => {
-        if (error.name != 'NavigationDuplicated') {
-          throw error;
-        }
-      });
+      this.$router
+        .replace({ query: { ...this.$route.query, ...query } })
+        .catch((error) => {
+          if (error.name != 'NavigationDuplicated') {
+            throw error;
+          }
+        });
       this.changePage(1, false);
-
       this.getCoins();
+      this.search = '';
+      this.filterApi.search = '';
     },
     changeFilterValue(data, index) {
       this.filters[index].value = data;
       if (data.value) {
         this.filterApi.filters[this.filters[index].filterName] = data.value;
         this.$router.replace({
-          query: { ...this.$route.query, [`${this.filters[index].filterName}`]: data.slug },
+          query: {
+            ...this.$route.query,
+            [`${this.filters[index].filterName}`]: data.slug,
+          },
         });
       } else {
         delete this.filterApi.filters[this.filters[index].filterName];
-        this.$router.replace({ query: { ...this.$route.query, [`${this.filters[index].filterName}`]: undefined } });
+        this.$router.replace({
+          query: {
+            ...this.$route.query,
+            [`${this.filters[index].filterName}`]: undefined,
+          },
+        });
       }
       this.presets.map((preset) => {
         preset.isActive = false;
@@ -458,39 +579,36 @@ export default {
       this.getCoins();
     },
     clearAllFilters() {
-      this.filters.map((filter) => {
-        filter.value = { name: 'All', value: null };
-      });
-      this.presets.map((preset) => {
-        preset.isActive = false;
-      });
-      this.presets[0].isActive = true;
-      this.filters.map((filter) => {
-        this.$router
-          .replace({ query: { ...this.$route.query, [`${filter.filterName}`]: undefined } })
-          .catch((error) => {
-            if (error.name != 'NavigationDuplicated') {
-              throw error;
-            }
-          });
+      this.$refs.cmSelect.forEach((select) => {
+        if (select.resetValue) {
+          select.resetValue();
+        }
       });
       this.filterApi.filters = {};
+      this.$router.replace({ query: {} }).catch((error) => {
+        if (error.name != 'NavigationDuplicated') {
+          throw error;
+        }
+      });
+      this.changePage(1, false);
       this.getCoins();
+      this.search = '';
+      this.filterApi.search = '';
     },
     getCoins() {
-  this.isLoad = true;
-  this.$store
-    .dispatch('getCoinsMarkets', this.filterApi)
-    .then((value) => {
-      document.body.scrollIntoView(true);
-    })
-    .catch((error) => {
-      console.error(error);
-    })
-    .finally(() => {
-      this.isLoad = false;
-    });
-}
+      this.isLoad = true;
+      this.$store
+        .dispatch('getCoinsMarkets', this.filterApi)
+        .then((value) => {
+          document.body.scrollIntoView(true);
+        })
+        .catch((error) => {
+          console.error(error);
+        })
+        .finally(() => {
+          this.isLoad = false;
+        });
+    },
   },
   mounted() {
     this.fetchCategories();
@@ -509,7 +627,9 @@ export default {
     }
     this.filters.map((filter) => {
       if (this.$route.query[filter.filterName]) {
-        const option = filter.options.find((option) => option.slug === this.$route.query[filter.filterName]);
+        const option = filter.options.find(
+          (option) => option.slug === this.$route.query[filter.filterName]
+        );
         if (option) {
           filter.value = option;
           this.filterApi.filters[filter.filterName] = option.value;

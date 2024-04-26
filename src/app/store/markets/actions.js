@@ -15,12 +15,12 @@ export default {
     };
     if (dataSerialize.includes('category')) {
       // if category exists
-      return axios.get(`${configs.LARAVEL_API_URL}/crypto-markets?${dataSerialize}`, config).then((data) => {
+      return axios.get(`${configs.API_URL}/crypto-markets?${dataSerialize}`, config).then((data) => {
         context.commit('setCoinsMarkets', data.data);
       });
     } else if (dataSerialize.includes('available_supply')) {
       // if available_supply exists
-      return axios.get(`${configs.LARAVEL_API_URL}/crypto-markets?${dataSerialize}`, config).then((data) => {
+      return axios.get(`${configs.API_URL}/crypto-markets?${dataSerialize}`, config).then((data) => {
         context.commit('setCoinsMarkets', data.data);
       });
     } else {

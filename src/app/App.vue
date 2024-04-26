@@ -40,7 +40,7 @@ export default {
   mounted() {
     
     // if (!this.$store.state.user.data && this.$route?.meta?.requiresAuth) {
-    if (!this.$store.state.user.data ) {
+    if (!this.$store.state.user.data  ) {
       this.$store
         .dispatch('getUser')
         .then(() => {

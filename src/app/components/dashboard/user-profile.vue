@@ -12,7 +12,7 @@
       {{ userName[0] }}
     </div>
     <div class="ml-1 user-profile__text--desktop">
-      <p class="m-0 text--button">{{ userName }}</p>
+      <p class="m-0 text--button username">{{ userName }}</p>
       <p
         class="m-0 text text--caption text-left text-blue"
         v-if="isAdmin"

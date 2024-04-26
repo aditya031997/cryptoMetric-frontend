@@ -61,7 +61,6 @@ export default {
     }
 
     const navigateToLink = (link) => {
-      console.log('Navigating to:', link)
       router.push(link)
         .then(() => {
           console.log('Navigation successful')

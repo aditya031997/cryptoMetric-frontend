@@ -67,7 +67,6 @@ export default {
   methods: {
     formSubmit() {
       this.isLoad = true;
-      console.log(this.email,"sdffff")
       this.$store
         .dispatch('postInviteUser', this.email)
         .then(({ status }) => {

@@ -7,55 +7,37 @@
       class="modal-alert"
       @submit.prevent="onSubmit"
     >
-      <!-- <ValidationProvider
-        name="coin"
-        rules="required"
-        v-slot="{ errors }"
-      > -->
-        <search-select
-          class-wrapper="mt-4"
-          label="Coin name"
-          :options="getCoinsNames"
-          :on-change="onChangeName"
-          placeholder="Search coin name..."
-          :value="name"
-          :index="1"
-          is-big-select
-          is-full
-        />
-        <p v-if="errors">{{ errors[0] }}</p>
-      <!-- </ValidationProvider> -->
-      <!-- <ValidationProvider
-        name="currency"
-        rules="required"
-        v-slot="{ errors }"
-        class="flex-grow-1"
-      > -->
-        <cm-select
-          class-wrapper="mt-4"
-          label="Price Currency"
-          placeholder="Currency"
-          :options="optionsCurrency"
-          :on-change="onChangeCurrency"
-          :index="2"
-          is-big-select
-          is-full
-          :value="currency"
-        />
-        <p v-if="errors">{{ errors[0] }}</p>
-      <!-- </ValidationProvider> -->
-      <!-- <ValidationProvider
-        name="price"
-        rules="required|double"
-        v-slot="{ errors }"
-      > -->
-        <cm-input
-          class-wrapper="mt-4"
-          label="Price Value"
-          v-model="decimal"
-          :error="errors[0]"
-        />
-      <!-- </ValidationProvider> -->
+      <search-select
+        class-wrapper="mt-4"
+        label="Coin name"
+        :options="getCoinsNames"
+        :on-change="onChangeName"
+        placeholder="Search coin name..."
+        :value="name"
+        :index="1"
+        is-big-select
+        is-full
+      />
+
+      <cm-select
+        class-wrapper="mt-4"
+        label="Price Currency"
+        placeholder="Currency"
+        :options="optionsCurrency"
+        :on-change="onChangeCurrency"
+        :index="2"
+        is-big-select
+        is-full
+        :value="currency"
+      />
+
+      <cm-input
+        class-wrapper="mt-4"
+        label="Price Value"
+        v-model="priceValue"
+        @input="priceValidation"
+        :error="priceError"
+      />
       <p class="m-0 mt-4 mr-1 text text--caption">Alert Action:</p>
       <div class="mt-1 d-flex align-items-center">
         <cm-switch
@@ -77,7 +59,7 @@
         custom-class="mt-4"
         is-block
         type="submit"
-        :disabled="invalid"
+        :disabled="isValid"
       >
         Create Alert
       </cm-button>
@@ -116,7 +98,6 @@ export default {
     CmButton,
     CmSelect,
     ValidationObserver,
-    // ValidationProvider,
     CmLoader,
     SearchSelect,
     CmSwitch,
@@ -135,6 +116,9 @@ export default {
     options: [1, 2, 3, 4, 5, 6],
     name: null,
     currency: null,
+    priceValue: '',
+    isValid: true,
+    priceError: '',
     decimal: '',
     errorMessage: '',
   }),
@@ -151,11 +135,34 @@ export default {
     decimal() {
       this.errorMessage = '';
     },
+    passwordValue() {
+      this.errorMessage = '';
+    },
   },
   computed: {
     ...mapGetters(['getCoinsNames']),
   },
   methods: {
+    priceValidation(event) {
+      this.priceValue = event;
+
+      if (event === '') {
+        this.priceError = 'The price field is required';
+      } else if (!/^\d*\.?\d+$/.test(event)) {
+        this.priceError = 'The price field must be a valid decimal';
+      } else {
+        this.priceError = '';
+      }
+
+      this.validation();
+    },
+    validation() {
+      if (!this.priceError && this.priceValue) {
+        this.isValid = false;
+      } else {
+        this.isValid = true;
+      }
+    },
     onChangeName(value) {
       this.name = value;
     },
@@ -163,13 +170,14 @@ export default {
       this.currency = value;
     },
     onSubmit() {
-      const decimalFloatLength = this.decimal.toString().includes('.')
-        ? this.decimal.toString().split('.').pop().length
+      const decimalFloatLength = this.priceValue.toString().includes('.')
+        ? this.priceValue.toString().split('.').pop().length
         : 0;
-      if (Number(this.decimal) <= 0) {
-        this.$refs.validator.setErrors({
-          price: ['Number cannot be negative or equal to zero'],
-        });
+      if (Number(this.priceValue) <= 0) {
+        // this.$refs.validator.setErrors({
+        //   price: ['Number cannot be negative or equal to zero'],
+        // })
+        this.priceError = "Number cannot be negative or equal to zero"
         return;
       }
       if (decimalFloatLength <= 12) {
@@ -180,7 +188,7 @@ export default {
             data: {
               coin_id: this.name.coin_id,
               price_currency: this.currency === 'USD' ? 0 : 1,
-              price: this.decimal,
+              price: this.priceValue,
               alert_type: !this.actionSwitch ? 1 : 2,
             },
           })
@@ -193,7 +201,9 @@ export default {
           .finally(() => (this.isLoad = false));
       } else {
         this.$refs.validator.setErrors({
-          price: ['The number of characters after the decimal point exceeds the limit. Max - 12'],
+          price: [
+            'The number of characters after the decimal point exceeds the limit. Max - 12',
+          ],
         });
       }
     },
@@ -201,7 +211,16 @@ export default {
   mounted() {
     if (this.$store.state.coins.names.length === 0) {
       this.isLoad = true;
-      this.$store.dispatch('getCoinsNames').finally(() => (this.isLoad = false));
+      this.$store
+        .dispatch('getCoinsNames')
+        .then((response) => {
+        })
+        .catch((error) => {
+          console.error('API Error:', error);
+        })
+        .finally(() => {
+          this.isLoad = false;
+        });
     }
   },
 };

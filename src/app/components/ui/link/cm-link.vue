@@ -6,9 +6,9 @@
     :class="[
       customClass,
       {
-        'link-secondary': !isActive,
-        'link-primary': isActive,
-        'is-active': isActive,
+        'link-secondary': !computedIsActive,
+        'link-primary': computedIsActive,
+        'is-active': computedIsActive,
       },
     ]"
   >
@@ -24,10 +24,13 @@ export default {
   name: 'cm-link',
   props: {
     to: { type: [String, Object] },
-    isActive: { type: Boolean, default: false },
+    isActiveProp: { type: Boolean, default: false },
     customClass: { type: String },
-    onClick: {
-      type: Function,
+    onClick: { type: Function },
+  },
+  computed: {
+    computedIsActive() {
+      return this.$route.path === this.to || this.$route.path.startsWith(this.to + '/');
     },
   },
   methods: {
@@ -40,7 +43,6 @@ export default {
 };
 </script>
 
-<style
-  lang="scss"
-  scoped
-></style>
+<style lang="scss" scoped>
+/* Add your styles here */
+</style>

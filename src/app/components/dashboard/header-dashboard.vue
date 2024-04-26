@@ -28,19 +28,44 @@
           {{ titleHeader }}
         </h1>
       </div>
-      <div>
-        <button @click="Swap">Swap</button>
+      <div class="border-none bg-none connect-btn">
+        <button
+          v-if="!walletAddress"
+          @click="connectWallet"
+        >
+          Connect
+        </button>
+        <button
+          v-else
+          @click="disconnectAccount"
+        >
+          <popper-tooltip
+            custom-class="header-logout"
+            placement="bottom"
+            :disabled="isDnd || poppersOff"
+          >
+            <iconSwitch />
+            <template v-slot:popper>Disconnect</template>
+          </popper-tooltip>
+        </button>
       </div>
       <div
-        v-if="!userAddress"
-        class="header-dashboard__connect-button"
+        v-if="walletAddress"
+        class="header-dashboard__connected-address"
       >
-        <button @click="connectWallet">Connect</button>
-      </div>
-      <div v-else>
-        <p class="header-dashboard__connected-address">
-          {{ formatAddress(userAddress) }}
-        </p>
+        <div class="address-box">
+          <figure>
+            <img
+              src="../../assets/images/img-avatar.png"
+              alt=""
+            />
+          </figure>
+          <div class="content">
+            <p class="wallet-address">
+              {{ formatAddress(walletAddress) }}
+            </p>
+          </div>
+        </div>
       </div>
       <div class="header-dashboard__section">
         <dashboard-settings v-if="this.$route.meta.headerName === 'Home'" />
@@ -50,7 +75,8 @@
     </header>
     <wallet-modal
       :is-visible="isWalletModalVisible"
-      @hide-modal="toggleWalletModal"
+      @hide-modal="connectWallet"
+      @account-changed="handleAccountChanged"
     />
     <Web3Exchange
       :is-visible="isWebExchangeModalVisible"
@@ -61,20 +87,22 @@
 
 <script>
 import iconBack from '../icons/icon-back.vue';
+import iconSwitch from '../icons/icon-switch.vue';
 import ButtonIcon from '../ui/button/button-icon.vue';
 import UserProfile from './user-profile.vue';
+
+import PopperTooltip from '@/components/poppers/popper-tooltip.vue';
 import UserNotify from './user-notify.vue';
 import DashboardSettings from './dashboard-settings.vue';
 import IconBurger from '../icons/icon-burger.vue';
 import WalletModal from '../modals/web3-modal.vue';
 import Web3 from 'web3';
-import Web3Exchange from '../modals/web3-exchange.vue';
-
-// import { useSendTransaction, useWaitForTransaction } from "wagmi";
 
 export default {
   components: {
     iconBack,
+    PopperTooltip,
+    iconSwitch,
     ButtonIcon,
     UserProfile,
     UserNotify,
@@ -86,8 +114,7 @@ export default {
   data() {
     return {
       isWalletModalVisible: false,
-      userAddress: null,
-      isWebExchangeModalVisible: false,
+      walletAddress: localStorage.getItem('walletAddress') || '',
     };
   },
   props: {
@@ -111,6 +138,14 @@ export default {
     },
   },
   methods: {
+    handleAccountChanged(newAddress) {
+      this.walletAddress = newAddress;
+      this.walletAddress1 = newAddress;
+    },
+    disconnectAccount() {
+      this.walletAddress = '';
+      localStorage.removeItem('walletAddress');
+    },
     onClickBack() {
       this.$router.go(-1);
     },
@@ -123,62 +158,17 @@ export default {
     async connectWallet() {
       if (window.ethereum) {
         try {
-          const accounts = await window.ethereum.request({
-            method: 'eth_requestAccounts',
+          const account = await window.ethereum.request({
+            method: 'eth_accounts',
           });
-          this.userAddress = accounts[0];
-        } catch (error) {
-          console.error('Error connecting to wallet:', error);
-        }
-      } else {
-        console.error('MetaMask not detected');
+          if (account.length > 0) {
+            this.walletAddress = account[0]
+            this.isWalletModalVisible = false; 
+          } else {
+            this.isWalletModalVisible = !this.isWalletModalVisible;
+          }
+        } catch (error) {}
       }
-    },
-    Swap() {
-      this.isWebExchangeModalVisible = true;
-    },
-    // async Swap() {
-    //   console.log("before")
-    //   if (window.ethereum) {
-    //     console.log("after")
-    //     // Use MetaMask's provider
-    //     const web3 = new Web3(window.ethereum);
-
-    //     try {
-    //       // Request account access if needed
-    //       await window.ethereum.request({ method: 'eth_requestAccounts' });
-    //       // Get the selected account
-    //       const accounts = await web3.eth.getAccounts();
-    //        console.log(accounts,"accounts")
-    //       const senderAddress = accounts[0];
-
-    //       // Transaction details
-    //       const transaction = {
-    //         from: senderAddress,
-    //         to: '0x461B71cff4d4334BbA09489acE4b5Dc1A1813445', // Recipient address
-    //         value: '0', // Value to send (in wei)
-    //         data: '0x095ea7b3000000000000000000000000111111125421ca6dc452d289314280a0f8842a65ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', // Transaction data
-    //       };
-    //       console.log(transaction,"transaction")
-    //       // Send transaction
-    //       const txHash = await web3.eth.sendTransaction(transaction);
-    //       console.log('Transaction sent:', txHash);
-    //       alert('Transaction sent! Check your MetaMask.');
-
-    //     } catch (error) {
-    //       console.error('Error sending transaction:', error);
-    //       alert('Transaction failed. See console for error.');
-    //     }
-
-    //   } else {
-    //     alert('Please install MetaMask to use this feature.');
-    //   }
-    // },
-    async toggleWalletModal() {
-      if (!this.userAddress && window.ethereum) {
-        await this.connectWallet();
-      }
-      this.isWalletModalVisible = !this.isWalletModalVisible;
     },
     formatAddress(address) {
       if (address) {
@@ -189,13 +179,15 @@ export default {
       return '';
     },
   },
-  mounted() {
-    this.connectWallet();
-  },
 };
 </script>
 
 <style
   lang="scss"
   scoped
-></style>
+>
+/* .popper-tooltip .is-active {
+  position: absolute !important;
+  top: 21px !important;
+} */
+</style>

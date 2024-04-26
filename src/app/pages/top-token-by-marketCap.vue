@@ -1,16 +1,22 @@
 <template>
   <div class="highchart-wrapper">
-    <!-- Filter buttons -->
-    <div class="filter-buttons">
-      <button
-        v-for="filter in filters"
-        :key="filter.value"
-        @click="filterData(filter.value)"
-        :class="{ active: activeFilter === filter.value }"
-      >
-        {{ filter.label }}
-      </button>
+    <div v-if="isLoading">
+      <cm-loader />
     </div>
+    <!-- Filter buttons -->
+    <div v-else>
+      <div class="filter-buttons">
+        <button
+          v-for="filter in filters"
+          :key="filter.value"
+          @click="filterData(filter.value)"
+          :class="{ active: activeFilter === filter.value }"
+        >
+          {{ filter.label }}
+        </button>
+      </div>
+    </div>
+
     <!-- Chart container -->
     <div>
       <div
@@ -46,12 +52,16 @@
 import io from 'socket.io-client';
 import configs from '../../configs/configs';
 import { mapGetters } from 'vuex';
+import CmLoader from '../components/ui/loader/cm-loader.vue';
 import {
   getImageCoin,
   getBigImageCoin,
 } from '.././utils/helpers/formatter-images';
 
 export default {
+  components: {
+    CmLoader,
+  },
   data() {
     return {
       chart: null,
@@ -60,9 +70,10 @@ export default {
       activeFilter: '1h',
       globalPositions: [],
       favFilter: false,
+      isLoading: true,
       currentPage: 1,
       totalPages: 1,
-      bubblesPerPage: 45,
+      bubblesPerPage: 40,
       filters: [
         { label: '1 Hour', value: '1h' },
         { label: '24 Hours', value: '24h' },
@@ -86,6 +97,7 @@ export default {
       this.updatePagination();
       this.renderChart();
       this.startAnimation();
+      this.isLoading = false;
       this.dataReceived = true;
     });
 
@@ -95,6 +107,7 @@ export default {
       this.updatePagination();
       this.renderChart();
       this.startAnimation();
+      this.isLoading = false;
       this.dataReceived = true;
     });
   },
@@ -189,7 +202,7 @@ export default {
         }
 
         this.globalPositions[i] = {
-          x: currentX + radius, 
+          x: currentX + radius,
           y: currentY + radius,
         };
 
@@ -310,7 +323,7 @@ export default {
           plotOptions: {
             packedbubble: {
               minSize: '60%',
-              maxSize: '132',
+              maxSize: '170',
               layoutAlgorithm: {
                 gravitationalConstant: 0.01,
                 splitSeries: false,
@@ -412,16 +425,16 @@ export default {
     },
 
     calculateBubbleSize(crypto) {
-      let percentChangeKey = 'percent_change_24h'; 
+      let percentChangeKey = 'percent_change_24h';
       if (this.activeFilter && this.activeFilter !== 'favorites') {
         percentChangeKey = 'percent_change_' + this.activeFilter;
       }
       let percentChange = parseFloat(crypto[percentChangeKey]);
       if (isNaN(percentChange)) {
-        percentChange = 0; 
+        percentChange = 0;
       }
       const rangeMultiplier = 20;
-      const minBubbleSize = 50; 
+      const minBubbleSize = 50;
       let bubbleSize =
         Math.abs(percentChange) * rangeMultiplier + minBubbleSize;
 
@@ -438,8 +451,8 @@ export default {
 
     updateBubblePositions() {
       const containerWidth = this.chart.plotWidth;
-      let currentX = 0; 
-      let currentY = 0; 
+      let currentX = 0;
+      let currentY = 0;
       let rowHeight = 0;
 
       this.chart.series[0].data.forEach((point, i) => {
@@ -447,7 +460,7 @@ export default {
         const diameter = radius * 2;
 
         if (currentX + diameter > containerWidth) {
-          currentX = 0; 
+          currentX = 0;
           currentY += rowHeight;
           rowHeight = 0;
         }
@@ -552,7 +565,7 @@ export default {
           this.getCoinImageUrl();
         }
       },
-      immediate: true, 
+      immediate: true,
     },
   },
 };
@@ -563,6 +576,16 @@ export default {
   background-color: #06111d;
   margin: 0px -20px;
   box-shadow: 0px 0px 0px 100vw #06111d;
+}
+
+.loader {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 2s linear infinite;
+  margin: 0 auto;
 }
 
 #highcharts-xx9ychm-387 {

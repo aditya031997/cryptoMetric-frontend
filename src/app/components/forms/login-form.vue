@@ -2,41 +2,32 @@
   <div class="auth-form auth-form--login">
     <cm-logo />
     <h1 class="auth-form__title text text--title-2">Sign In</h1>
-    <validation-observer
-      ref="validator"
-    >
+    <validation-observer ref="validator">
       <form @submit.prevent="onSubmit">
-        <!-- <ValidationProvider
-          name="email"
-          rules="required|email"
-          v-slot="{ errors }"
-        > -->
-          <cm-input
-            class-wrapper="mt-3"
-            id="input-email"
-            label="Email"
-            v-model="emailValue"
-          />
-          <ErrorMessage name="email" />
-        <!-- </ValidationProvider>
-        <ValidationProvider
-          name="password"
-          rules="required"
-          v-slot="{ errors }"
-        > -->
-          <cm-input
-            class-wrapper="mt-3"
-            id="input-password"
-            label="Password"
-            type="password"
-            v-model="passwordValue"
-          />
-          <ErrorMessage name="password" />
-        <!-- </ValidationProvider> -->
+        <cm-input
+          class-wrapper="mt-3"
+          id="input-email"
+          label="Email"
+          v-model="emailValue"
+          @input="emailValidation"
+          :error="emailError"
+        />
+
+        <ErrorMessage name="email" />
+        <cm-input
+          class-wrapper="mt-3"
+          id="input-password"
+          label="Password"
+          type="password"
+          v-model="passwordValue"
+          @input="passwordValidation"
+          :error="passwordError"
+        />
+        <ErrorMessage name="password" />
         <cm-button
           custom-class="mt-4"
           is-block
-          :disabled="isLoad || invalid"
+          :disabled="isValid"
           type="submit"
         >
           Sign In
@@ -47,11 +38,11 @@
         >
           {{ errorMessage }}
         </p>
-        <!-- <div class="mt-3">
-          <p class="auth-form__link text--caption text">
-            Not on Cryptometric yet?<cm-link :to="'/register'">Create Account</cm-link>
-          </p>
-        </div> -->
+        <!-- <p class="auth-form__link text--caption text">
+          Not on Cryptometric yet?<cm-link :to="'/register'"
+            >Create Account</cm-link
+          >
+        </p> -->
         <p class="auth-form__link text--caption text mt-3">
           <cm-link :to="{ name: 'forgot-password' }">Forgot Password?</cm-link>
         </p>
@@ -65,7 +56,6 @@ import cmInput from '../ui/input/cm-input.vue';
 import CmLink from '../ui/link/cm-link.vue';
 import CmButton from '../ui/button/cm-button.vue';
 import { ValidationObserver, ErrorMessage } from 'vee-validate';
-// import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
 import CmLogo from '../cm-logo.vue';
 import accessToken from '../../utils/helpers/access-token';
 
@@ -74,7 +64,6 @@ export default {
     cmInput,
     CmLink,
     CmButton,
-    // ValidationProvider,
     ErrorMessage,
     ValidationObserver,
     CmLogo,
@@ -84,6 +73,9 @@ export default {
     emailValue: '',
     passwordValue: '',
     errorMessage: '',
+    emailError: '',
+    passwordError: '',
+    isValid: true,
   }),
   watch: {
     emailValue(value) {
@@ -92,47 +84,92 @@ export default {
     passwordValue(value) {
       this.errorMessage = '';
     },
-    isLoad() {
+    isLoad(value) {
+
       this.$root.$emit('set-auth-loading', this.isLoad);
     },
   },
   methods: {
+    emailValidation(event) {
+      if (event !== '') {
+        this.emailValue = event;
+      }
+      if (!event) {
+        this.emailError = ' The email field is required';
+        return;
+      }
+      const regex =
+        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}[a-zA-Z0-9]*$/;
+      if (!regex.test(event)) {
+        this.emailError = ' The email field must be a valid email ';
+      } else {
+        this.emailError = '';
+      }
+      this.validation();
+    },
+    passwordValidation(event) {
+  this.passwordValue = event;
+
+  if (event === '') {
+    this.passwordError = 'The password field is required';
+  } else {
+    this.passwordError = '';
+  }
+
+  this.validation();
+},
+
+    validation() {
+      if (
+        !this.passwordError &&
+        !this.emailError &&
+        this.passwordValue &&
+        this.emailValue
+      ) {
+        this.isValid = false;
+      } else {
+        this.isValid = true;
+      }
+    },
     onSubmit() {
-      const data = {
-        email: this.emailValue,
-        password: this.passwordValue,
-      };
-      this.isLoad = true;
-      this.$api
-        .post('/login', data)
-        .then((data) => {
-          accessToken.set(data.live.token, false);
-          accessToken.set(data.local.data.token, true);
-          const userData = data.live.user;
-          this.$store.commit('setUser', userData);
-          // this.$router.push({ name: 'dashboard-home' });
-          window.location.reload();
-        })
-        .catch((errors) => {
-          if (typeof errors == 'string') {
-            this.errorMessage = errors.message;
-          } else {
-            if (errors?.errors) {
-              this.errorMessage = errors.message;
+      if (
+        !this.emailError &&
+        !this.passwordError &&
+        this.emailValue &&
+        this.passwordValue
+      ) {
+        const data = {
+          email: this.emailValue,
+          password: this.passwordValue,
+        };
+        this.isLoad = true;
+        this.$api
+          .post('/login', data)
+          .then((response) => {
+            accessToken.set(response.live.token, false);
+            accessToken.set(response.local.data.token, true);
+            const userData = response.live.user;
+            this.$store.commit('setUser', userData);
+            window.location.reload();
+          })
+          .catch((error) => {
+            if (typeof error == 'string') {
+              this.errorMessage = error;
             } else {
-              this.errorMessage = errors.message;
+              if (error?.errors) {
+                this.errorMessage = error.message;
+              } else {
+                this.errorMessage = error.message;
+              }
             }
-          }
-        })
-        .finally(() => {
-          this.isLoad = false;
-        });
+          })
+          .finally(() => {
+            this.isLoad = false;
+          });
+      }
     },
   },
 };
 </script>
 
-<style
-  lang="scss"
-  scoped
-></style>
+<style lang="scss" scoped></style>
