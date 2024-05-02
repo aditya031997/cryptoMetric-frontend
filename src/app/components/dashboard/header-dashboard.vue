@@ -134,7 +134,7 @@ import DashboardSettings from './dashboard-settings.vue';
 import IconBurger from '../icons/icon-burger.vue';
 import WalletModal from '../modals/web3-modal.vue';
 import DropdownIcon from '../../components/icons/icon-dropdown.vue';
-import CheckIcon from '../../components/icons/icon-check.vue';
+import CheckIcon from '../../components/icons/token-check.vue';
 import Web3 from 'web3';
 import { getImageCoin } from '../../utils/helpers/formatter-images';
 
