@@ -10,7 +10,7 @@ import uuid from 'vue-uuid';
 import App from './App.vue';
 import store from './store/index';
 import router from './router/index';
-
+import Notifications from '@kyvg/vue3-notification'
 import apiClient from './utils/helpers/api-client.js';
 import configs from '#/configs/configs';
 import lodash from 'lodash';
@@ -31,7 +31,7 @@ const app = createApp(App)
 app.config.globalProperties.$api = apiClient;
 
 
-
+app.use(Notifications)
 app.use(store);
 app.use(router)
 app.mount('#app');

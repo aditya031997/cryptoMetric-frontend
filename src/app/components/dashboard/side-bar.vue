@@ -189,6 +189,13 @@ export default {
           icon: 'icon-support',
           active: true,
         },
+        {
+          id: 8,
+          to: '/swap',
+          name: 'Swap',
+          icon: 'icon-support',
+          active: true,
+        },
       ];
     },
   },

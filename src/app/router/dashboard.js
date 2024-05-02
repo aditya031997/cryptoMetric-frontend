@@ -2,12 +2,12 @@ import DashboardHome from '../pages/dashboard-home.vue';
 import DashboardNews from '../pages/dashboard-news.vue';
 import DashboardMarkets from '../pages/dashboard-markets.vue';
 import DashboardCoin from '../pages/dashboard-coin.vue';
-import DashboardIco from '../pages/dashboard-ico.vue';
 import DashboardProfile from '../pages/dashboard-profile.vue';
 import DashboardAlerts from '../pages/dashboard-alerts.vue';
 import DashboardUsers from '../pages/dashboard-users.vue';
 import DashboardUser from '../pages/dashboard-user.vue';
 import DashboardBubble from '../pages/top-token-by-marketCap.vue';
+import DashboardSwap from '../pages/web3-exchange.vue'
 import roles from './roles';
 
 export default [
@@ -52,6 +52,12 @@ export default [
     name: 'top-token-by-market-cap',
     component: DashboardBubble,
     meta: { requiresAuth: true, headerName: 'Top Token By Market Cap' },
+  },
+  {
+    path: '/swap',
+    name: 'swap-token',
+    component: DashboardSwap,
+    meta: { requiresAuth: true, headerName: 'Swap token' },
   },
   {
     path: '/alerts',
