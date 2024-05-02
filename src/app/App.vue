@@ -16,7 +16,6 @@
 import CmLoader from './components/ui/loader/cm-loader.vue';
 import Layout from './layouts/layout.vue';
 import roles from './router/roles';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 import { Notifications } from '@kyvg/vue3-notification';
 
