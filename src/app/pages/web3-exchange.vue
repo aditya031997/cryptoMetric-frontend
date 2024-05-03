@@ -284,7 +284,7 @@ export default {
     async handleSelect1(selectedOption) {
       Cookies.set('tokenone', selectedOption.address, { expires: 7 });
       const response = await axios.get(
-        `${configs.NODE_API_URL}/tokens/convert?chain=${this.chainId}&addresses=${selectedOption.address}`
+        `${configs.LARAVEL_API_URL}/tokens/convert?chain=${this.chainId}&addresses=${selectedOption.address}`
       );
 
       this.msg1 = response.data.msg;
@@ -320,7 +320,7 @@ export default {
     async handleSelect2(selectedOption) {
       Cookies.set('tokentwo', selectedOption.address, { expires: 7 });
       const response = await axios.get(
-        `${configs.NODE_API_URL}/tokens/convert?chain=${this.chainId}&addresses=${selectedOption.address}`
+        `${configs.LARAVEL_API_URL}/tokens/convert?chain=${this.chainId}&addresses=${selectedOption.address}`
       );
       this.msg2 = response.data.msg;
       const web3 = new Web3(window.ethereum);
@@ -397,7 +397,7 @@ export default {
 
       try {
         const response = await axios.get(
-          `${configs.NODE_API_URL}/tokens/swager?chain=${this.chainId}`
+          `${configs.LARAVEL_API_URL}/tokens/swager?chain=${this.chainId}`
         );
         const responseData = response.data.msg;
         const tokensArray = Object.entries(responseData.tokens).map(
@@ -470,7 +470,7 @@ export default {
       const tokentwo = Cookies.get('tokentwo');
       try {
         const allowanceResponse = await axios.get(
-          `${configs.NODE_API_URL}/tokens/allowance`,
+          `${configs.LARAVEL_API_URL}/tokens/allowance`,
           {
             params: {
               tokenAddress: `${tokenone}`,
@@ -486,7 +486,7 @@ export default {
 
           if (allowance === '0') {
             const approve = await axios.get(
-              `${configs.NODE_API_URL}/tokens/approveTransaction?tokenAddress=${tokenone}&chain=${this.chainId}`
+              `${configs.LARAVEL_API_URL}/tokens/approveTransaction?tokenAddress=${tokenone}&chain=${this.chainId}`
             );
           }
           if (this.slippageType === 'auto') {
@@ -505,7 +505,7 @@ export default {
             ),
           };
           const swap = await axios.post(
-            `${configs.NODE_API_URL}/tokens/swapper`,
+            `${configs.LARAVEL_API_URL}/tokens/swapper`,
             swapData
           );
 
