@@ -92,6 +92,7 @@ import IconLink from '../icons/icon-link.vue';
 import IconSidebarLeft from '../icons/icon-sidebar-left.vue';
 import IconSidebarRight from '../icons/icon-sidebar-right.vue';
 import IconClose from '../icons/icon-close.vue';
+import iconSwap from '../icons/icon-swap.vue';
 import ExternalLink from '../ui/link/external-link.vue';
 
 export default {
@@ -112,6 +113,7 @@ export default {
     IconSidebarLeft,
     IconSidebarRight,
     IconClose,
+    iconSwap,
     ExternalLink,
   },
   props: {
@@ -193,7 +195,7 @@ export default {
           id: 8,
           to: '/swap',
           name: 'Swap',
-          icon: 'icon-support',
+          icon: 'icon-swap',
           active: true,
         },
       ];

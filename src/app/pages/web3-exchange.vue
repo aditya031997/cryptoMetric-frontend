@@ -283,7 +283,6 @@ export default {
     },
     async handleSelect1(selectedOption) {
       Cookies.set('tokenone', selectedOption.address, { expires: 7 });
-
       const response = await axios.get(
         `${configs.NODE_API_URL}/tokens/convert?chain=${this.chainId}&addresses=${selectedOption.address}`
       );
@@ -381,12 +380,9 @@ export default {
       this.selectedOption = option;
       if (option === 'auto') {
         this.slippageType = 'auto';
-        // Set the default slippage value for auto option
         this.slippage = 0.5;
       } else if (option === 'custom') {
         this.slippageType = 'custom';
-        // Reset the slippage value for custom option
-        // this.slippage = null;
         this.slippage = 0.5;
       }
     },
@@ -398,8 +394,8 @@ export default {
         setTimeout(() => this.fetchTokenData(), 1000);
         return;
       }
+
       try {
-        [];
         const response = await axios.get(
           `${configs.NODE_API_URL}/tokens/swager?chain=${this.chainId}`
         );
@@ -414,37 +410,47 @@ export default {
           })
         );
 
-        const placeholderOption = {
-          name: 'Select token',
-          symbol: '',
-          value: null,
-          logoURI: null,
-        };
-        this.tokens = [placeholderOption, ...tokensArray];
         this.tokens = tokensArray;
-        this.selectedFromToken = placeholderOption;
-        this.selectedToToken = placeholderOption;
-        this.msg1 = '';
-        this.msg2 = '';
+
+        let defaultToken;
+        if (this.chainId === 137) {
+          defaultToken = this.tokens.find((token) => token.symbol === 'MATIC');
+        } else if (this.chainId === 1) {
+          defaultToken = this.tokens.find((token) => token.symbol === 'ETH');
+        } else if (this.chainId === 56) {
+          defaultToken = this.tokens.find((token) => token.symbol === 'BNB');
+        }
+
+        if (defaultToken) {
+          this.selectedFromToken = defaultToken;
+          setTimeout(() => {
+            this.handleSelect1(defaultToken);
+          }, 1000);
+        } else {
+          this.selectedFromToken = null;
+        }
+
+        this.selectedToToken = null;
       } catch (error) {
         console.error('Error fetching token data:', error.message);
       }
     },
+
     async getAccountBalance() {
       if (window.ethereum) {
         const web3 = new Web3(window.ethereum);
         try {
           await window.ethereum.request({ method: 'eth_requestAccounts' });
           const networkId = await web3.eth.net.getId();
-          this.chainId = Number(networkId); // Convert and store network ID as a number
+          this.chainId = Number(networkId);
 
           ethereum.on('chainChanged', (chainId) => {
             const id = parseInt(chainId, 16);
             this.chainId = id;
-            this.fetchTokenData(); // Refetch token data whenever chain changes
+            this.fetchTokenData();
           });
 
-          this.fetchTokenData(); // Also fetch token data initially after getting chain ID
+          this.fetchTokenData();
         } catch (error) {
           console.error('Error fetching account balance:', error);
         }
@@ -621,7 +627,6 @@ export default {
     await this.getAccountBalance().then((balance) => {
       this.balance = balance;
     });
-    this.fetchTokenData();
   },
   watch: {
     selectedFromToken(newVal, oldVal) {
