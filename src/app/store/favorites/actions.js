@@ -6,9 +6,9 @@ const api = getCurrentInstance()?.appContext.config.globalProperties?.$api;
 
 export default {
   getFavorites(context) {
-    return apiInstance()?.get('/coins/favorites').then(({ coins }) => {
-      context.commit('setFavorites', coins);
-    });
+    // return apiInstance()?.get('/coins/favorites').then(({ coins }) => {
+    //   context.commit('setFavorites', coins);
+    // });
   },
   postChangeFavorite({ commit }, data) {
     const token = localStorage.getItem('vue-authenticate.vueauth_token');

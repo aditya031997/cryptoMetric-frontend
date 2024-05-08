@@ -4,17 +4,11 @@
       <div class="header-btn">
         <button class="swap-btn">Swap</button>
         <div class="dropdown-btn">
-          <button
-            @click="toggleSlippageModal"
-            class="head-right-btn"
-          >
+          <button @click="toggleSlippageModal" class="head-right-btn">
             <settingIcon />
           </button>
 
-          <div
-            v-if="showSlippageModal"
-            class="slippage-modal"
-          >
+          <div v-if="showSlippageModal" class="slippage-modal">
             <div class="modal-content">
               <div class="accordion">
                 <div
@@ -23,10 +17,7 @@
                   class="accordion-item"
                   :class="{ active: activeIndex === index }"
                 >
-                  <div
-                    class="accordion-header"
-                    @click="toggleAccordion(index)"
-                  >
+                  <div class="accordion-header" @click="toggleAccordion(index)">
                     <!-- {{ item.title }} -->
                     Max. slippage
                     <div class="accrodion-right-content">
@@ -34,10 +25,7 @@
                       <dropdownIcon />
                     </div>
                   </div>
-                  <div
-                    class="accordion-content"
-                    v-if="activeIndex === index"
-                  >
+                  <div class="accordion-content" v-if="activeIndex === index">
                     <div class="inner-content">
                       <div class="checkbox-container">
                         <button
@@ -72,11 +60,7 @@
     </div>
     <div class="tokenlist">
       <div class="token-left-section">
-        <label
-          for="select-field-from"
-          class="form-label"
-          >You Pay</label
-        >
+        <label for="select-field-from" class="form-label">You Pay</label>
         <input
           v-model="selectedTokenQuantity1"
           type="text"
@@ -86,15 +70,25 @@
           class="form-control number-input"
         />
 
-        <p
-          class="pay-content"
-          v-if="convertedData1 > 0"
-        >
+        <p class="pay-content" v-if="convertedData1 > 0">
           ${{ convertedData1 }}
         </p>
       </div>
       <div class="right-side-input-css">
-        <multiselect
+     
+        <button class="token-btn" @click="isSwapModalVisible = true">
+          <span class="swap-list">
+            <img
+              src="../assets/images/zrx-icon.png"
+              :alt="icon"
+              class="token-logo"
+            />
+            <span>ZRX</span>
+          </span>
+          <span> <dropdownIcon /></span>
+        </button>
+     
+        <!-- <multiselect
           v-model="selectedFromToken"
           :options="tokens"
           :custom-label="customLabel"
@@ -125,28 +119,18 @@
             </div>
           </template>
         </multiselect>
-        <div
-          class="right-side-balance-box"
-          v-if="msg1 != 0 || msg1 != ''"
-        >
+        <div class="right-side-balance-box" v-if="msg1 != 0 || msg1 != ''">
           Balance: {{ tokenBalance1 }}
           <button @click="setMaxTokenQuantity">max</button>
-        </div>
+        </div> -->
       </div>
     </div>
-    <button
-      @click="swapTokens"
-      class="exchange-button btn"
-    >
+    <button @click="swapTokens" class="exchange-button btn">
       <slipage-add />
     </button>
     <div class="tokenlist">
       <div class="token-left-section">
-        <label
-          for="select-field-from"
-          class="form-label"
-          >You Receive</label
-        >
+        <label for="select-field-from" class="form-label">You Receive</label>
         <input
           v-model="ratio"
           type="text"
@@ -156,15 +140,14 @@
           class="form-control number-input"
         />
 
-        <p
-          class="pay-content"
-          v-if="ratio"
-        >
-          ${{ ratio }}
-        </p>
+        <p class="pay-content" v-if="ratio">${{ ratio }}</p>
       </div>
       <div class="right-side-input-css">
-        <multiselect
+       <button class="select-token-btn" @click="isSwapModalVisible = true">
+           <span>Select Token</span>
+         <dropdownIcon />
+        </button>
+        <!-- <multiselect
           v-model="selectedToToken"
           :options="tokens"
           :custom-label="customLabel"
@@ -195,7 +178,7 @@
             </div>
           </template>
         </multiselect>
-        <p v-if="msg2 != 0 || msg2 != ''">Balance: {{ tokenBalance2 }}</p>
+        <p v-if="msg2 != 0 || msg2 != ''">Balance: {{ tokenBalance2 }}</p> -->
       </div>
     </div>
     <button
@@ -205,12 +188,19 @@
     >
       {{ buttonText }}
     </button>
+    <SwapModal
+      :is-visible="isSwapModalVisible"
+      @hide-modal="toggleSwapModal(false)"
+    />
   </div>
 </template>
-  <script>
+<script>
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import Web3 from 'web3';
+import SwapModal from '../components/modals/modal-swap.vue';
+import '../assets/scss/pages/swap.scss';
+import SwapIcon from '../assets/images/zrx-icon.png';
 import Multiselect from 'vue-multiselect';
 import slipageAdd from '../components/icons/slipage-add.vue';
 import dropdownIcon from '../components/icons/icon-dropdown.vue';
@@ -232,6 +222,8 @@ export default {
     Multiselect,
     slipageAdd,
     dropdownIcon,
+    SwapIcon,
+    SwapModal,
     settingIcon,
   },
   props: {
@@ -242,6 +234,7 @@ export default {
     return {
       tokens: [],
       selectedFromToken: null,
+      isSwapModalVisible: false,
       selectedToToken: null,
       selectedTokenQuantity1: '',
       selectedTokenQuantity2: '',
@@ -272,6 +265,9 @@ export default {
   methods: {
     customLabel({ name, symbol }) {
       return `${name} ${symbol}`;
+    },
+    toggleSwapModal(show) {
+      this.isSwapModalVisible = show;
     },
     sanitizeInput(event, model) {
       let value = event.target.value;
@@ -647,317 +643,7 @@ export default {
   },
 };
 </script>
-  
-  <style>
-.container {
-  max-width: 660px;
-  margin: 0 auto;
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
 
-.dropdown-btn {
-  position: relative;
-}
+<style>
 
-.slippage-modal {
-  position: absolute;
-  z-index: 99;
-  top: 42px;
-  left: -155px;
-  width: 310px;
-}
-
-.modal-content {
-  padding: 3px 16px;
-}
-
-.header-btn {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-.head-right-btn {
-  background-color: #f9f9f9;
-  /* padding: 12px 12px; */
-  border-radius: 50%;
-  padding-left: 8px;
-  /* gap: 4px; */
-  border: none;
-  /* font-size: 16px; */
-  width: 40px;
-  height: 40px;
-  display: grid;
-  place-items: center;
-}
-
-.swap-btn {
-  color: rgb(34, 34, 34);
-  background-color: rgba(34, 34, 34, 0.07);
-  padding: 8px 16px;
-  border-radius: 20px;
-  gap: 4px;
-  font-weight: 485;
-  border: none;
-}
-
-.tokenlist {
-  background-color: rgb(249, 249, 249);
-  border-radius: 16px;
-  color: rgb(125, 125, 125);
-  font-size: 14px;
-  font-weight: 500;
-  height: 120px;
-  line-height: 20px;
-  padding: 16px;
-  position: relative;
-  display: flex;
-  justify-content: space-between;
-  gap: 90px;
-  align-items: center;
-  /* display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 2rem; */
-}
-
-.pay-content {
-  box-sizing: border-box;
-  margin: 0px;
-  min-width: 0px;
-  font-weight: 485;
-  font-size: 14px;
-  color: rgb(125, 125, 125);
-  letter-spacing: -0.01em;
-}
-
-.token-left-section {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.number-input {
-  max-width: 280px;
-  font-weight: 485;
-  max-height: 44px;
-  color: rgb(34, 34, 34);
-  font-weight: 485;
-  outline: none;
-  border: none !important;
-  flex: 1 1 auto;
-  background-color: transparent;
-  font-size: 28px;
-  text-overflow: ellipsis;
-  background: none !important;
-  box-shadow: none !important;
-}
-
-.number-input:focus {
-  color: #495057;
-  background-color: #ffffff;
-  border-color: #81dbff;
-  outline: 0;
-  box-shadow: 0 0 0 0.2rem rgba(1, 183, 255, 0.25);
-}
-
-.form-label {
-  font-weight: bold;
-  margin-bottom: 0px;
-}
-
-.form-select,
-.form-control {
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.exchange-button {
-  /* position: absolute; */
-  margin-bottom: 2rem;
-  /* padding: 0.75rem 1.5rem; */
-  padding: 0;
-  display: grid;
-  place-items: center;
-  background-color: rgb(249, 249, 249);
-  color: black;
-  border-radius: 12px;
-  height: 40px;
-  width: 40px;
-  position: relative;
-  margin: -22px auto;
-  background-color: rgb(249, 249, 249);
-  border: 4px solid rgb(255, 255, 255);
-  z-index: 2;
-  cursor: pointer;
-}
-
-.modal-button {
-  display: block;
-  width: 100%;
-  padding: 0.75rem 1.5rem;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.connect-wallet {
-  padding: 16px;
-  width: 100%;
-  line-height: 24px;
-  font-weight: 535;
-  font-size: 20px;
-  border-radius: 16px;
-  border: 1px solid transparent;
-  background: #28a5ff;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: transform 450ms ease 0s;
-  margin-top: 6px;
-}
-
-.connect-wallet:hover {
-  color: white;
-}
-
-.token-logo {
-  width: 16px;
-  height: 16px;
-  margin-right: 8px;
-}
-
-.option-template {
-  display: flex;
-  align-items: center;
-}
-
-.token-info {
-  margin-top: 1rem;
-  padding: 1rem;
-  background-color: #f5f5f5;
-  border-radius: 4px;
-}
-
-.token-title {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-}
-
-.token-price,
-.ratio-value {
-  font-size: 1.1rem;
-}
-
-.accordion-header {
-  padding: 8px 0;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 14px;
-}
-
-.accrodion-right-content {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.accrodion-right-content p {
-  margin-bottom: 0;
-}
-
-.accordion-content {
-  /* padding: 10px; */
-  display: none;
-  font-size: 14px;
-  padding-bottom: 6px;
-}
-
-.inner-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-}
-
-.checkbox-container {
-  border: 1px solid rgba(34, 34, 34, 0.07) !important;
-  border-radius: 50px;
-  display: flex;
-  gap: 6px;
-  padding: 6px 9px;
-}
-
-.custom-btn,
-.auto-btn {
-  width: auto;
-  cursor: pointer;
-  padding: 6px 12px;
-  text-align: center;
-  gap: 4px;
-  border-radius: 12px;
-  background: none;
-  border: none;
-}
-
-.checkbtn {
-  background: rgba(34, 34, 34, 0.07);
-}
-
-.input-number {
-  padding: 8px 16px;
-  border-radius: 12px;
-  width: auto;
-  min-width: 100px;
-  flex: 1 1 0%;
-  border: 1px solid rgba(34, 34, 34, 0.07);
-}
-
-.input-number:focus-within {
-  /* border: none; */
-  outline: none;
-  box-shadow: none;
-}
-
-.accordion-item.active .accordion-content {
-  display: block;
-}
-
-.right-side-input-css {
-  width: 50%;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 25px;
-}
-
-.right-side-balance-box {
-  display: flex;
-  align-items: center;
-  justify-content: end;
-  gap: 8px;
-}
-
-.right-side-balance-box button {
-  color: #fc72ff;
-  border: none;
-  text-transform: capitalize;
-  background: none;
-}
-
-.right-side-input-css p {
-  margin-bottom: 0;
-  text-align: end;
-}
 </style>
-  
