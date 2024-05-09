@@ -108,6 +108,7 @@
         >
           <span class="swap-list">
             <img
+              v-if="selectedFromToken && selectedFromToken.logoURI"
               :src="selectedFromToken?.logoURI"
               :alt="selectedFromToken?.symbol"
               class="token-logo"
@@ -156,7 +157,10 @@
       </div>
       <div class="right-side-input-css">
         <button
-          class="select-token-btn"
+          :class="{
+            'select-token-btn': true,
+            selected: !!selectedReceiveToken,
+          }"
           @click="
             isSwapModalVisible = true;
             handleSelectTo();

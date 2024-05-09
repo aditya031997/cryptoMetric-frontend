@@ -54,6 +54,10 @@
   &.selected{
     background-color: #ffffff;
     border-color: #ffffff;
+    color: #333333;
+    svg{
+      color: #333333;
+    }
   }
   svg{
     color: #ffffff;
