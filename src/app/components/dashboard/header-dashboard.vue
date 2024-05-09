@@ -182,7 +182,7 @@ export default {
       isDropdownVisible: false,
       dropdownItems: [
         { name: 'Ethereum', slug: 'ethereum', chainId: 1, checked: false },
-        { name: 'Binance', slug: 'binance-coin', chainId: 56, checked: false },
+        { name: 'Binance', slug: 'bnb', chainId: 56, checked: false },
         { name: 'Polygon', slug: 'polygon', chainId: 137, checked: false },
       ],
       selectedImageUrl: '',
@@ -422,8 +422,5 @@ export default {
 .dropdown-item:hover {
   background: rgba(34, 34, 34, 0.07);
 }
-/* .popper-tooltip .is-active {
-  position: absolute !important;
-  top: 21px !important;
-} */
+
 </style>

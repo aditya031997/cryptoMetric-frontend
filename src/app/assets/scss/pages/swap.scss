@@ -51,9 +51,17 @@
   box-sizing: border-box;
   min-width: 0px;
   appearance: none;
+  &.selected{
+    background-color: #ffffff;
+    border-color: #ffffff;
+  }
   svg{
     color: #ffffff;
     font-size: 24px;
+  }
+  .token-logo{
+    width: 22px;
+    height: 22px;
   }
 }
 .container {
@@ -73,7 +81,7 @@
     position: absolute;
     z-index: 99;
     top: 42px;
-    left: -155px;
+    right:0px;
     width: 310px;
   }
   

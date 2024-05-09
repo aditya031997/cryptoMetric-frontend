@@ -1,6 +1,7 @@
 import { apiInstance } from "@/utils/helpers/api-client";
 import axios from 'axios';
 import accessToken from '../../utils/helpers/access-token';
+import configs from '../../../configs/configs';
 
 
 export default {
@@ -15,7 +16,7 @@ export default {
     });
   },
   changeTheme(context, data) {
-    const endpoint = 'https://api.cryptometric.com/api/user/chart-theme';
+    const endpoint = `${configs.API_URL}/user/chart-theme`;
     const headers = {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${accessToken.get()}`
@@ -30,7 +31,7 @@ export default {
       });
   },
   changeUserInfo(context, data) {
-    const endpoint = 'https://api.cryptometric.com/api/profile';
+    const endpoint = `${configs.API_URL}/profile`;
     const headers = {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${accessToken.get()}`
@@ -45,7 +46,7 @@ export default {
       });
   },
 updatePassword(context, data) {
-  const endpoint = 'https://api.cryptometric.com/api/profile/update-password';
+  const endpoint = `${configs.API_URL}/profile/update-password`;
   const headers = {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${accessToken.get()}`,

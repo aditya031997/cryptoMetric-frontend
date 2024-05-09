@@ -2,6 +2,8 @@
   padding-left: 0px;
   padding-right: 0px;
   padding-bottom: 0px;
+  max-width: 420px;
+  width: 100%;
     .modal-header{
         h2{
             font-size: 16px;
@@ -241,4 +243,70 @@
 {
 	border-radius: 10px;
 	background-color: #555;
+}
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9;
+}
+.close {
+  cursor: pointer;
+  color: #000;
+  font-size: 30px;
+  font-weight: 400;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  top: 15px;
+  right: 15px;
+}
+.modal {
+  width: 35%;
+  min-width: 320px;
+  background-color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.modal-header {
+  color: #000;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid transparent;
+  padding: 0 20px;
+  margin-bottom: 15px;
+}
+
+.modal-description {
+  color: #666;
+  font-size: 15px;
+}
+
+.modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+}
+
+.modal-button {
+  margin: 10px 0;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  color: #fff;
+  background-color: #01b7ff;
+  font-weight: 600;
+  cursor: pointer;
+  display: block;
 }

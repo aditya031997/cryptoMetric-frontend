@@ -4,11 +4,17 @@
       <div class="header-btn">
         <button class="swap-btn">Swap</button>
         <div class="dropdown-btn">
-          <button @click="toggleSlippageModal" class="head-right-btn">
+          <button
+            @click="toggleSlippageModal"
+            class="head-right-btn"
+          >
             <settingIcon />
           </button>
 
-          <div v-if="showSlippageModal" class="slippage-modal">
+          <div
+            v-if="showSlippageModal"
+            class="slippage-modal"
+          >
             <div class="modal-content">
               <div class="accordion">
                 <div
@@ -17,7 +23,10 @@
                   class="accordion-item"
                   :class="{ active: activeIndex === index }"
                 >
-                  <div class="accordion-header" @click="toggleAccordion(index)">
+                  <div
+                    class="accordion-header"
+                    @click="toggleAccordion(index)"
+                  >
                     <!-- {{ item.title }} -->
                     Max. slippage
                     <div class="accrodion-right-content">
@@ -25,7 +34,10 @@
                       <dropdownIcon />
                     </div>
                   </div>
-                  <div class="accordion-content" v-if="activeIndex === index">
+                  <div
+                    class="accordion-content"
+                    v-if="activeIndex === index"
+                  >
                     <div class="inner-content">
                       <div class="checkbox-container">
                         <button
@@ -47,6 +59,7 @@
                         type="text"
                         class="input-number"
                         placeholder="0.5"
+                        v-model="customSlippage"
                         @focus="setToCustom"
                       />
                     </div>
@@ -60,77 +73,71 @@
     </div>
     <div class="tokenlist">
       <div class="token-left-section">
-        <label for="select-field-from" class="form-label">You Pay</label>
+        <label
+          for="select-field-from"
+          class="form-label"
+          >You Pay</label
+        >
         <input
-          v-model="selectedTokenQuantity1"
+          v-model="fromTokenQuantity"
           type="text"
           min="0"
           placeholder="0"
-          @input="sanitizeInput($event, 'selectedTokenQuantity1')"
+          @input="sanitizeInput($event, 'fromTokenQuantity')"
           class="form-control number-input"
         />
-
-        <p class="pay-content" v-if="convertedData1 > 0">
-          ${{ convertedData1 }}
+        <p
+          class="pay-content"
+          v-if="fromCalculatedFiat > 0"
+        >
+          ${{ fromCalculatedFiat }}
         </p>
       </div>
-      <div class="right-side-input-css">
-     
-        <button class="token-btn" @click="isSwapModalVisible = true">
+      <div v-if="isLoadingTokens || isLoadingBalances">Loading tokens...</div>
+
+      <div
+        v-else
+        class="right-side-input-css"
+      >
+        <button
+          class="token-btn"
+          @click="
+            isSwapModalVisible = true;
+            handleSelectFrom();
+          "
+        >
           <span class="swap-list">
             <img
-              src="../assets/images/zrx-icon.png"
-              :alt="icon"
+              :src="selectedFromToken?.logoURI"
+              :alt="selectedFromToken?.symbol"
               class="token-logo"
             />
-            <span>ZRX</span>
+            <span>{{ selectedFromToken?.symbol }}</span>
           </span>
           <span> <dropdownIcon /></span>
         </button>
-     
-        <!-- <multiselect
-          v-model="selectedFromToken"
-          :options="tokens"
-          :custom-label="customLabel"
-          @select="handleSelect1"
-          :disabled="loading"
-          placeholder="Select token"
+        <div
+          class="right-side-balance-box mt-1"
+          v-if="fromFiat != 0 || fromFiat != ''"
         >
-          <template #option="{ option }">
-            <div class="option-template">
-              <img
-                v-if="option.logoURI"
-                :src="option.logoURI"
-                :alt="option.name"
-                class="token-logo"
-              />
-              <span>{{ option.name }} {{ option.symbol }}</span>
-            </div>
-          </template>
-          <template #singleLabel="{ option }">
-            <div class="selected-option">
-              <img
-                v-if="option.logoURI"
-                :src="option.logoURI"
-                :alt="option.name"
-                class="token-logo"
-              />
-              <span>{{ option.name }} {{ option.symbol }}</span>
-            </div>
-          </template>
-        </multiselect>
-        <div class="right-side-balance-box" v-if="msg1 != 0 || msg1 != ''">
-          Balance: {{ tokenBalance1 }}
+          Balance: {{ fromTokenBalance }}
           <button @click="setMaxTokenQuantity">max</button>
-        </div> -->
+        </div>
       </div>
     </div>
-    <button @click="swapTokens" class="exchange-button btn">
+    <button
+      @click="swapTokens"
+      class="exchange-button btn"
+    >
       <slipage-add />
     </button>
     <div class="tokenlist">
       <div class="token-left-section">
-        <label for="select-field-from" class="form-label">You Receive</label>
+        <label
+          for="select-field-from"
+          class="form-label"
+          >You Receive</label
+        >
         <input
           v-model="ratio"
           type="text"
@@ -140,45 +147,41 @@
           class="form-control number-input"
         />
 
-        <p class="pay-content" v-if="ratio">${{ ratio }}</p>
+        <p
+          class="pay-content"
+          v-if="ratio"
+        >
+          ${{ ratio }}
+        </p>
       </div>
       <div class="right-side-input-css">
-       <button class="select-token-btn" @click="isSwapModalVisible = true">
-           <span>Select Token</span>
-         <dropdownIcon />
-        </button>
-        <!-- <multiselect
-          v-model="selectedToToken"
-          :options="tokens"
-          :custom-label="customLabel"
-          @select="handleSelect2"
-          :disabled="loading"
-          placeholder="Select token"
+        <button
+          class="select-token-btn"
+          @click="
+            isSwapModalVisible = true;
+            handleSelectTo();
+          "
         >
-          <template #option="{ option }">
-            <div class="option-template">
-              <img
-                v-if="option.logoURI"
-                :src="option.logoURI"
-                :alt="option.name"
-                class="token-logo"
-              />
-              <span>{{ option.name }} {{ option.symbol }}</span>
-            </div>
-          </template>
-          <template #singleLabel="{ option }">
-            <div class="selected-option">
-              <img
-                v-if="option.logoURI"
-                :src="option.logoURI"
-                :alt="option.name"
-                class="token-logo"
-              />
-              <span>{{ option.name }} {{ option.symbol }}</span>
-            </div>
-          </template>
-        </multiselect>
-        <p v-if="msg2 != 0 || msg2 != ''">Balance: {{ tokenBalance2 }}</p> -->
+          <span v-if="!selectedReceiveToken">Select Token</span>
+          <span
+            v-else
+            class="swap-list"
+          >
+            <img
+              :src="selectedReceiveToken?.logoURI"
+              :alt="selectedReceiveToken?.symbol"
+              class="token-logo"
+            />
+            <span>{{ selectedReceiveToken?.symbol }}</span>
+          </span>
+          <dropdownIcon />
+        </button>
+        <p
+          class="mt-1"
+          v-if="toFiat != 0 || toFiat != ''"
+        >
+          Balance: {{ toTokenBalance }}
+        </p>
       </div>
     </div>
     <button
@@ -188,9 +191,14 @@
     >
       {{ buttonText }}
     </button>
-    <SwapModal
+    <!-- In your component template -->
+    <TokenModal
+      ref="tokenModal"
       :is-visible="isSwapModalVisible"
+      :chain-id="chainId"
       @hide-modal="toggleSwapModal(false)"
+      @token-selected="handleTokenSelected"
+      @tokens-fetched="handleTokensFetched"
     />
   </div>
 </template>
@@ -198,7 +206,7 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import Web3 from 'web3';
-import SwapModal from '../components/modals/modal-swap.vue';
+import TokenModal from '../components/modals/modal-swap.vue';
 import '../assets/scss/pages/swap.scss';
 import SwapIcon from '../assets/images/zrx-icon.png';
 import Multiselect from 'vue-multiselect';
@@ -223,7 +231,7 @@ export default {
     slipageAdd,
     dropdownIcon,
     SwapIcon,
-    SwapModal,
+    TokenModal,
     settingIcon,
   },
   props: {
@@ -234,18 +242,20 @@ export default {
     return {
       tokens: [],
       selectedFromToken: null,
+      selectedReceiveToken: null,
       isSwapModalVisible: false,
-      selectedToToken: null,
-      selectedTokenQuantity1: '',
-      selectedTokenQuantity2: '',
-      tokenBalance1: '',
-      tokenBalance2: '',
+      isLoadingTokens: false,
+      isLoadingBalances: false,
+      selectedToken: {},
+      fromTokenQuantity: '',
+      toTokenQuantity: '',
+      fromTokenBalance: '',
+      toTokenBalance: '',
       chainId: '',
-      msg1: 0,
-      msg2: 0,
+      fromFiat: 0,
+      toFiat: 0,
       balance: '0',
-      convertedData1: '',
-      convertedData2: '',
+      fromCalculatedFiat: '',
       ratio: '',
       isSwapped: false,
       showSlippageModal: false,
@@ -269,85 +279,108 @@ export default {
     toggleSwapModal(show) {
       this.isSwapModalVisible = show;
     },
+    handleSelectFrom() {
+      this.isSelectingFrom = true;
+    },
+    handleSelectTo() {
+      this.isSelectingFrom = false;
+    },
+    // In your methods
+    handleTokensFetched(tokens) {
+      this.tokens = tokens;
+      this.setDefaultToken();
+    },
+    handleTokenSelected(token) {
+      if (this.isSelectingFrom) {
+        this.selectedFromToken = token;
+        this.updateTokenBalance(token, true);
+      } else {
+        this.selectedReceiveToken = token;
+        this.updateTokenBalance(token, false);
+      }
+      this.isSwapModalVisible = false;
+    },
+    async updateTokenBalance(token, isFrom) {
+      if (this.isLoadingBalances) {
+        console.log('Update in progress, skipping new request');
+        return;
+      }
+      this.isLoadingBalances = true;
+
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const response = await axios.get(
+          `${configs.LOCAL_API_URL}/tokens/convert?chain=${this.chainId}&addresses=${token.address}`
+        );
+        const web3 = new Web3(window.ethereum);
+        const account = (await web3.eth.getAccounts())[0];
+        const provider = new ethers.BrowserProvider(window.ethereum);
+
+        let tokenBalance;
+        if (token.address === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
+          console.log('here');
+          const signer = await provider.getSigner();
+          const balance = await provider.getBalance(signer.address);
+          tokenBalance = ethers.formatUnits(balance.toString(), 18);
+        } else {
+          console.log('there');
+
+          // Handle ERC-20 token
+          const contract = new ethers.Contract(token.address, abi, provider);
+          const decimals = await contract.decimals();
+          const balanceAmount = await contract.balanceOf(account);
+          tokenBalance = ethers.formatUnits(balanceAmount.toString(), decimals);
+        }
+
+        const first4Chars = tokenBalance.slice(0, 4);
+
+        if (isFrom) {
+          this.fromFiat = response.data.msg;
+          this.fromTokenBalance = first4Chars;
+          this.fromCalculatedFiat = response.data.msg * this.fromTokenQuantity;
+        } else {
+          this.toFiat = response.data.msg;
+          this.toTokenBalance = first4Chars;
+        }
+
+        this.calculateRatio();
+      } catch (error) {
+        console.error('Failed to fetch token balance:', error);
+      } finally {
+        this.isLoadingBalances = false;
+      }
+    },
     sanitizeInput(event, model) {
       let value = event.target.value;
       value = value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
 
       this[model] = value;
-
-      this.calculateRatio(model === 'selectedTokenQuantity1' ? 'from' : 'to');
-    },
-    async handleSelect1(selectedOption) {
-      Cookies.set('tokenone', selectedOption.address, { expires: 7 });
-      const response = await axios.get(
-        `${configs.LOCAL_API_URL}/tokens/convert?chain=${this.chainId}&addresses=${selectedOption.address}`
-      );
-
-      this.msg1 = response.data.msg;
-      this.convertedData1 = response.data.msg * this.selectedTokenQuantity1;
-
-      const web3 = new Web3(window.ethereum);
-      const account = (await web3.eth.getAccounts())[0];
-      const provider = new ethers.BrowserProvider(window.ethereum);
-
-      let tokenBalance;
-
-      if (
-        selectedOption.address === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
-      ) {
-        const signer = await provider.getSigner();
-        const bal = await provider.getBalance(signer.address);
-        tokenBalance = ethers.formatUnits(bal.toString(), 18);
-      } else {
-        // Handle ERC-20 token
-        const contract = new ethers.Contract(
-          selectedOption.address,
-          abi,
-          provider
-        );
-        const decimals = await contract.decimals();
-        const balanceAmount = await contract.balanceOf(account);
-        tokenBalance = ethers.formatUnits(balanceAmount.toString(), decimals);
+      if (this.selectedFromToken && model === 'fromTokenQuantity') {
+        this.updateTokenBalance(this.selectedFromToken, true);
       }
-      const first4Chars = tokenBalance.slice(0, 4);
-      this.tokenBalance1 = first4Chars;
-      this.calculateRatio();
-    },
-    async handleSelect2(selectedOption) {
-      Cookies.set('tokentwo', selectedOption.address, { expires: 7 });
-      const response = await axios.get(
-        `${configs.LOCAL_API_URL}/tokens/convert?chain=${this.chainId}&addresses=${selectedOption.address}`
-      );
-      this.msg2 = response.data.msg;
-      const web3 = new Web3(window.ethereum);
-      const account = (await web3.eth.getAccounts())[0];
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const contract = new ethers.Contract(
-        selectedOption.address,
-        abi,
-        provider
-      );
-      const decimals = await contract.decimals();
-      const balanceAmount = await contract.balanceOf(account);
-      const formatedBalance = ethers.formatUnits(
-        balanceAmount.toString(),
-        decimals
-      );
-      const first4Chars = formatedBalance.slice(0, 4);
-      this.tokenBalance2 = first4Chars;
-      this.calculateRatio();
+
+      this.calculateRatio(model === 'fromTokenQuantity' ? 'from' : 'to');
     },
     calculateRatio(origin) {
-      if (!this.selectedFromToken || !this.selectedToToken) {
+      console.log('Selected from token:', this.selectedFromToken);
+      console.log('Selected receive token:', this.selectedReceiveToken);
+      console.log('Message 1:', this.fromFiat);
+      console.log('Message 2:', this.toFiat);
+      if (
+        !this.selectedFromToken ||
+        !this.selectedReceiveToken ||
+        !this.fromFiat ||
+        !this.toFiat
+      ) {
+        console.log('Missing data for calculation');
         return;
       }
 
-      const input1 = parseFloat(this.selectedTokenQuantity1) || 0;
+      const input1 = parseFloat(this.fromTokenQuantity) || 0;
       const input2 = parseFloat(this.ratio) || 0;
 
-      // Swap msg1 and msg2 if tokens are swapped
-      let rateFromMsg1 = parseFloat(this.msg1) || 0;
-      let rateFromMsg2 = parseFloat(this.msg2) || 0;
+      let rateFromMsg1 = parseFloat(this.fromFiat) || 0;
+      let rateFromMsg2 = parseFloat(this.toFiat) || 0;
       if (this.isSwapped) {
         [rateFromMsg1, rateFromMsg2] = [rateFromMsg2, rateFromMsg1];
       }
@@ -357,17 +390,21 @@ export default {
         this.ratio = result.toFixed(2);
       } else if (origin === 'to' && !isNaN(input2) && rateFromMsg1 !== 0) {
         const result = (input2 * rateFromMsg2) / rateFromMsg1;
-        this.selectedTokenQuantity1 = result.toFixed(2);
+        this.fromTokenQuantity = result.toFixed(2);
       }
     },
     setMaxTokenQuantity() {
-      const maxQuantity = parseFloat(this.tokenBalance1) - 0.01;
-      this.selectedTokenQuantity1 =
-        maxQuantity > 0 ? maxQuantity.toFixed(2) : '0';
+      const maxQuantity = parseFloat(this.fromTokenBalance) - 0.01;
+      this.fromTokenQuantity = maxQuantity > 0 ? maxQuantity.toFixed(2) : '0';
       this.calculateRatio('from');
     },
     toggleSlippageModal() {
       this.showSlippageModal = !this.showSlippageModal;
+    },
+    handleClickOutside(event) {
+      if (!this.$el.contains(event.target) && this.showSlippageModal) {
+        this.showSlippageModal = false;
+      }
     },
     setToCustom() {
       this.selectOption('custom');
@@ -376,62 +413,13 @@ export default {
       this.selectedOption = option;
       if (option === 'auto') {
         this.slippageType = 'auto';
-        this.slippage = 0.5;
       } else if (option === 'custom') {
         this.slippageType = 'custom';
-        this.slippage = 0.5;
       }
     },
     toggleAccordion(index) {
       this.activeIndex = this.activeIndex === index ? null : index;
     },
-    async fetchTokenData() {
-      if (!this.chainId) {
-        setTimeout(() => this.fetchTokenData(), 1000);
-        return;
-      }
-
-      try {
-        const response = await axios.get(
-          `${configs.LOCAL_API_URL}/tokens/swager?chain=${this.chainId}`
-        );
-        const responseData = response.data.msg;
-        const tokensArray = Object.entries(responseData.tokens).map(
-          ([address, tokenData]) => ({
-            address,
-            name: tokenData.name,
-            symbol: tokenData.symbol,
-            logoURI: tokenData.logoURI,
-            value: tokenData.symbol,
-          })
-        );
-
-        this.tokens = tokensArray;
-
-        let defaultToken;
-        if (this.chainId === 137) {
-          defaultToken = this.tokens.find((token) => token.symbol === 'MATIC');
-        } else if (this.chainId === 1) {
-          defaultToken = this.tokens.find((token) => token.symbol === 'ETH');
-        } else if (this.chainId === 56) {
-          defaultToken = this.tokens.find((token) => token.symbol === 'BNB');
-        }
-
-        if (defaultToken) {
-          this.selectedFromToken = defaultToken;
-          setTimeout(() => {
-            this.handleSelect1(defaultToken);
-          }, 1000);
-        } else {
-          this.selectedFromToken = null;
-        }
-
-        this.selectedToToken = null;
-      } catch (error) {
-        console.error('Error fetching token data:', error.message);
-      }
-    },
-
     async getAccountBalance() {
       if (window.ethereum) {
         const web3 = new Web3(window.ethereum);
@@ -440,13 +428,17 @@ export default {
           const networkId = await web3.eth.net.getId();
           this.chainId = Number(networkId);
 
-          ethereum.on('chainChanged', (chainId) => {
-            const id = parseInt(chainId, 16);
-            this.chainId = id;
-            this.fetchTokenData();
-          });
+          // Immediately fetch tokens and set the default token
+          await this.fetchAndSetDefaultToken();
 
-          this.fetchTokenData();
+          // Listen to chain changes
+          ethereum.on('chainChanged', async (chainIdHex) => {
+            const id = parseInt(chainIdHex, 16);
+            if (this.chainId !== id) {
+              this.chainId = id;
+              await this.fetchAndSetDefaultToken();
+            }
+          });
         } catch (error) {
           console.error('Error fetching account balance:', error);
         }
@@ -455,11 +447,41 @@ export default {
       }
     },
 
+    async fetchAndSetDefaultToken() {
+      this.isLoadingTokens = true;
+      try {
+        await this.$refs.tokenModal.fetchTokens(this.chainId);
+        this.setDefaultToken();
+      } catch (error) {
+        console.error('Error fetching tokens:', error);
+      } finally {
+        this.isLoadingTokens = false;
+      }
+    },
+    setDefaultToken() {
+      const symbolMap = {
+        137: 'MATIC',
+        1: 'ETH',
+        56: 'BNB',
+      };
+      const desiredSymbol = symbolMap[this.chainId.toString()];
+      const defaultToken = Object.values(this.tokens).find(
+        (token) => token.symbol === desiredSymbol
+      );
+
+      if (defaultToken) {
+        this.selectedFromToken = defaultToken;
+        this.updateTokenBalance(defaultToken, true);
+      }
+    },
+
     updateStateBasedOnChainId() {
       console.log(this.chainId, 'Chain ID');
     },
     async handleTrade() {
       this.isTransactionPending = true;
+      const slippageValue =
+        this.selectedOption === 'auto' ? 0.5 : this.customSlippage;
       const web3 = new Web3(window.ethereum);
       const savedAccount = await web3.eth.getAccounts();
       const tokenone = Cookies.get('tokenone');
@@ -490,13 +512,13 @@ export default {
           }
 
           swapData = {
-            slippage: 0.5,
+            slippage: slippageValue,
             src: tokenone,
             from: savedAccount[0],
             dst: tokentwo,
             chain: this.chainId,
             amount: web3.utils.toWei(
-              this.selectedTokenQuantity1.toString(),
+              this.fromTokenQuantity.toString(),
               'ether'
             ),
           };
@@ -555,39 +577,36 @@ export default {
     resetTransactionFields() {
       this.selectedFromToken = null;
       this.selectedToToken = null;
-      this.selectedTokenQuantity1 = '';
-      this.selectedTokenQuantity2 = '';
+      this.fromTokenQuantity = '';
+      this.toTokenQuantity = '';
       this.ratio = '';
-      this.tokenBalance1 = '';
-      this.tokenBalance2 = '';
-      this.msg1 = 0;
-      this.msg2 = 0;
+      this.fromTokenBalance = '';
+      this.toTokenBalance = '';
+      this.fromFiat = 0;
+      this.toFiat = 0;
     },
     swapSelections() {
       const temp = this.selectedFromToken;
       this.selectedFromToken = this.selectedToToken;
       this.selectedToToken = temp;
       this.isSwapped = !this.isSwapped;
-      this.fetchTokenData();
+      // this.fetchTokenData();
     },
     swapTokens() {
       const tempFromToken = this.selectedFromToken;
-      const tempToToken = this.selectedToToken;
-      const tempQuantity1 = this.selectedTokenQuantity1;
+      const tempToToken = this.selectedReceiveToken;
+      const tempQuantity1 = this.fromTokenQuantity;
       const tempRatio = this.ratio;
 
       // Swap the tokens
       this.selectedFromToken = tempToToken;
-      this.selectedToToken = tempFromToken;
+      this.selectedReceiveToken = tempFromToken;
 
       // Swap the input values
-      this.selectedTokenQuantity1 = tempRatio;
+      this.fromTokenQuantity = tempRatio;
       this.ratio = tempQuantity1;
 
-      // Toggle the isSwapped flag
       this.isSwapped = !this.isSwapped;
-
-      // Recalculate the ratio
       this.calculateRatio('from');
     },
   },
@@ -595,24 +614,24 @@ export default {
     isDisabled() {
       return (
         !this.ratio ||
-        this.msg2 == 0 ||
-        !this.selectedTokenQuantity1 ||
-        this.selectedTokenQuantity1 === '0' ||
-        parseFloat(this.selectedTokenQuantity1) >
-          parseFloat(this.tokenBalance1) ||
+        this.toFiat == 0 ||
+        !this.fromTokenQuantity ||
+        this.fromTokenQuantity === '0' ||
+        parseFloat(this.fromTokenQuantity) >
+          parseFloat(this.fromTokenBalance) ||
         this.isTransactionPending
       ); // Disable button if transaction is pending
     },
     buttonText() {
-      if (this.msg2 == 0 || this.msg2 == '') {
+      if (this.toFiat == 0 || this.toFiat == '') {
         return 'Select Token';
       } else if (
-        !this.selectedTokenQuantity1 ||
-        this.selectedTokenQuantity1 === '0' ||
-        this.selectedTokenQuantity1 === ''
+        !this.fromTokenQuantity ||
+        this.fromTokenQuantity === '0' ||
+        this.fromTokenQuantity === ''
       ) {
         return 'Enter an Amount';
-      } else if (this.selectedTokenQuantity1 >= this.tokenBalance1) {
+      } else if (this.fromTokenQuantity >= this.fromTokenBalance) {
         return 'Insufficient balance';
       } else {
         return this.isTransactionPending ? 'Processing...' : 'Swap';
@@ -620,6 +639,7 @@ export default {
     },
   },
   async mounted() {
+    document.addEventListener('click', this.handleClickOutside);
     await this.getAccountBalance().then((balance) => {
       this.balance = balance;
     });
@@ -631,13 +651,13 @@ export default {
     selectedToToken(newVal, oldVal) {
       if (newVal !== oldVal) this.calculateRatio('from');
     },
-    msg1(newVal) {
+    fromFiat(newVal) {
       this.calculateRatio('from');
     },
-    msg2(newVal) {
+    toFiat(newVal) {
       this.calculateRatio('from');
     },
-    selectedTokenQuantity1(newVal) {
+    fromTokenQuantity(newVal) {
       if (newVal) this.calculateRatio('from');
     },
   },
@@ -645,5 +665,4 @@ export default {
 </script>
 
 <style>
-
 </style>
