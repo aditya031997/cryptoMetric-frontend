@@ -558,6 +558,7 @@ export default {
               'ether'
             ),
           };
+          console.log(swapData,"swapData")
           const swap = await axios.post(
             `${configs.LOCAL_API_URL}/tokens/swapper`,
             swapData
