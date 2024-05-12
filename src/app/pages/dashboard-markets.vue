@@ -234,7 +234,7 @@ export default {
             name: category.name,
             value: category.categoryId,
           }));
-          // this.initializeFilters();
+          this.initializeFilters();
         } else {
           console.error('Categories data is undefined or empty');
         }
