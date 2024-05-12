@@ -254,6 +254,7 @@ export default {
       fromTokenQuantity: '',
       toTokenQuantity: '',
       fromTokenBalance: '',
+      balanceCache: {},
       toTokenBalance: '',
       chainId: '',
       fromFiat: 0,
@@ -305,53 +306,84 @@ export default {
       this.isSwapModalVisible = false;
     },
     async updateTokenBalance(token, isFrom) {
-      if (this.isLoadingBalances) {
+      // Choose the appropriate loading flag
+      let loadingFlag = isFrom ? 'isLoadingFromBalance' : 'isLoadingToBalance';
+
+      // Check the cache for existing balances
+      const cacheKey = token.address + (isFrom ? '_from' : '_to');
+      if (this.balanceCache[cacheKey]) {
+        if (isFrom) {
+          this.fromFiat = this.balanceCache[cacheKey].fiat;
+          this.fromTokenBalance = this.balanceCache[cacheKey].balance;
+          this.fromCalculatedFiat = this.balanceCache[cacheKey].calculatedFiat;
+        } else {
+          this.toFiat = this.balanceCache[cacheKey].fiat;
+          this.toTokenBalance = this.balanceCache[cacheKey].balance;
+        }
+        this.calculateRatio();
+        return;
+      }
+
+      // Prevent concurrent updates for this field
+      if (this[loadingFlag]) {
         console.log('Update in progress, skipping new request');
         return;
       }
-      this.isLoadingBalances = true;
+
+      this[loadingFlag] = true;
 
       try {
+        // Simulate a small delay before fetching the balance
         await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Fetch fiat value data from your API
         const response = await axios.get(
           `${configs.LOCAL_API_URL}/tokens/convert?chain=${this.chainId}&addresses=${token.address}`
         );
+        const fiatValue = response.data.msg;
+
         const web3 = new Web3(window.ethereum);
         const account = (await web3.eth.getAccounts())[0];
         const provider = new ethers.BrowserProvider(window.ethereum);
 
         let tokenBalance;
+
         if (token.address === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
-          console.log('here');
+          // Handle native cryptocurrency (e.g., Ether)
           const signer = await provider.getSigner();
           const balance = await provider.getBalance(signer.address);
           tokenBalance = ethers.formatUnits(balance.toString(), 18);
         } else {
-          console.log('there');
-
-          // Handle ERC-20 token
+          // Handle ERC-20 token balance
           const contract = new ethers.Contract(token.address, abi, provider);
           const decimals = await contract.decimals();
           const balanceAmount = await contract.balanceOf(account);
           tokenBalance = ethers.formatUnits(balanceAmount.toString(), decimals);
         }
 
-        const first4Chars = tokenBalance.slice(0, 4);
+        const truncatedBalance = tokenBalance.slice(0, 4);
 
         if (isFrom) {
-          this.fromFiat = response.data.msg;
-          this.fromTokenBalance = first4Chars;
-          this.fromCalculatedFiat = response.data.msg * this.fromTokenQuantity;
+          this.fromFiat = fiatValue;
+          this.fromTokenBalance = truncatedBalance;
+          this.fromCalculatedFiat = fiatValue * this.fromTokenQuantity;
         } else {
-          this.toFiat = response.data.msg;
-          this.toTokenBalance = first4Chars;
+          this.toFiat = fiatValue;
+          this.toTokenBalance = truncatedBalance;
         }
+
+        // Cache the fetched balance and calculated values
+        this.balanceCache[cacheKey] = {
+          balance: truncatedBalance,
+          fiat: fiatValue,
+          calculatedFiat: isFrom ? this.fromCalculatedFiat : undefined,
+        };
 
         this.calculateRatio();
       } catch (error) {
         console.error('Failed to fetch token balance:', error);
       } finally {
-        this.isLoadingBalances = false;
+        this[loadingFlag] = false; // Release the loading flag
       }
     },
     sanitizeInput(event, model) {
