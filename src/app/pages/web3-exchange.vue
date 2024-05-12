@@ -261,6 +261,8 @@ export default {
       toFiat: 0,
       balance: '0',
       fromCalculatedFiat: '',
+      selectedFromTokenAddress: '',
+      selectedToTokenAddress: '',
       ratio: '',
       isSwapped: false,
       showSlippageModal: false,
@@ -298,9 +300,11 @@ export default {
     handleTokenSelected(token) {
       if (this.isSelectingFrom) {
         this.selectedFromToken = token;
+        this.selectedFromTokenAddress = token.address; 
         this.updateTokenBalance(token, true);
       } else {
         this.selectedReceiveToken = token;
+        this.selectedToTokenAddress = token.address;
         this.updateTokenBalance(token, false);
       }
       this.isSwapModalVisible = false;
@@ -398,17 +402,13 @@ export default {
       this.calculateRatio(model === 'fromTokenQuantity' ? 'from' : 'to');
     },
     calculateRatio(origin) {
-      console.log('Selected from token:', this.selectedFromToken);
-      console.log('Selected receive token:', this.selectedReceiveToken);
-      console.log('Message 1:', this.fromFiat);
-      console.log('Message 2:', this.toFiat);
       if (
         !this.selectedFromToken ||
         !this.selectedReceiveToken ||
         !this.fromFiat ||
         !this.toFiat
       ) {
-        console.log('Missing data for calculation');
+        // console.log('Missing data for calculation');
         return;
       }
 
@@ -507,6 +507,7 @@ export default {
 
       if (defaultToken) {
         this.selectedFromToken = defaultToken;
+        this.selectedFromTokenAddress = defaultToken.address;
         this.updateTokenBalance(defaultToken, true);
       }
     },
@@ -520,27 +521,25 @@ export default {
         this.selectedOption === 'auto' ? 0.5 : this.customSlippage;
       const web3 = new Web3(window.ethereum);
       const savedAccount = await web3.eth.getAccounts();
-      const tokenone = Cookies.get('tokenone');
-      const tokentwo = Cookies.get('tokentwo');
       try {
         const allowanceResponse = await axios.get(
           `${configs.LOCAL_API_URL}/tokens/allowance`,
           {
             params: {
-              tokenAddress: `${tokenone}`,
+              tokenAddress: `${this.selectedFromTokenAddress}`,
               walletAddress: `${savedAccount}`,
               chain: `${this.chainId}`,
             },
           }
         );
         const allowance = allowanceResponse.data.allowance;
-
+          console.log(allowance,"allowance")
         setTimeout(async () => {
           let swapData;
 
           if (allowance === '0') {
             const approve = await axios.get(
-              `${configs.LOCAL_API_URL}/tokens/approveTransaction?tokenAddress=${tokenone}&chain=${this.chainId}`
+              `${configs.LOCAL_API_URL}/tokens/approveTransaction?tokenAddress=${this.selectedFromTokenAddress}&chain=${this.chainId}`
             );
           }
           if (this.slippageType === 'auto') {
@@ -549,16 +548,16 @@ export default {
 
           swapData = {
             slippage: slippageValue,
-            src: tokenone,
+            src: this.selectedFromTokenAddress,
             from: savedAccount[0],
-            dst: tokentwo,
+            dst: this.selectedToTokenAddress,
             chain: this.chainId,
             amount: web3.utils.toWei(
               this.fromTokenQuantity.toString(),
               'ether'
             ),
           };
-          console.log(swapData,"swapData")
+         console.log(swapData,"swapData")
           const swap = await axios.post(
             `${configs.LOCAL_API_URL}/tokens/swapper`,
             swapData
@@ -581,10 +580,10 @@ export default {
                 gas: swap.data.tx.gas,
                 gasPrice: swap.data.tx.gasPrice,
               };
-              console.log(transaction, 'transaction');
+              // console.log(transaction, 'transaction');
               // Send transaction
               const txHash = await web3.eth.sendTransaction(transaction);
-              console.log(txHash, 'txHash');
+              // console.log(txHash, 'txHash');
               if (txHash) {
                 this.isTransactionPending = false;
                 this.resetTransactionFields();
