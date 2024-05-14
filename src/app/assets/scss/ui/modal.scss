@@ -65,3 +65,34 @@
     opacity: 1;
   }
 }
+
+.multiselect__content-wrapper{
+  background-color: transparent;
+  .multiselect__content{
+    background-color: #ffffff;
+    .multiselect__element{
+      border-bottom:1px solid #dfe8ef ;
+      .multiselect__option{
+        padding-top: 10px;
+        padding-bottom: 10px;
+      }
+    }
+  }
+}
+.multiselect__content-wrapper::-webkit-scrollbar-track
+{
+	border-radius: 10px;
+	background-color:#dfe8ef ;
+}
+
+.multiselect__content-wrapper::-webkit-scrollbar
+{
+	width: 6px;
+	background-color:#dfe8ef ;
+}
+
+.multiselect__content-wrapper::-webkit-scrollbar-thumb
+{
+	border-radius: 10px;
+	background-color: #9ea8b0;
+}
