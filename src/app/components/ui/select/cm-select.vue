@@ -40,6 +40,7 @@
         :placeholder="placeholder"
         :label="label"
         :show-labels="false"
+        
         :options="options"
         :searchable="isSearch"
         @update:modelValue="handlerChangeSelect"
