@@ -24,6 +24,12 @@
           {{ symbol }}
         </p>
       </div>
+      <button @click="handleBuy">
+        Buy
+      </button>
+      <button @click="handleSell">
+        Sell
+      </button>
       <template v-if="hasButton">
         <button-favorite
           v-if="!isDnd"
@@ -61,6 +67,7 @@
     </div>
   </div>
 </template>
+
 
 <script>
 import { getImageCoin, getBigImageCoin } from '@/utils/helpers/formatter-images';
@@ -130,6 +137,13 @@ export default {
       default: false,
     },
   },
+  data() {
+    return {
+      modelValue: this.value,
+      selectedCoinName: '',
+      selectedCoinSymbol: '',
+    };
+  },
   computed: {
     getCoinImageUrl() {
       if (this.isCoinPage) {
@@ -147,7 +161,39 @@ export default {
       return simpleFormatPrice(this.price);
     },
   },
+  methods: {
+    resetValue() {
+      if (this.isFilter) {
+        this.modelValue = { name: 'All', value: null };
+        this.onChange(this.defaultValue, this.index);
+        if (this.resetOption) {
+          this.resetOption();
+        }
+      }
+    },
+    getImageCoin(slug) {
+      if (slug) {
+        return getImageCoin(slug);
+      }
+      return '';
+    },
+    handlerChangeSelect(value) {
+      this.modelValue = value;
+      this.onChange(value, this.index);
+    },
+    handleBuy() {
+      this.selectedCoinName = this.name;
+      this.selectedCoinSymbol = this.symbol;
+      // Handle the buy action here
+      console.log(`Buying ${this.selectedCoinName} (${this.selectedCoinSymbol})`);
+    },
+    handleSell() {
+      this.selectedCoinName = this.name;
+      this.selectedCoinSymbol = this.symbol;
+      // Handle the sell action here
+      console.log(`Selling ${this.selectedCoinName} (${this.selectedCoinSymbol})`);
+    },
+  },
 };
 </script>
 
-<style></style>

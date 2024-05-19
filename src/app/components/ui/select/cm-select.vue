@@ -38,12 +38,12 @@
       <Multiselect
         v-model="modelValue"
         :placeholder="placeholder"
-        :label="label"
-        :show-labels="false"
         :options="options"
-        :searchable="isSearch"
+        :searchable="true"
+        :label="'name'"
+        :show-labels="false"
         @update:modelValue="handlerChangeSelect"
-        :clearOnSelect="isFilter"
+        :clear-on-select="isFilter"
       >
         <template #singleLabel="{ option }">
           <p
@@ -88,6 +88,7 @@
     </div>
   </div>
 </template>
+
 
 <script>
 import Multiselect from 'vue-multiselect';

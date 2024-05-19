@@ -88,7 +88,7 @@
         />
         <p
           class="pay-content"
-          v-if="fromCalculatedFiat > 0"
+          v-if="fromTokenQuantity > 0 && fromCalculatedFiat"
         >
           ${{ fromCalculatedFiat }}
         </p>
@@ -152,7 +152,7 @@
           class="pay-content"
           v-if="ratio"
         >
-          ${{ ratio }}
+          ${{ toCalculatedFiat }}
         </p>
       </div>
       <div class="right-side-input-css">
@@ -247,6 +247,7 @@ export default {
       tokens: [],
       selectedFromToken: null,
       selectedReceiveToken: null,
+      disableRecalculation: false,
       isSwapModalVisible: false,
       isLoadingTokens: false,
       isLoadingBalances: false,
@@ -261,6 +262,7 @@ export default {
       toFiat: 0,
       balance: '0',
       fromCalculatedFiat: '',
+      toCalculatedFiat: '',
       selectedFromTokenAddress: '',
       selectedToTokenAddress: '',
       ratio: '',
@@ -300,7 +302,7 @@ export default {
     handleTokenSelected(token) {
       if (this.isSelectingFrom) {
         this.selectedFromToken = token;
-        this.selectedFromTokenAddress = token.address; 
+        this.selectedFromTokenAddress = token.address;
         this.updateTokenBalance(token, true);
       } else {
         this.selectedReceiveToken = token;
@@ -319,7 +321,6 @@ export default {
         if (isFrom) {
           this.fromFiat = this.balanceCache[cacheKey].fiat;
           this.fromTokenBalance = this.balanceCache[cacheKey].balance;
-          this.fromCalculatedFiat = this.balanceCache[cacheKey].calculatedFiat;
         } else {
           this.toFiat = this.balanceCache[cacheKey].fiat;
           this.toTokenBalance = this.balanceCache[cacheKey].balance;
@@ -402,13 +403,13 @@ export default {
       this.calculateRatio(model === 'fromTokenQuantity' ? 'from' : 'to');
     },
     calculateRatio(origin) {
+      if (this.disableRecalculation) return;
       if (
         !this.selectedFromToken ||
         !this.selectedReceiveToken ||
         !this.fromFiat ||
         !this.toFiat
       ) {
-        // console.log('Missing data for calculation');
         return;
       }
 
@@ -417,6 +418,7 @@ export default {
 
       let rateFromMsg1 = parseFloat(this.fromFiat) || 0;
       let rateFromMsg2 = parseFloat(this.toFiat) || 0;
+
       if (this.isSwapped) {
         [rateFromMsg1, rateFromMsg2] = [rateFromMsg2, rateFromMsg1];
       }
@@ -424,6 +426,7 @@ export default {
       if (origin === 'from' && !isNaN(input1) && rateFromMsg2 !== 0) {
         const result = (input1 * rateFromMsg1) / rateFromMsg2;
         this.ratio = result.toFixed(2);
+        this.toCalculatedFiat = (result * rateFromMsg2).toFixed(4);
       } else if (origin === 'to' && !isNaN(input2) && rateFromMsg1 !== 0) {
         const result = (input2 * rateFromMsg2) / rateFromMsg1;
         this.fromTokenQuantity = result.toFixed(2);
@@ -512,9 +515,7 @@ export default {
       }
     },
 
-    updateStateBasedOnChainId() {
-      console.log(this.chainId, 'Chain ID');
-    },
+    updateStateBasedOnChainId() {},
     async handleTrade() {
       this.isTransactionPending = true;
       const slippageValue =
@@ -533,7 +534,7 @@ export default {
           }
         );
         const allowance = allowanceResponse.data.allowance;
-          console.log(allowance,"allowance")
+        // console.log(allowance, 'allowance');
         setTimeout(async () => {
           let swapData;
 
@@ -557,7 +558,7 @@ export default {
               'ether'
             ),
           };
-         console.log(swapData,"swapData")
+          // console.log(swapData, 'swapData');
           const swap = await axios.post(
             `${configs.LOCAL_API_URL}/tokens/swapper`,
             swapData
@@ -626,24 +627,45 @@ export default {
       this.selectedFromToken = this.selectedToToken;
       this.selectedToToken = temp;
       this.isSwapped = !this.isSwapped;
-      // this.fetchTokenData();
     },
     swapTokens() {
-      const tempFromToken = this.selectedFromToken;
-      const tempToToken = this.selectedReceiveToken;
-      const tempQuantity1 = this.fromTokenQuantity;
-      const tempRatio = this.ratio;
+      this.disableRecalculation = true;
 
-      // Swap the tokens
-      this.selectedFromToken = tempToToken;
+      // Swap the token objects
+      const tempFromToken = this.selectedFromToken;
+      this.selectedFromToken = this.selectedReceiveToken;
       this.selectedReceiveToken = tempFromToken;
 
-      // Swap the input values
-      this.fromTokenQuantity = tempRatio;
-      this.ratio = tempQuantity1;
+      // Swap the quantities in the input fields
+      const tempQuantity = this.fromTokenQuantity;
+      this.fromTokenQuantity = this.ratio;
+      this.ratio = tempQuantity;
 
-      this.isSwapped = !this.isSwapped;
-      this.calculateRatio('from');
+      // Swap the balances related to each token
+      const tempBalance = this.fromTokenBalance;
+      this.fromTokenBalance = this.toTokenBalance;
+      this.toTokenBalance = tempBalance;
+
+      // Swap the calculated fiat values
+      const tempCalculatedFiat = this.fromCalculatedFiat;
+      this.fromCalculatedFiat = this.toCalculatedFiat;
+      this.toCalculatedFiat = tempCalculatedFiat;
+
+      // Swap the fiat conversion rates
+      const tempFiat = this.fromFiat;
+      this.fromFiat = this.toFiat;
+      this.toFiat = tempFiat;
+
+      // Re-enable recalculation
+      this.disableRecalculation = false;
+
+      // Force an update to the component to reflect changes
+      this.$forceUpdate();
+    },
+    updateFromCalculatedFiat() {
+      this.fromCalculatedFiat = (
+        this.fromFiat * parseFloat(this.fromTokenQuantity)
+      ).toFixed(2);
     },
   },
   computed: {
@@ -687,14 +709,18 @@ export default {
     selectedToToken(newVal, oldVal) {
       if (newVal !== oldVal) this.calculateRatio('from');
     },
-    fromFiat(newVal) {
-      this.calculateRatio('from');
+    fromFiat(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        this.updateFromCalculatedFiat();
+      }
     },
     toFiat(newVal) {
       this.calculateRatio('from');
     },
-    fromTokenQuantity(newVal) {
-      if (newVal) this.calculateRatio('from');
+    fromTokenQuantity(newVal, oldVal) {
+      if (newVal !== oldVal && newVal > 0) {
+        this.updateFromCalculatedFiat();
+      }
     },
   },
 };

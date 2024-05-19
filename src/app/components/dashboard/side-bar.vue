@@ -63,7 +63,9 @@
           class="side-bar__button"
           @click="$emit('on-hide-side-bar')"
         >
-          <component :is="!isSmallBar ? 'icon-sidebar-right' : 'icon-sidebar-left'" />
+          <component
+            :is="!isSmallBar ? 'icon-sidebar-right' : 'icon-sidebar-left'"
+          />
           <span
             class="ml-2 side-bar__text"
             :class="{ 'side-bar__text--none': !isSmallBar }"
@@ -176,7 +178,7 @@ export default {
         //   icon: 'icon-calendar',
         //   active: true,
         // },
-      
+
         {
           id: 6,
           to: '/news',
@@ -185,17 +187,17 @@ export default {
           active: true,
         },
         {
-          id: 7,
-          to: '/support',
-          name: 'Support',
-          icon: 'icon-support',
-          active: true,
-        },
-        {
           id: 8,
           to: '/swap',
           name: 'Swap',
           icon: 'icon-swap',
+          active: true,
+        },
+        {
+          id: 7,
+          to: '/support',
+          name: 'Support',
+          icon: 'icon-support',
           active: true,
         },
       ];

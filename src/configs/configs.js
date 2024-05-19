@@ -6,7 +6,7 @@ const configs = {
   NEWS_IMG_URL: '	https://stg-api.cryptometric.com/storage/news/_slug_',
   LARAVEL_API_URL: 'https://stg-api.cryptometric.com/api',
   ICO_IMG_URL: '',
-  EXCHANGES_IMG_URL: '',
+  EXCHANGES_IMG_URL: 'https://stg-api.cryptometric.com/_image_',
   PUSHER_APP_ID: '',
   PUSHER_APP_KEY: '',
   PUSHER_APP_SECRET: '',
