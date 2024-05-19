@@ -24,12 +24,12 @@
           {{ symbol }}
         </p>
       </div>
-      <button @click="handleBuy">
+      <!-- <button @click="handleBuy">
         Buy
       </button>
       <button @click="handleSell">
         Sell
-      </button>
+      </button> -->
       <template v-if="hasButton">
         <button-favorite
           v-if="!isDnd"
@@ -181,18 +181,18 @@ export default {
       this.modelValue = value;
       this.onChange(value, this.index);
     },
-    handleBuy() {
-      this.selectedCoinName = this.name;
-      this.selectedCoinSymbol = this.symbol;
-      // Handle the buy action here
-      console.log(`Buying ${this.selectedCoinName} (${this.selectedCoinSymbol})`);
-    },
-    handleSell() {
-      this.selectedCoinName = this.name;
-      this.selectedCoinSymbol = this.symbol;
-      // Handle the sell action here
-      console.log(`Selling ${this.selectedCoinName} (${this.selectedCoinSymbol})`);
-    },
+    // handleBuy() {
+    //   this.selectedCoinName = this.name;
+    //   this.selectedCoinSymbol = this.symbol;
+    //   // Handle the buy action here
+    //   console.log(`Buying ${this.selectedCoinName} (${this.selectedCoinSymbol})`);
+    // },
+    // handleSell() {
+    //   this.selectedCoinName = this.name;
+    //   this.selectedCoinSymbol = this.symbol;
+    //   // Handle the sell action here
+    //   console.log(`Selling ${this.selectedCoinName} (${this.selectedCoinSymbol})`);
+    // },
   },
 };
 </script>

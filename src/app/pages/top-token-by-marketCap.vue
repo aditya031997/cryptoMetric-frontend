@@ -73,7 +73,7 @@ export default {
       isLoading: true,
       currentPage: 1,
       totalPages: 1,
-      bubblesPerPage: 40,
+      bubblesPerPage: 35,
       filters: [
         { label: '1 Hour', value: '1h' },
         { label: '24 Hours', value: '24h' },
