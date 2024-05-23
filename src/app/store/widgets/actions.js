@@ -39,11 +39,24 @@ export default {
       });
   },
 
-  changePositionOrderWidgets(context, data) {
-
+  changePositionOrderWidgets({ commit }, data) {
+    const token = localStorage.getItem('vue-authenticate.vueauth_token');
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+  
     const list = data.map((widget, index) => ({ widget_id: widget.widget_id, position: index + 1 }));
-    return apiInstance().post('/widgets/user', { widgets: list }).then(() => {
-      context.commit('setWidgetsOrder', data);
-    });
-  },
+    
+    return axios.post(`${configs.API_URL}/widgets/user`, { widgets: list }, config)
+      .then(() => {
+        commit('setWidgetsOrder', data);
+      })
+      .catch(error => {
+        console.error('Error changing position order of widgets:', error);
+        throw error;
+      });
+  }
+  
 };
