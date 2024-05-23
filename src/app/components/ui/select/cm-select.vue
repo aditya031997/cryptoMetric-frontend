@@ -42,7 +42,7 @@
         :show-labels="false"
         
         :options="options"
-        :searchable="isSearch"
+        :searchable="true"
         @update:modelValue="handlerChangeSelect"
         :clearOnSelect="isFilter"
       >

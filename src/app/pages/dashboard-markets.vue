@@ -51,6 +51,7 @@
           :label="filter.name"
           :placeholder="filter.label"
           :options="filter.options"
+
           :isSearch="true"
           :class-wrapper="'page-markets__filter'"
           :on-change="changeFilterValue"
