@@ -168,7 +168,7 @@ export default {
       this.isLoading = true;
       try {
         const response = await axios.get(
-          `http://localhost:5000/tokens/retriveToken?query=${query}&chain=${this.chainId}`
+          `${configs.LOCAL_API_URL}/tokens/retriveToken?query=${query}&chain=${this.chainId}`
         );
         this.filteredApiTokens = response?.data?.msg || [];
       } catch (error) {
