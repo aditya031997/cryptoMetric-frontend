@@ -470,6 +470,8 @@ export default {
           // Immediately fetch tokens and set the default token
           await this.fetchAndSetDefaultToken();
 
+          // await this.updateTokenBalance();
+
           // Listen to chain changes
           ethereum.on('chainChanged', async (chainIdHex) => {
             const id = parseInt(chainIdHex, 16);
