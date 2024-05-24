@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="!isLoad"
-    class="d-flex align-start flex-wrap ml-n4"
+    class="d-flex align-start ml-n4 alert-widget-card"
   >
     <cm-card
       title="List"
@@ -35,7 +35,13 @@
     >
       <alerts-settings />
     </cm-card>
-    <cm-card
+
+  </div>
+    <div
+    v-if="!isLoad"
+    class="d-flex align-start flex-wrap ml-n4"
+  >
+      <cm-card
       title="All Alerts"
       ref="alerts"
       :custom-class="getClassHistoryAlerts"
