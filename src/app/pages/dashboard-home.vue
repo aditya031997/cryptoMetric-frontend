@@ -1,7 +1,7 @@
 <template>
   <div v-if="!isLoad">
     <buttons-widgets v-if="isDnd" />
-    <draggable
+    <VueDraggable
       v-model="widgetsList"
       @start="drag = true"
       @end="drag = false"
@@ -16,7 +16,9 @@
         :key="widget.id"
         :is-dnd="isDnd"
         :widget="widget"
-        :class-content="widget.name === 'gainers_losers' ? 'widget-tops' : 'mt-4'"
+        :class-content="
+          widget.name === 'gainers_losers' ? 'widget-tops' : 'mt-4'
+        "
       >
         <template v-if="widget.name === 'coins_alerts'">
           <widget-coins />
@@ -29,7 +31,7 @@
         </template>
         <widget-news v-if="widget.name === 'news'" />
       </widgets-dnd-wrapper>
-    </draggable>
+    </VueDraggable>
   </div>
   <cm-loader v-else />
 </template>
@@ -44,7 +46,7 @@ import WidgetTopGainers from '../components/widgets/top-coins/widget-top-gainers
 import WidgetTopLosers from '../components/widgets/top-coins/widget-top-losers.vue';
 import WidgetsDndWrapper from '../components/widgets/widgets-dnd-wrapper.vue';
 import WidgetWatchlist from '../components/widgets/watchlist/widget-watchlist.vue';
-import draggable from 'vuedraggable';
+import { VueDraggable } from 'vue-draggable-plus';
 import { mapGetters } from 'vuex';
 
 export default {
@@ -58,7 +60,7 @@ export default {
     WidgetsDndWrapper,
     WidgetCoins,
     WidgetWatchlist,
-    draggable,
+    VueDraggable,
   },
   data: () => ({
     drag: false,
@@ -89,9 +91,14 @@ export default {
     offDndMode(isSave = false) {
       if (isSave) {
         this.isLoad = true;
-        this.$store.dispatch('changePositionOrderWidgets', this.$store.state.widgets.order).finally(() => {
-          this.isLoad = false;
-        });
+        this.$store
+          .dispatch(
+            'changePositionOrderWidgets',
+            this.$store.state.widgets.order
+          )
+          .finally(() => {
+            this.isLoad = false;
+          });
       } else {
         this.$store.commit('cancelChangedDnd');
       }
@@ -115,8 +122,7 @@ export default {
     this.$root.$off('offDndMode', this.offDndMode);
   },
   watch: {
-    getOrderWidgets(newValue) {
-    }
+    getOrderWidgets(newValue) {},
   },
 };
 </script>

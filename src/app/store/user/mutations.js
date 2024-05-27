@@ -12,6 +12,9 @@ export default {
     state.data.firstname = data.first_name;
     state.data.lastname = data.last_name;
   },
+  updateChartTheme(state, data) {
+    state.data.chart_theme = data;
+  },
   setStatusAlertEmail(state, data) {
     state.data.email_alert_status = data;
   },

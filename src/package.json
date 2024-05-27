@@ -39,6 +39,7 @@
     "vue": "^3.1.0",
     "vue-chartjs": "^3.5.1",
     "vue-clickaway": "^2.2.2",
+    "vue-draggable-plus": "^0.4.1",
     "vue-echo-laravel": "^1.0.0",
     "vue-flickity": "^1.2.1",
     "vue-multiselect": "^3.0.0-beta.3",
