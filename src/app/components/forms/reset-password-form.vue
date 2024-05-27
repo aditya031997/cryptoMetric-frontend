@@ -2,48 +2,33 @@
   <div class="auth-form auth-form--reset-password">
     <div class="auth-form__wrapper">
       <cm-logo />
-      <h1 class="auth-form__title text text--title-2 text-cod-grey">Password Recovery</h1>
-      <validation-observer
-        ref="validator"
-      >
+      <h1 class="auth-form__title text text--title-2 text-cod-grey">
+        Password Recovery
+      </h1>
+      <validation-observer ref="validator">
         <form @submit.prevent="onSubmit">
-          <!-- <validation-provider
-            ref="passwordProvider"
-            name="password"
-            rules="required|min:8"
-            v-slot="{ errors }"
-            vid="password"
-          > -->
-            <cm-input
-              class-wrapper="mt-3"
-              id="input-password"
-              label="Password"
-              :error="errors[0]"
-              type="password"
-              v-model="passwordValue"
-            />
-            <ErrorMessage name="password" />
-          <!-- </validation-provider>
-          <validation-provider
-            ref="confirmationProvider"
-            name="password"
-            vid="password_confirmation"
-            rules="required|confirmed:password"
-            v-slot="{ errors }"
-          > -->
-            <cm-input
-              classWrapper="mt-3"
-              id="input-confirm-password"
-              label="Confirm Password"
-              type="password"
-              v-model="passwordConfirmValue"
-            />
-            <ErrorMessage name="password" />
-          <!-- </validation-provider> -->
+          <cm-input
+            class-wrapper="mt-3"
+            id="input-password"
+            label="Password"
+            type="password"
+            v-model="passwordValue"
+            @input="passwordValidation"
+            :error="passwordError"
+          />
+          <ErrorMessage name="password" />
+          <cm-input
+            classWrapper="mt-3"
+            id="input-confirm-password"
+            label="Confirm Password"
+            type="password"
+            v-model="passwordConfirmValue"
+          />
+          <ErrorMessage name="password" />
           <cm-button
             custom-class="mt-4"
             is-block
-            :disabled="isLoad || invalid"
+            :disabled="isValid"
             type="submit"
           >
             Reset Password
@@ -72,7 +57,7 @@
 </template>
 
 <script>
-import { ValidationObserver,ErrorMessage } from 'vee-validate';
+import { ValidationObserver, ErrorMessage } from 'vee-validate';
 // import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
 import CmLink from '../ui/link/cm-link.vue';
 import CmButton from '../ui/button/cm-button.vue';
@@ -97,7 +82,9 @@ export default {
     errorMessage: '',
     email: '',
     token: '',
+    isValid: true,
     passwordValue: '',
+    passwordError: '',
     passwordConfirmValue: '',
   }),
   watch: {
@@ -130,12 +117,26 @@ export default {
       this.$refs.confirmationProvider.isActive = false;
       this.$refs.confirmationProvider.isActive = true;
     },
-    onSubmit() {
-      if (validatePassword(this.passwordValue)) {
-        this.$refs.validator.setErrors({
-          password: ['Password must have digits, uppercase, lowercase and non-alphanumeric symbols'],
-        });
+    passwordValidation(event) {
+      if (event !== '') {
+        this.passwordValue = event;
+      }
+      if (event === '') {
+        this.passwordError = 'The password field is required';
+        return;
+      }
+      this.passwordError = '';
+      this.validation();
+    },
+    validation() {
+      if (!this.passwordError && this.passwordValue) {
+        this.isValid = false;
       } else {
+        this.isValid = true;
+      }
+    },
+    onSubmit() {
+      if (!this.passwordError && this.passwordValue) {
         const data = {
           email: this.email,
           token: this.token,
@@ -148,11 +149,6 @@ export default {
           .then((response) => {
             this.$root.$emit('set-auth-loading', false);
             this.responseMessage = response;
-            // this.passwordValue = '';
-            // this.passwordConfirmValue = '';
-            // setTimeout(() => {
-            //   this.clearErrors();
-            // }, 10);
             this.$router.push({ name: 'login' });
           })
           .catch((response) => {
@@ -160,7 +156,8 @@ export default {
               if (typeof response === 'string') {
                 this.$refs.validator.setErrors({ password: [response] });
               } else {
-                const { password, password_confirmation, ...other } = response.errors;
+                const { password, password_confirmation, ...other } =
+                  response.errors;
                 const errors = {};
                 if (other) {
                   errors.password = Object.values(other).flat();
