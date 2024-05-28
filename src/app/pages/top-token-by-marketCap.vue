@@ -1,6 +1,5 @@
 <template>
   <div class="highchart-wrapper">
-  <cm-loader />
     <div v-if="isLoading">
       <cm-loader />
     </div>
@@ -579,7 +578,8 @@ export default {
   box-shadow: 0px 0px 0px 100vw #06111d;
 }
 .highchart-wrapper .cm-loader{
-  margin-left:125px
+  margin-left:125px;
+  margin-top:70px;
 }
 .loader {
   border: 4px solid #f3f3f3;
