@@ -23,6 +23,8 @@
             label="Confirm Password"
             type="password"
             v-model="passwordConfirmValue"
+            @input="passwordConfirmValidation"
+            :error="passwordConfirmError"
           />
           <ErrorMessage name="password" />
           <cm-button
@@ -85,6 +87,7 @@ export default {
     isValid: true,
     passwordValue: '',
     passwordError: '',
+    passwordConfirmError: '',
     passwordConfirmValue: '',
   }),
   watch: {
@@ -128,15 +131,40 @@ export default {
       this.passwordError = '';
       this.validation();
     },
+    passwordConfirmValidation(event) {
+      if (event !== '') {
+        this.passwordConfirmValue = event;
+      }
+      if (event === '') {
+        this.passwordConfirmError = 'The password field is required';
+        return;
+      }
+      if (event !== this.passwordValue) {
+        this.passwordConfirmError = 'The passwords do not match';
+      } else {
+        this.passwordConfirmError = '';
+      }
+      this.validation();
+    },
     validation() {
-      if (!this.passwordError && this.passwordValue) {
+      if (
+        !this.passwordError &&
+        this.passwordValue &&
+        !this.passwordConfirmError &&
+        this.passwordConfirmValue
+      ) {
         this.isValid = false;
       } else {
         this.isValid = true;
       }
     },
     onSubmit() {
-      if (!this.passwordError && this.passwordValue) {
+      if (
+        !this.passwordError &&
+        this.passwordValue &&
+        this.passwordConfirmValue &&
+        !this.passwordConfirmError
+      ) {
         const data = {
           email: this.email,
           token: this.token,
