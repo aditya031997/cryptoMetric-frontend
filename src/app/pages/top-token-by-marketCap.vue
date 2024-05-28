@@ -26,7 +26,7 @@
       <!-- Custom Pagination -->
       <div
         class="pagination"
-        v-if="activeFilter !== 'favorites'"
+        v-if="activeFilter !== 'favorites' && !isLoading"
       >
         <button @click="gotoFirstPage">&lt;&lt;</button>
         <button @click="previousPage">&lt;</button>

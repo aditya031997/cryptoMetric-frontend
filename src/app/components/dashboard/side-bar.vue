@@ -10,7 +10,9 @@
       @click.stop="emitClose"
     >
       <div class="side-bar__logo">
-        <cm-logo :isSmall="!isSmallBar" />
+        <router-link :to="{ path: '/home' }">
+          <cm-logo :isSmall="!isSmallBar" />
+        </router-link>
         <button-icon
           :on-click="closeSideBar"
           custom-class="side-bar__button-close"
@@ -96,6 +98,7 @@ import IconSidebarRight from '../icons/icon-sidebar-right.vue';
 import IconClose from '../icons/icon-close.vue';
 import iconSwap from '../icons/icon-swap.vue';
 import ExternalLink from '../ui/link/external-link.vue';
+import { RouterLink } from 'vue-router';
 
 export default {
   name: 'side-bar',
@@ -117,6 +120,7 @@ export default {
     IconClose,
     iconSwap,
     ExternalLink,
+    RouterLink
   },
   props: {
     isOpenSideBar: {

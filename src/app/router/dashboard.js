@@ -57,7 +57,7 @@ export default [
     path: '/swap',
     name: 'swap-token',
     component: DashboardSwap,
-    meta: { requiresAuth: true, headerName: 'Swap token' },
+    meta: { requiresAuth: true, headerName: 'Swap Token' },
   },
   {
     path: '/alerts',
