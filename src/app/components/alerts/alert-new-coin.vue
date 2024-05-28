@@ -6,7 +6,7 @@
       </p>
     </div>
     <div class="alert-card__footer">
-      <p class="m-0 d-flex justify-content-between align-items-center text text--caption">
+      <p class="m-0 d-flex justify-content-between align-items-start text text--caption">
         <default-image
           class="alert-card__icon"
           :src="getImageCoinUrl"

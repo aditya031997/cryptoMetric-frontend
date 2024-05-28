@@ -1,4 +1,5 @@
 .dashboard {
+
 }
 .dashboard__content {
   flex-grow: 1;
@@ -9,6 +10,11 @@
   // background: $navy-blue-dark;
   transition: 0.15s padding ease-in-out;
   // -webkit-overflow-scrolling: touch;
+  &>.cm-loader{
+    &:first-of-type{
+      margin-left:125px
+    }
+  }
   @media (max-width: breakpoint-max('sm')) {
     padding: 78px 33px 24px 30px;
   }

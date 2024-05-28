@@ -31,7 +31,11 @@
   margin-top: 8px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  span{
+    word-break: break-word;
+    word-break: break-all;
+  }
 }
 .alert-card__date {
   display: flex;
@@ -43,6 +47,7 @@
   font-size: 0.88rem;
   white-space: nowrap;
   color: $secondary;
+ 
 }
 .alert-card__price {
   text-overflow: ellipsis;
