@@ -96,3 +96,15 @@
 	border-radius: 10px;
 	background-color: #9ea8b0;
 }
+.change-news__modal{
+  .modal {
+    width: 100%;
+    max-width: 575px;
+    .modal__title{
+      white-space: normal;
+    }
+  }
+}
+.modal-open{
+  overflow:hidden ;
+}
