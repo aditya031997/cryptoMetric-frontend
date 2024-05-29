@@ -258,7 +258,7 @@ export default {
               radialGradient: { cx: 0.5, cy: 0.5, r: 0.5 },
               stops: [
                 [0, 'rgba(6,199,110,0)'],
-                [0.7, 'rgba(6,199,110,0.2)'],
+                [0.8, 'rgba(6,199,110,0.3)'],
                 [1, 'rgba(6,199,110,1)'],
               ],
             };
@@ -267,7 +267,7 @@ export default {
               radialGradient: { cx: 0.5, cy: 0.5, r: 0.5 },
               stops: [
                 [0, 'rgba(200,42,78,0)'],
-                [0.7, 'rgba(200,42,78,0.3)'],
+                [0.8, 'rgba(200,42,78,0.4)'],
                 [1, 'rgba(200,42,78,1)'],
               ],
             };
@@ -335,7 +335,7 @@ export default {
                 enabled: true,
                 useHTML: true,
                 formatter: function () {
-                  const maxImageSize = this.point.marker.radius * 0.8;
+                  const maxImageSize = this.point.marker.radius * 0.6;
                   const minImageSize = 10;
                   const imageSize = Math.max(
                     Math.min(maxImageSize, this.point.marker.radius),
@@ -345,8 +345,8 @@ export default {
                   const fontSize = Math.max(this.point.marker.radius * 0.2, 5);
                   const changeColor =
                     parseFloat(this.point.change) >= 0
-                      ? 'rgb(6,199,110)'
-                      : 'rgb(200,42,78)';
+                      ? 'rgba(6,199,110,0)'
+                      : 'rgba(200,42,78,0)';
 
                   return `
                           <div style="text-align:center; font-size:${fontSize}px;">
