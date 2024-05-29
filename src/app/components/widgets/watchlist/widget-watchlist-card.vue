@@ -94,13 +94,6 @@ export default {
       navigateToLink,
     };
   },
-  // methods: {
-  //   onClickCoin() {
-  //     if (!this.isDnd) {
-  //       this.$router.push(`crypto-markets/${this.slug}`);
-  //     }
-  //   },
-  // },
 };
 </script>
 

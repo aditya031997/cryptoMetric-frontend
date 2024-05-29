@@ -11,6 +11,7 @@
           v-model="emailValue"
           @input="emailValidation"
           :error="emailError"
+          placeholder="Enter your email"
         />
 
         <ErrorMessage name="email" />
@@ -18,11 +19,23 @@
           class-wrapper="mt-3"
           id="input-password"
           label="Password"
-          type="password"
+          :type="passwordFieldType"
           v-model="passwordValue"
           @input="passwordValidation"
           :error="passwordError"
-        />
+          placeholder="Enter your password"
+        >
+          <template #append>
+            <button
+              type="button"
+              @click="togglePasswordVisibility"
+              class="password-toggle"
+            >
+              <icon-hide v-if="passwordFieldType === 'password'" />
+              <icon-show v-else />
+            </button>
+          </template>
+        </cm-input>
         <ErrorMessage name="password" />
         <cm-button
           custom-class="mt-4"
@@ -58,6 +71,8 @@ import CmButton from '../ui/button/cm-button.vue';
 import { ValidationObserver, ErrorMessage } from 'vee-validate';
 import CmLogo from '../cm-logo.vue';
 import accessToken from '../../utils/helpers/access-token';
+import IconShow from '../icons/icon-show-password.vue';
+import IconHide from '../icons/icon-hide-password.vue';
 
 export default {
   components: {
@@ -67,6 +82,8 @@ export default {
     ErrorMessage,
     ValidationObserver,
     CmLogo,
+    IconShow,
+    IconHide,
   },
   data: () => ({
     isLoad: false,
@@ -76,6 +93,7 @@ export default {
     emailError: '',
     passwordError: '',
     isValid: true,
+    passwordFieldType: 'password', // initial password field type
   }),
   watch: {
     emailValue(value) {
@@ -85,11 +103,13 @@ export default {
       this.errorMessage = '';
     },
     isLoad(value) {
-
       this.$root.$emit('set-auth-loading', this.isLoad);
     },
   },
   methods: {
+    togglePasswordVisibility() {
+      this.passwordFieldType = this.passwordFieldType === 'password' ? 'text' : 'password';
+    },
     emailValidation(event) {
       if (event !== '') {
         this.emailValue = event;
@@ -108,17 +128,16 @@ export default {
       this.validation();
     },
     passwordValidation(event) {
-  this.passwordValue = event;
+      this.passwordValue = event;
 
-  if (event === '') {
-    this.passwordError = 'The password field is required';
-  } else {
-    this.passwordError = '';
-  }
+      if (event === '') {
+        this.passwordError = 'The password field is required';
+      } else {
+        this.passwordError = '';
+      }
 
-  this.validation();
-},
-
+      this.validation();
+    },
     validation() {
       if (
         !this.passwordError &&
@@ -172,4 +191,19 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.password-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+}
+
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+</style>

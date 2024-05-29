@@ -8,42 +8,31 @@
       @submit.prevent="onSubmitForm"
     >
       <h2 class="m-0 pb-4 text text--title-3 profile-forms__title">Security</h2>
-      <!-- <validation-provider
-        name="password"
-        rules="required|min:8"
-        v-slot="{ errors }"
-        vid="password"
-      > -->
       <cm-input
         class-wrapper="mt-3"
         id="input-password"
         label="Password"
-        :is-error="!!password"
         type="password"
-        v-model="password"
+        v-model="passwordValue"
+        @input="passwordValidation"
+        :error="passwordError"
+        placeholder="Enter your password"
       />
       <ErrorMessage name="password" />
-
-      <!-- </validation-provider>
-      <validation-provider
-        name="password"
-        vid="password_confirmation"
-        rules="required|confirmed:password"
-        v-slot="{ errors }"
-      > -->
       <cm-input
         class-wrapper="mt-3"
         id="input-confirm-password"
         label="Confirm Password"
-        :is-error="!!passwordConfirm"
         type="password"
-        v-model="passwordConfirm"
+        v-model="passwordConfirmValue"
+        @input="passwordConfirmValidation"
+        :error="passwordConfirmError"
+        placeholder="Enter your confirm password"
       />
       <ErrorMessage name="passwordConfirm" />
 
-      <!-- </validation-provider> -->
       <cm-button
-        :disabled="invalid"
+        :disabled="isValid"
         type="submit"
         is-block
         custom-class="mt-4"
@@ -51,16 +40,16 @@
         Save
       </cm-button>
       <p
+        v-if="responseMessage"
         class="mt-2 text text--caption text-success text-center"
-        v-if="message"
       >
-        {{ message }}
+        {{ responseMessage }}
       </p>
       <p
+        v-if="errorMessage"
         class="mt-2 text text--caption text-success text-center"
-        v-if="error"
       >
-        {{ error }}
+        {{ errorMessage }}
       </p>
     </form>
     <div
@@ -74,7 +63,6 @@
 
 <script>
 import { ValidationObserver, ErrorMessage } from 'vee-validate';
-// import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
 import CmButton from '../ui/button/cm-button.vue';
 import cmInput from '../ui/input/cm-input.vue';
 import CmLoader from '../ui/loader/cm-loader.vue';
@@ -85,21 +73,62 @@ export default {
     cmInput,
     CmButton,
     ValidationObserver,
-    // ValidationProvider,
     ErrorMessage,
     CmLoader,
   },
   data: () => ({
     isLoad: false,
-    password: '',
-    passwordConfirm: '',
-    message: '',
-    error: '',
+    passwordValue: '',
+    isValid: true,
+    passwordConfirmValue: '',
+    passwordError: '',
+    passwordConfirmError: '',
+    responseMessage: '',
+    errorMessage: '',
   }),
   methods: {
+    passwordValidation(event) {
+      if (event !== '') {
+        this.passwordValue = event;
+      }
+      if (event === '') {
+        this.passwordError = 'The password field is required';
+        return;
+      }
+      this.passwordError = '';
+      this.validation();
+    },
+    passwordConfirmValidation(event) {
+      if (event !== '') {
+        this.passwordConfirmValue = event;
+      }
+      if (event === '') {
+        this.passwordConfirmError = 'The password field is required';
+        return;
+      }
+      if (event !== this.passwordValue) {
+        this.passwordConfirmError = 'The passwords do not match';
+      } else {
+        this.passwordConfirmError = '';
+      }
+      this.validation();
+    },
+    validation() {
+      if (
+        !this.passwordError &&
+        this.passwordValue &&
+        !this.passwordConfirmError &&
+        this.passwordConfirmValue
+      ) {
+        this.isValid = false;
+      } else {
+        this.isValid = true;
+      }
+    },
     onSubmitForm() {
       if (validatePassword(this.password)) {
-        this.error = "Password must have digits, uppercase, lowercase and non-alphanumeric symbols"
+        this.error =
+          'Password must have digits, uppercase, lowercase and non-alphanumeric symbols';
       } else {
         this.isLoad = true;
         this.$store

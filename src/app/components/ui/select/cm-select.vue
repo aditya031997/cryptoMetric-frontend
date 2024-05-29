@@ -39,7 +39,7 @@
         v-model="modelValue"
         :placeholder="placeholder"
         :options="options"
-        :searchable="true"
+        :searchable="false"
         :label="'name'"
         :show-labels="false"
         @update:modelValue="handlerChangeSelect"
@@ -88,7 +88,6 @@
     </div>
   </div>
 </template>
-
 
 <script>
 import Multiselect from 'vue-multiselect';
@@ -151,3 +150,5 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped></style>

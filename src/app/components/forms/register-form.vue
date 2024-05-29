@@ -13,6 +13,7 @@
             v-model="firstNameValue"
             @input="firstNameValidation"
             :error="firstNameError"
+            placeholder="Enter your first name"
           />
           <ErrorMessage name="first-name" />
 
@@ -23,6 +24,7 @@
             v-model="lastNameValue"
             @input="lastNameValidation"
             :error="lastNameError"
+            placeholder="Enter your last name"
           />
           <ErrorMessage name="last-name" />
 
@@ -34,6 +36,7 @@
             @input="emailValidation"
             @change="emailValidation"
             :error="emailError"
+            placeholder="Enter your email"
           />
           <ErrorMessage name="email" />
 
@@ -41,22 +44,46 @@
             class-wrapper="mt-3"
             id="input-password"
             label="Password"
-            type="password"
+            :type="passwordFieldType"
             v-model="passwordValue"
             @input="passwordValidation"
             :error="passwordError"
-          />
+            placeholder="Enter your password"
+          >
+            <template #append>
+              <button
+                type="button"
+                @click="togglePasswordVisibility"
+                class="password-toggle"
+              >
+                <icon-show v-if="passwordFieldType === 'password'" />
+                <icon-hide v-else />
+              </button>
+            </template>
+          </cm-input>
           <ErrorMessage name="password" />
 
           <cm-input
             class-wrapper="mt-3"
             id="input-confirm-password"
             label="Confirm Password"
-            type="password"
+            :type="passwordConfirmFieldType"
             v-model="passwordConfirmValue"
             @input="passwordConfirmValidation"
             :error="passwordConfirmError"
-          />
+            placeholder="Confirm your password"
+          >
+            <template #append>
+              <button
+                type="button"
+                @click="togglePasswordConfirmVisibility"
+                class="password-toggle"
+              >
+                <icon-show v-if="passwordConfirmFieldType === 'password'" />
+                <icon-hide v-else />
+              </button>
+            </template>
+          </cm-input>
           <ErrorMessage name="passwordConfirm" />
 
           <cm-button
@@ -86,6 +113,7 @@
   </div>
 </template>
 
+
 <script>
 import cmInput from '../ui/input/cm-input.vue';
 import CmButton from '../ui/button/cm-button.vue';
@@ -93,7 +121,8 @@ import { ValidationObserver, ErrorMessage } from 'vee-validate';
 import CmLogo from '../cm-logo.vue';
 import CmLink from '../ui/link/cm-link.vue';
 import accessToken from '../../utils/helpers/access-token';
-import { validatePassword } from '../../utils/helpers/validate-password';
+import IconShow from '../icons/icon-show-password.vue';
+import IconHide from '../icons/icon-hide-password.vue';
 
 export default {
   components: {
@@ -103,6 +132,8 @@ export default {
     ErrorMessage,
     CmLogo,
     CmLink,
+    IconShow,
+    IconHide,
   },
   data: () => ({
     isLoad: false,
@@ -118,8 +149,18 @@ export default {
     lastNameError: '',
     passwordConfirmError: '',
     isValid: true,
+    passwordFieldType: 'password', // initial password field type
+    passwordConfirmFieldType: 'password', // initial confirm password field type
   }),
   methods: {
+    togglePasswordVisibility() {
+      this.passwordFieldType =
+        this.passwordFieldType === 'password' ? 'text' : 'password';
+    },
+    togglePasswordConfirmVisibility() {
+      this.passwordConfirmFieldType =
+        this.passwordConfirmFieldType === 'password' ? 'text' : 'password';
+    },
     emailValidation(event) {
       if (event !== '') {
         this.emailValue = event;
@@ -246,4 +287,31 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+
+<style lang="scss" scoped>
+.cm-input__wrapper {
+  position: relative;
+}
+
+.cm-input__append {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.password-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+}
+
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+</style>

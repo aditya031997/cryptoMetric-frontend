@@ -8,16 +8,39 @@
       :for="id"
       >{{ label }}</label
     >
-    <input
-      class="cm-input__input"
-      :type="type"
-      :class="{ 'is-error': error && isError, 'is-icons': isIcons, 'is-secondary': secondary, 'is-disabled': disabled }"
-      :id="id"
-      :value="value"
-      :placeholder="placeholder"
-      :disabled="disabled"
-      @input="onChange"
-    />
+    <div class="cm-input__wrapper">
+      <input
+        class="cm-input__input"
+        :type="type"
+        :class="{ 'is-error': error && isError, 'is-icons': isIcons, 'is-secondary': secondary, 'is-disabled': disabled }"
+        :id="id"
+        :value="value"
+        :placeholder="placeholder"
+        :disabled="disabled"
+        @input="onChange"
+      />
+      <template v-if="isIcons">
+        <label
+          :for="id"
+          class="cm-input__icon cm-input__icon--left"
+        >
+          <slot />
+        </label>
+        <template v-if="value">
+          <button-icon
+            :customClass="'cm-input__icon cm-input__icon--right'"
+            :onClick="onClear"
+          >
+            <slot name="icon-right" />
+          </button-icon>
+        </template>
+      </template>
+      <template v-if="$slots.append">
+        <div class="cm-input__append">
+          <slot name="append" />
+        </div>
+      </template>
+    </div>
     <p
       class="cm-input__sub-text"
       :class="{ 'is-error': error && isError }"
@@ -25,22 +48,6 @@
     >
       {{ error ? error : subText }}
     </p>
-    <template v-if="isIcons">
-      <label
-        :for="id"
-        class="cm-input__icon cm-input__icon--left"
-      >
-        <slot />
-      </label>
-      <template v-if="value">
-        <button-icon
-          :customClass="'cm-input__icon cm-input__icon--right'"
-          :onClick="onClear"
-        >
-          <slot name="icon-right" />
-        </button-icon>
-      </template>
-    </template>
   </div>
 </template>
 
@@ -89,7 +96,31 @@ export default {
 };
 </script>
 
-<style
-  lang="scss"
-  scoped
-></style>
+<style lang="scss" scoped>
+.cm-input__wrapper {
+  position: relative;
+}
+
+.cm-input__append {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.password-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+}
+
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+</style>
+

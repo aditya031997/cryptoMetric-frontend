@@ -15,6 +15,7 @@
             v-model="passwordValue"
             @input="passwordValidation"
             :error="passwordError"
+            placeholder="Enter your password"
           />
           <ErrorMessage name="password" />
           <cm-input
@@ -25,6 +26,7 @@
             v-model="passwordConfirmValue"
             @input="passwordConfirmValidation"
             :error="passwordConfirmError"
+            placeholder="Enter your confirm password"
           />
           <ErrorMessage name="password" />
           <cm-button
@@ -60,7 +62,6 @@
 
 <script>
 import { ValidationObserver, ErrorMessage } from 'vee-validate';
-// import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
 import CmLink from '../ui/link/cm-link.vue';
 import CmButton from '../ui/button/cm-button.vue';
 import CmInput from '../ui/input/cm-input.vue';
@@ -70,7 +71,6 @@ import { validatePassword } from '../../utils/helpers/validate-password';
 export default {
   name: 'reset-password-form',
   components: {
-    // ValidationProvider,
     ValidationObserver,
     ErrorMessage,
     CmLink,

@@ -16,6 +16,7 @@
             @input="emailValidation"
             @change="emailValidation"
             :error="emailError"
+            placeholder="Enter your email"
           />
           <ErrorMessage name="email" />
           <cm-button
