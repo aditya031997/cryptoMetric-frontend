@@ -34,6 +34,7 @@
         </cm-select>
         <cm-modal
           :is-active="isModal"
+          :class="'change-news__modal'"
           :on-close="onCloseModal"
           :title="'Are you going to change News updates?'"
         >
@@ -193,7 +194,12 @@ export default {
       if (value && this.valueSelect !== value) {
         this.valueSelectSaved = value;
         this.isModal = true;
+         document.body.classList.add('modal-open');
       }
+    },
+    onCloseModal() {
+      this.isModal = false;
+      document.body.classList.remove('modal-open');
     },
     changeEmailStatus() {
       this.isModal = false;
