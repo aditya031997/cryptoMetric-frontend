@@ -24,13 +24,14 @@
           {{ symbol }}
         </p>
       </div>
-      <!-- <button @click="handleBuy">
+
+      <template v-if="hasButton">
+        <button @click="handleBuy">
         Buy
       </button>
       <button @click="handleSell">
         Sell
-      </button> -->
-      <template v-if="hasButton">
+      </button>
         <button-favorite
           v-if="!isDnd"
           :is-short="!isCoinPage"
@@ -59,7 +60,10 @@
       </div>
       <p
         class="coin-stats__typography-percent text"
-        :class="{ 'text-danger': parseFloat(percent) < 0, 'text-success': parseFloat(percent) > 0 }"
+        :class="{
+          'text-danger': parseFloat(percent) < 0,
+          'text-success': parseFloat(percent) > 0,
+        }"
         v-if="this.percent"
       >
         {{ percentFixed }}
@@ -70,13 +74,20 @@
 
 
 <script>
-import { getImageCoin, getBigImageCoin } from '@/utils/helpers/formatter-images';
+import {
+  getImageCoin,
+  getBigImageCoin,
+} from '@/utils/helpers/formatter-images';
 import ButtonFavorite from '@/components/ui/button/button-favorite.vue';
 import PopperTooltip from '@/components/poppers/popper-tooltip.vue';
 import IconScroll from '@/components/icons/icon-scroll.vue';
 import ButtonIcon from '@/components/ui/button/button-icon.vue';
 
-import { formatPrice, formatPercent, simpleFormatPrice } from '@/utils/helpers/formatter';
+import {
+  formatPrice,
+  formatPercent,
+  simpleFormatPrice,
+} from '@/utils/helpers/formatter';
 import DefaultImage from '../default-image.vue';
 
 export default {
@@ -181,18 +192,18 @@ export default {
       this.modelValue = value;
       this.onChange(value, this.index);
     },
-    // handleBuy() {
-    //   this.selectedCoinName = this.name;
-    //   this.selectedCoinSymbol = this.symbol;
-    //   // Handle the buy action here
-    //   console.log(`Buying ${this.selectedCoinName} (${this.selectedCoinSymbol})`);
-    // },
-    // handleSell() {
-    //   this.selectedCoinName = this.name;
-    //   this.selectedCoinSymbol = this.symbol;
-    //   // Handle the sell action here
-    //   console.log(`Selling ${this.selectedCoinName} (${this.selectedCoinSymbol})`);
-    // },
+    handleBuy() {
+      this.selectedCoinName = this.name;
+      this.selectedCoinSymbol = this.symbol;
+      // Handle the buy action here
+      console.log(`Buying ${this.selectedCoinName} (${this.selectedCoinSymbol})`);
+    },
+    handleSell() {
+      this.selectedCoinName = this.name;
+      this.selectedCoinSymbol = this.symbol;
+      // Handle the sell action here
+      console.log(`Selling ${this.selectedCoinName} (${this.selectedCoinSymbol})`);
+    },
   },
 };
 </script>
