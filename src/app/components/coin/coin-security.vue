@@ -12,8 +12,10 @@
               <span class="caption">
                 <div class="sec-value-field">
                   <span>{{ item.value }}</span>
-                  <IconCheck v-if="item.check" class="check-icon" />
-                  <IconClose v-else class="close-icon" />
+                  <template v-if="item.check !== null">
+                    <IconCheck v-if="item.check" class="check-icon" />
+                    <IconClose v-else class="close-icon" />
+                  </template>
                 </div>
               </span>
             </div>
