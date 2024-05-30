@@ -284,6 +284,9 @@ export default {
 
           return bubble;
         });
+      const screenWidth = window.innerWidth;
+      const minSize = screenWidth < 768 ? '30%' : '60%';
+      const maxSize = screenWidth < 768 ? '100%' : '220%';
       if (this.chart) {
         this.chart.series[0].setData(processedData);
       } else {
@@ -322,8 +325,8 @@ export default {
           },
           plotOptions: {
             packedbubble: {
-              minSize: '60%',
-              maxSize: '170',
+              minSize: minSize,
+              maxSize: maxSize,
               layoutAlgorithm: {
                 gravitationalConstant: 0.01,
                 splitSeries: false,
@@ -400,6 +403,23 @@ export default {
               },
             },
           ],
+           responsive: {
+            rules: [
+              {
+                condition: {
+                  maxWidth: 767,
+                },
+                chartOptions: {
+                  plotOptions: {
+                    packedbubble: {
+                      minSize: '30%',
+                      maxSize: '150%',
+                    },
+                  },
+                },
+              },
+            ],
+          },
         });
       }
     },

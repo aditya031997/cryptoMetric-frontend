@@ -1,13 +1,25 @@
 
 .alert-widget-card{
+ @media(max-width:1130px){
+  flex-wrap: wrap;
+ }
   .page-alerts__card{
     &--list {
       max-width:calc(100% - 380px);
       width: 100%;
+      @media(max-width:1130px){
+        max-width: 100%;
+       }
+       .table{
+          max-width: 100%;
+       }
     }
     &--settings {
       max-width: 380px;
       width: 100%;
+      @media(max-width:1130px){
+        max-width: 100%;
+       }
     }
     &--alerts {
       max-width: 642px;

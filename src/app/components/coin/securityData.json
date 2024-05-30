@@ -1,0 +1,20 @@
+ [
+    {
+      "title": "Open Source",
+      "description": "The code is available for anyone to see.",
+      "value": "Yes",
+      "check": true
+    },
+    {
+      "title": "Anti-Whale",
+      "description": "This feature prevents large holders from manipulating the market.",
+      "value": "No",
+      "check": false
+    },
+    {
+      "title": "Creator Percent",
+      "description": "The percentage of tokens held by the creator.",
+      "value": "2.37%",
+      "check": null
+    }
+  ]
