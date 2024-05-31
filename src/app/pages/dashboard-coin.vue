@@ -64,8 +64,6 @@
       />
     </page-card> -->
 
-    <iframe src="https://stg-widget.upchat.io/66594e5c29105f0e2b14e42d" width="100%" style="height: 100%; min-height: 610px; position: fixed; z-index: 999; bottom: 0%;" frameborder="0"></iframe>
-
     <p class="text text-center h-100 d-flex align-items-center justify-content-center text-danger text--caption">
       {{ errorMessage }}
     </p>
