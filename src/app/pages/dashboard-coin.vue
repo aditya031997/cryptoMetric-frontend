@@ -52,7 +52,7 @@
       />
     </page-card>
 
-   <page-card  custom-class="mt-4">
+   <!-- <page-card  custom-class="mt-4">
       <template v-slot:nav>
         <coin-app-bar :list="SecurityListbar" :on-change="changeSecurityAppBarElement" />
       </template>
@@ -62,7 +62,7 @@
         v-bind="activeSecurityComponent.props"
         :slug="coin.slug"
       />
-    </page-card>
+    </page-card> -->
 
     <p class="text text-center h-100 d-flex align-items-center justify-content-center text-danger text--caption">
       {{ errorMessage }}

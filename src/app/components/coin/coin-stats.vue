@@ -25,7 +25,7 @@
         </p>
       </div>
 
-      <template v-if="hasButton">
+      <!-- <template v-if="hasButton">
         <button @click="handleBuy">
         Buy
       </button>
@@ -44,7 +44,7 @@
         >
           <icon-scroll />
         </button-icon>
-      </template>
+      </template> -->
     </div>
     <div class="coin-stats__typography">
       <div class="coin-stats__popper-wrapper">
@@ -192,18 +192,18 @@ export default {
       this.modelValue = value;
       this.onChange(value, this.index);
     },
-    handleBuy() {
-      this.selectedCoinName = this.name;
-      this.selectedCoinSymbol = this.symbol;
-      // Handle the buy action here
-      console.log(`Buying ${this.selectedCoinName} (${this.selectedCoinSymbol})`);
-    },
-    handleSell() {
-      this.selectedCoinName = this.name;
-      this.selectedCoinSymbol = this.symbol;
-      // Handle the sell action here
-      console.log(`Selling ${this.selectedCoinName} (${this.selectedCoinSymbol})`);
-    },
+    // handleBuy() {
+    //   this.selectedCoinName = this.name;
+    //   this.selectedCoinSymbol = this.symbol;
+    //   // Handle the buy action here
+    //   console.log(`Buying ${this.selectedCoinName} (${this.selectedCoinSymbol})`);
+    // },
+    // handleSell() {
+    //   this.selectedCoinName = this.name;
+    //   this.selectedCoinSymbol = this.symbol;
+    //   // Handle the sell action here
+    //   console.log(`Selling ${this.selectedCoinName} (${this.selectedCoinSymbol})`);
+    // },
   },
 };
 </script>
