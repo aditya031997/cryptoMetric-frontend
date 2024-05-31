@@ -1,0 +1,201 @@
+ [
+    {
+      "title": "Open Source",
+      "description": "The code is available for anyone to see.",
+      "value": "Yes",
+      "check": true
+    },
+    {
+      "title": "Proxy Contract",
+      "description": "A contract that acts on behalf of another, adding features without changing the original.",
+      "value": "No",
+      "check": true
+    },
+    {
+      "title": "Mintable",
+      "description": "New tokens can be created after the initial creation.",
+      "value": "No",
+      "check": true
+    },
+    {
+      "title": "Owner Address",
+      "description": "The digital wallet address of the current token owner.",
+      "value": "0x00...000",
+      "check": false
+    },
+    {
+      "title": "Retrieve Ownership",
+      "description": "Ability to take back control of the token.",
+      "value": "No",
+      "check": true
+    },
+    {
+      "title": "Balance Mod",
+      "description": "Changes to the number of tokens in someone's wallet.",
+      "value": "No",
+      "check": true
+    },
+    {
+      "title": "Hidden Owner",
+      "description": "The owner's identity is not publicly disclosed.",
+      "value": "No",
+      "check": true
+    },
+    {
+      "title": "Self Destruct",
+      "description": "Token can be programmed to disappear.",
+      "value": "No",
+      "check": true
+    },
+    {
+      "title": "External Call Risk",
+      "description": "Risk from the token interacting with outside contracts.",
+      "value": "No",
+      "check": true
+    },
+    {
+      "title": "Buy Tax",
+      "description": "Extra fees on transactions.",
+      "value": "5%",
+      "check": false
+    },
+    {
+      "title": "Sell Tax",
+      "description": "Extra fees on transactions.",
+      "value": "5%",
+      "check": false
+    },
+    {
+      "title": "Buy Available",
+      "description": "Restrictions on buying or selling the token.",
+      "value": "No",
+      "check": true
+    },
+    {
+      "title": "Cannot Sell All",
+      "description": "Restrictions on buying or selling the token.",
+      "value": "No",
+      "check": true
+    },
+    {
+      "title": "Slippage Mod",
+      "description": "Slippage in trading refers to the difference between the expected price of a trade and the price at which it is actually executed.",
+      "value": "No",
+      "check": true
+    },
+    {
+      "title": "Honeypot",
+      "description": "A trap making it impossible to sell the token later.",
+      "value": "No",
+      "check": true
+    },
+    {
+      "title": "Transfer Pausable",
+      "description": "Ability to stop transactions temporarily.",
+      "value": "No",
+      "check": true
+    },
+    {
+      "title": "Blacklisted",
+      "description": "Lists controlling who can use or hold the token.",
+      "value": "No",
+      "check": true
+    },
+    {
+      "title": "Whitelisted",
+      "description": "Lists controlling who can use or hold the token.",
+      "value": "Yes",
+      "check": false
+    },
+    {
+      "title": "In Dex",
+      "description": "Available on decentralized exchanges.",
+      "value": "Yes",
+      "check": true
+    },
+    {
+      "title": "Anti-Whale",
+      "description": "Measures against large market-manipulating transactions.",
+      "value": "Yes",
+      "check": false
+    },
+    {
+      "title": "Anti-Whale Mod",
+      "description": "Ability to modify the Anti-Whale measures.",
+      "value": "No",
+      "check": false
+    },
+    {
+      "title": "Trading Cooldown",
+      "description": "Waiting period between trades.",
+      "value": "No",
+      "check": false
+    },
+    {
+      "title": "Token Name",
+      "description": "Name of the token.",
+      "value": "OPEN GPU",
+      "check": null
+    },
+    {
+      "title": "Token Symbol",
+      "description": "Symbol representing the token.",
+      "value": "oGPU",
+      "check": null
+    },
+    {
+      "title": "Holders",
+      "description": "Number of token holders.",
+      "value": "1.4K",
+      "check": null
+    },
+    {
+      "title": "Total Supply",
+      "description": "Total number of tokens in circulation.",
+      "value": "21M",
+      "check": null
+    },
+    {
+      "title": "Owner Balance",
+      "description": "Balance of tokens owned by the owner.",
+      "value": "0",
+      "check": null
+    },
+    {
+      "title": "Owner Percent",
+      "description": "Percentage of total token supply owned by the owner.",
+      "value": "0%",
+      "check": null
+    },
+    {
+      "title": "Creator Address",
+      "description": "Address of the token's creator.",
+      "value": "0x8a...9a8",
+      "check": null
+    },
+    {
+      "title": "Creator Balance",
+      "description": "Balance of tokens owned by the creator.",
+      "value": "497.5K",
+      "check": null
+    },
+    {
+      "title": "Creator Percent",
+      "description": "Percentage of total token supply owned by the creator.",
+      "value": "2.3689999999999998%",
+      "check": null
+    },
+    {
+      "title": "LP Holders",
+      "description": "Number of liquidity pool (LP) token holders.",
+      "value": "5",
+      "check": null
+    },
+    {
+      "title": "LP Total Supply",
+      "description": "Total number of liquidity pool (LP) tokens in circulation.",
+      "value": "6.8K",
+      "check": null
+    }
+     
+  ]
