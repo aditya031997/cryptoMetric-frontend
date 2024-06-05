@@ -338,7 +338,7 @@ export default {
                 enabled: true,
                 useHTML: true,
                 formatter: function () {
-                  const maxImageSize = this.point.marker.radius * 0.6;
+                  const maxImageSize = this.point.marker.radius * 0.8;
                   const minImageSize = 10;
                   const imageSize = Math.max(
                     Math.min(maxImageSize, this.point.marker.radius),
@@ -348,8 +348,8 @@ export default {
                   const fontSize = Math.max(this.point.marker.radius * 0.2, 5);
                   const changeColor =
                     parseFloat(this.point.change) >= 0
-                      ? 'rgba(6,199,110,0)'
-                      : 'rgba(200,42,78,0)';
+                      ? 'rgb(6,199,110)'
+                      : 'rgb(200,42,78)';
 
                   return `
                           <div style="text-align:center; font-size:${fontSize}px;">
