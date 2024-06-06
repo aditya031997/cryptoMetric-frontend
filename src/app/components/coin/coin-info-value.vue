@@ -20,6 +20,15 @@
     </div>
     <div
       class="ml-4 mt-1"
+      v-if="this.coin.available_supply"
+    >
+      <p class="m-0 text text--caption text-secondary">Circulating Supply</p>
+      <p class="m-0 mt-1 text text-truncate">
+        {{ getCirculatingSupply }}
+      </p>
+    </div>
+    <div
+      class="ml-4 mt-1"
       v-if="this.coin.total_supply"
     >
       <p class="m-0 text text--caption text-secondary">Total Supply</p>
@@ -86,6 +95,9 @@ export default {
     },
     getAvailableSupply() {
       return simpleFormatPrice(this.coin.available_supply);
+    },
+    getCirculatingSupply() {
+      return simpleFormatPrice(this.coin.circulating_supply);
     },
     getVolume() {
       return simpleFormatPrice(this.coin.volume_usd_24h);
