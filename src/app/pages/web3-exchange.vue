@@ -504,6 +504,7 @@ export default {
         137: 'MATIC',
         1: 'ETH',
         56: 'BNB',
+        8453:'ETH'
       };
       const desiredSymbol = symbolMap[this.chainId.toString()];
       const defaultToken = Object.values(this.tokens).find(
@@ -536,7 +537,6 @@ export default {
           }
         );
         const allowance = allowanceResponse.data.allowance;
-        // console.log(allowance, 'allowance');
         setTimeout(async () => {
           let swapData;
 
@@ -544,9 +544,6 @@ export default {
             const approve = await axios.get(
               `${configs.LOCAL_API_URL}/tokens/approveTransaction?tokenAddress=${this.selectedFromTokenAddress}&chain=${this.chainId}`
             );
-          }
-          if (this.slippageType === 'auto') {
-          } else if (this.slippageType === 'custom') {
           }
 
           swapData = {
@@ -560,7 +557,6 @@ export default {
               'ether'
             ),
           };
-          // console.log(swapData, 'swapData');
           const swap = await axios.post(
             `${configs.LOCAL_API_URL}/tokens/swapper`,
             swapData
@@ -583,13 +579,22 @@ export default {
                 gas: swap.data.tx.gas,
                 gasPrice: swap.data.tx.gasPrice,
               };
-              // console.log(transaction, 'transaction');
+
               // Send transaction
               const txHash = await web3.eth.sendTransaction(transaction);
               // console.log(txHash, 'txHash');
               if (txHash) {
+                notification.notify({
+                  title: 'Sucsess',
+                  text: 'Transaction Successfull',
+                  type: 'success',
+                  duration: 2000,
+                  speed: 1000,
+                });
                 this.isTransactionPending = false;
                 this.resetTransactionFields();
+                this.setDefaultToken(); // Set default token after transaction
+                this.updateTokenBalance(this.selectedFromToken, true); // Update balance
               }
             } catch (error) {
               this.isTransactionPending = false;
@@ -602,7 +607,6 @@ export default {
                 duration: 2000,
                 speed: 1000,
               });
-              4;
             }
           } else {
             alert('Please install MetaMask to use this feature.');
@@ -616,6 +620,7 @@ export default {
     resetTransactionFields() {
       this.selectedFromToken = null;
       this.selectedToToken = null;
+      this.selectedReceiveToken = null;
       this.fromTokenQuantity = '';
       this.toTokenQuantity = '';
       this.ratio = '';

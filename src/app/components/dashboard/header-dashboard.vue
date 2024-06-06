@@ -68,7 +68,7 @@
             v-if="isDropdownVisible"
           >
             <li
-            class="dropdown-item show-active"
+              class="dropdown-item show-active"
               v-for="(item, index) in dropdownItems"
               :key="item.name"
               :class="{ 'is-checked': item.checked }"
@@ -77,14 +77,14 @@
                 switchNetwork(item.name);
               "
             >
-            <div >
-              <img
-                :src="getImageCoin(item.slug)"
-                :alt="`Logo of ${item.name}`"
-                class="icon-img"
-              />
-              {{ item.name }}
-            </div>
+              <div>
+                <img
+                  :src="getImageCoin(item.slug)"
+                  :alt="`Logo of ${item.name}`"
+                  class="icon-img"
+                />
+                {{ item.name }}
+              </div>
               <CheckIcon :checked="item.checked" />
             </li>
           </ul>
@@ -139,20 +139,26 @@ import Web3 from 'web3';
 import { getImageCoin } from '../../utils/helpers/formatter-images';
 
 const networks = {
+  Base: {
+    chainId: '0x2105',
+    chainName: 'Base Network',
+    rpcUrls: ['https://mainnet.base.org'],
+    blockExplorerUrls: ['https://basescan.org'],
+  },
   Ethereum: {
-    chainId: '0x1', // Ethereum Mainnet
+    chainId: '0x1',
     chainName: 'Ethereum Mainnet',
-    rpcUrls: ['https://mainnet.infura.io/v3/YOUR_INFURA_API_KEY'],
+    rpcUrls: ['https://eth.llamarpc.com'],
     blockExplorerUrls: ['https://etherscan.io'],
   },
   Binance: {
-    chainId: '0x38', // Binance Smart Chain Mainnet
+    chainId: '0x38',
     chainName: 'BNB Chain',
     rpcUrls: ['https://bsc-dataseed.binance.org/'],
     blockExplorerUrls: ['https://bscscan.com'],
   },
   Polygon: {
-    chainId: '0x89', // Polygon Mainnet
+    chainId: '0x89', 
     chainName: 'Polygon Mainnet',
     rpcUrls: ['https://rpc-mainnet.maticvigil.com/'],
     blockExplorerUrls: ['https://polygonscan.com'],
@@ -181,6 +187,7 @@ export default {
       walletAddress: localStorage.getItem('walletAddress') || '',
       isDropdownVisible: false,
       dropdownItems: [
+        { name: 'Base', slug: 'base', chainId: 8453, checked: true },
         { name: 'Ethereum', slug: 'ethereum', chainId: 1, checked: false },
         { name: 'Binance', slug: 'bnb', chainId: 56, checked: false },
         { name: 'Polygon', slug: 'polygon', chainId: 137, checked: false },
@@ -210,8 +217,11 @@ export default {
   },
   methods: {
     getImageCoin(slug) {
-      return getImageCoin(slug);
-    },
+    if (slug === 'base') {
+      return require('@/assets/images/base-network.png');
+    }
+    return getImageCoin(slug);
+  },
     handleAccountChanged(newAddress) {
       this.walletAddress = newAddress;
     },
@@ -331,7 +341,9 @@ export default {
   mounted() {
     this.getWalletNetwork();
     document.addEventListener('click', this.handleClickOutside);
-    this.selectedImageUrl = this.getImageCoin(this.dropdownItems[0].slug);
+
+    const defaultNetwork = this.dropdownItems.find((item) => item.checked);
+    this.selectedImageUrl = this.getImageCoin(defaultNetwork.slug);
 
     if (window.ethereum) {
       window.ethereum.on('chainChanged', (chainIdHex) => {
@@ -382,7 +394,6 @@ export default {
   transform: translateY(0px);
 }
 
-
 .dropdown-list .icon-img {
   width: 20px;
   height: 20px;
@@ -410,7 +421,7 @@ export default {
   border-radius: 8px;
 }
 
-.is-checked{
+.is-checked {
   background: rgba(34, 34, 34, 0.07);
 }
 .dropdown-item div {
@@ -422,5 +433,4 @@ export default {
 .dropdown-item:hover {
   background: rgba(34, 34, 34, 0.07);
 }
-
 </style>

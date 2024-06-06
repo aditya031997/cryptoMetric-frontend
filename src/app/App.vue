@@ -7,7 +7,7 @@
   </main>
   <layout v-else-if="!isLoad">
     <router-view />
-    <notifications width="100px" />
+    <notifications width="24%" />
   </layout>
   <cm-loader v-else />
 </template>

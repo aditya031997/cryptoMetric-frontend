@@ -52,7 +52,7 @@
       />
     </page-card>
 
-    <!-- <page-card  custom-class="mt-4">
+    <page-card  custom-class="mt-4">
       <template v-slot:nav>
         <coin-app-bar :list="SecurityListbar" :on-change="changeSecurityAppBarElement" />
       </template>
@@ -62,7 +62,7 @@
         v-bind="activeSecurityComponent.props"
         :slug="coin.slug"
       />
-    </page-card> -->
+    </page-card>
 
     <p class="text text-center h-100 d-flex align-items-center justify-content-center text-danger text--caption">
       {{ errorMessage }}
@@ -80,6 +80,7 @@ import GoogleTrendsCard from '@/components/widgets/watchlist/google-trends-card.
 import CoinInfo from '@/components/coin/coin-info.vue';
 import CoinExchanges from '@/components/coin/coin-exchanges.vue';
 import CoinSecurity from '@/components/coin/coin-security.vue'
+import CoinDistribution from '../components/coin/coin-distribution.vue';
 import CoinInfoValue from '@/components/coin/coin-info-value.vue';
 import ChartTradingView from '@/components/charts/trading-view.vue';
 import { getListenerEcho, stopListenerEcho } from '../utils/echo';
@@ -92,6 +93,7 @@ export default {
     CoinAppBar,
     GoogleTrendsCard,
     CoinSecurity,
+    CoinDistribution,
     CoinInfo,
     CoinExchanges,
     CoinInfoValue,
@@ -136,7 +138,7 @@ export default {
         name: 'Supply Distribution',
         isActive: false,
         props: {},
-        component: 'coin-Distribution',
+        component: 'coin-distribution',
       },
     ],
     errorMessage: '',
