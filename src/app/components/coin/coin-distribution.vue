@@ -34,7 +34,7 @@ export default {
       this.isLoad = true;
       try {
         const tokenResponse = await axios.get(
-          `${configs.LOCAL_API_URL}/api/supply/tokenByName?query=${this.symbol}`
+          `${configs.LOCAL_API_URL}/supply/tokenByName?query=${this.symbol}`
         );
         const tokenData = tokenResponse.data.msg;
         if (tokenData) {
