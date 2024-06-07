@@ -260,7 +260,7 @@ export default {
     checkTokenAvailability() {
       axios
         .get(
-          `${configs.LOCAL_API_URL}//api/supply/tokenByName?query=${this.symbol}`
+          `${configs.LOCAL_API_URL}/api/supply/tokenByName?query=${this.symbol}`
         )
         .then((response) => {
           console.log(response, 'response');

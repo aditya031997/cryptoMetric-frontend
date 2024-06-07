@@ -63,7 +63,7 @@ export default {
       this.isLoad = true;
       try {
         // Initial API call to get token details
-        const tokenResponse = await axios.get(`${configs.LOCAL_API_URL}//api/supply/tokenByName?query=${this.symbol}`);
+        const tokenResponse = await axios.get(`${configs.LOCAL_API_URL}/api/supply/tokenByName?query=${this.symbol}`);
         const tokenData = tokenResponse.data.msg;
         if (tokenData.length > 0) {
           const { address, chainId } = tokenData[0];
