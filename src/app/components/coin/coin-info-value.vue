@@ -18,15 +18,7 @@
         {{ getAvailableSupply }}
       </p>
     </div>
-    <div
-      class="ml-4 mt-1"
-      v-if="this.coin.available_supply"
-    >
-      <p class="m-0 text text--caption text-secondary">Circulating Supply</p>
-      <p class="m-0 mt-1 text text-truncate">
-        {{ getCirculatingSupply }}
-      </p>
-    </div>
+ 
     <div
       class="ml-4 mt-1"
       v-if="this.coin.total_supply"
@@ -91,13 +83,10 @@ export default {
       return formatPercent(this.coin.percent_change_7d);
     },
     getTotalSupply() {
-      return simpleFormatPrice(this.coin.total_supply);
+      return this.coin.total_supply;
     },
     getAvailableSupply() {
-      return simpleFormatPrice(this.coin.available_supply);
-    },
-    getCirculatingSupply() {
-      return simpleFormatPrice(this.coin.circulating_supply);
+      return this.coin.available_supply;
     },
     getVolume() {
       return simpleFormatPrice(this.coin.volume_usd_24h);

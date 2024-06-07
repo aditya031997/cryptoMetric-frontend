@@ -49,18 +49,7 @@
         :is="isActiveComponent.component"
         v-bind="isActiveComponent.props"
         :slug="this.$route.params.slug"
-      />
-    </page-card>
-
-    <page-card  custom-class="mt-4">
-      <template v-slot:nav>
-        <coin-app-bar :list="SecurityListbar" :on-change="changeSecurityAppBarElement" />
-      </template>
-      <component
-        v-if="coin"
-        :is="activeSecurityComponent.component"
-        v-bind="activeSecurityComponent.props"
-        :slug="coin.slug"
+        :symbol="coin.symbol"
       />
     </page-card>
 
@@ -79,8 +68,8 @@ import CoinAppBar from '@/components/coin/coin-app-bar.vue';
 import GoogleTrendsCard from '@/components/widgets/watchlist/google-trends-card.vue';
 import CoinInfo from '@/components/coin/coin-info.vue';
 import CoinExchanges from '@/components/coin/coin-exchanges.vue';
-import CoinSecurity from '@/components/coin/coin-security.vue'
-import CoinDistribution from '../components/coin/coin-distribution.vue';
+import CoinSecurity from '@/components/coin/coin-security.vue';
+import CoinDistribution from '@/components/coin/coin-distribution.vue';
 import CoinInfoValue from '@/components/coin/coin-info-value.vue';
 import ChartTradingView from '@/components/charts/trading-view.vue';
 import { getListenerEcho, stopListenerEcho } from '../utils/echo';
@@ -124,17 +113,15 @@ export default {
         props: {},
         component: 'google-trends-card',
       },
-    ],
-   SecurityListbar: [
       {
-        id: 0,
+        id: 3,
         name: 'Security',
-        isActive: true,
+        isActive: false,
         props: {},
         component: 'coin-security',
       },
       {
-        id: 1,
+        id: 4,
         name: 'Supply Distribution',
         isActive: false,
         props: {},
@@ -146,9 +133,6 @@ export default {
   computed: {
     isActiveComponent() {
       return this.listBar.find((element) => element.isActive);
-    },
-     activeSecurityComponent() {
-      return this.SecurityListbar.find((element) => element.isActive);
     },
     isFavorite() {
       const favorites = this.$store.state.favorites.coins;
@@ -162,11 +146,6 @@ export default {
   methods: {
     changeAppBarElement(indexElement) {
       this.listBar.forEach((element, index) => {
-        element.isActive = index === indexElement;
-      });
-    },
-    changeSecurityAppBarElement(indexElement) {
-      this.SecurityListbar.forEach((element, index) => {
         element.isActive = index === indexElement;
       });
     },

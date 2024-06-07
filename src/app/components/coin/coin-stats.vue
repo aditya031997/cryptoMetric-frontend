@@ -26,24 +26,34 @@
       </div>
 
       <!-- <template v-if="hasButton">
-        <button @click="handleBuy">
-        Buy
-      </button>
-      <button @click="handleSell">
-        Sell
-      </button>
-        <button-favorite
-          v-if="!isDnd"
-          :is-short="!isCoinPage"
-          :coin="coin"
-          :is-active="isFavorite"
-        />
-        <button-icon
-          v-else
-          custom-class="coin-stats__handle"
-        >
-          <icon-scroll />
-        </button-icon>
+        <div class="d-flex align-item-center coin__btn">
+          <template v-if="showButtons">
+            <button
+              class="btn cm-button btn-outline-primary is-line cm-button--sm"
+              @click="handleBuy"
+            >
+              Buy
+            </button>
+            <button
+              class="btn cm-button btn-outline-primary is-line cm-button--sm"
+              @click="handleSell"
+            >
+              Sell
+            </button>
+          </template>
+          <button-favorite
+            v-if="!isDnd"
+            :is-short="!isCoinPage"
+            :coin="coin"
+            :is-active="isFavorite"
+          />
+          <button-icon
+            v-else
+            custom-class="coin-stats__handle"
+          >
+            <icon-scroll />
+          </button-icon>
+        </div>
       </template> -->
     </div>
     <div class="coin-stats__typography">
@@ -72,8 +82,8 @@
   </div>
 </template>
 
-
 <script>
+import axios from 'axios';
 import {
   getImageCoin,
   getBigImageCoin,
@@ -82,6 +92,8 @@ import ButtonFavorite from '@/components/ui/button/button-favorite.vue';
 import PopperTooltip from '@/components/poppers/popper-tooltip.vue';
 import IconScroll from '@/components/icons/icon-scroll.vue';
 import ButtonIcon from '@/components/ui/button/button-icon.vue';
+import Web3 from 'web3';
+import configs from '../../../configs/configs';
 
 import {
   formatPrice,
@@ -89,7 +101,6 @@ import {
   simpleFormatPrice,
 } from '@/utils/helpers/formatter';
 import DefaultImage from '../default-image.vue';
-
 export default {
   name: 'coin-stats',
   components: {
@@ -153,6 +164,9 @@ export default {
       modelValue: this.value,
       selectedCoinName: '',
       selectedCoinSymbol: '',
+      showButtons: false,
+      tokenId: '',
+      chainId: '',
     };
   },
   computed: {
@@ -192,19 +206,94 @@ export default {
       this.modelValue = value;
       this.onChange(value, this.index);
     },
-    // handleBuy() {
-    //   this.selectedCoinName = this.name;
-    //   this.selectedCoinSymbol = this.symbol;
-    //   // Handle the buy action here
-    //   console.log(`Buying ${this.selectedCoinName} (${this.selectedCoinSymbol})`);
-    // },
-    // handleSell() {
-    //   this.selectedCoinName = this.name;
-    //   this.selectedCoinSymbol = this.symbol;
-    //   // Handle the sell action here
-    //   console.log(`Selling ${this.selectedCoinName} (${this.selectedCoinSymbol})`);
-    // },
+    async fetchChainId() {
+      if (window.ethereum) {
+        const web3 = new Web3(window.ethereum);
+        try {
+          await window.ethereum.request({ method: 'eth_requestAccounts' });
+          const networkId = await web3.eth.net.getId();
+          console.log(networkId, 'networkId');
+          this.chainId = `0x${Number(networkId).toString(16)}`;
+        } catch (error) {
+          console.error('Error fetching network ID:', error);
+        }
+      }
+    },
+    async handleBuy() {
+      this.selectedCoinName = this.name;
+      this.selectedCoinSymbol = this.symbol;
+      // Switch network if tokenId is not equal to chainId
+      if (this.tokenId !== this.chainId) {
+        await this.switchNetwork();
+      }
+      // Redirect to the swap page with the symbol as a query parameter
+      const url = new URL('/swap', window.location.origin);
+      url.searchParams.set('fromToken', this.symbol);
+      window.location.href = url.toString();
+    },
+    async handleSell() {
+      this.selectedCoinName = this.name;
+      this.selectedCoinSymbol = this.symbol;
+      // Redirect to the swap page with the symbol as a query parameter
+      if (this.tokenId !== this.chainId) {
+        await this.switchNetwork();
+      }
+      const url = new URL('/swap', window.location.origin);
+      url.searchParams.set('toToken', this.symbol);
+      window.location.href = url.toString();
+    },
+    async switchNetwork() {
+      if (!window.ethereum) return alert('MetaMask is not installed');
+
+      const hexChainId = `0x${parseInt(this.tokenId, 10).toString(16)}`;
+
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: hexChainId }],
+        });
+        this.isDropdownVisible = false;
+      } catch (switchError) {
+        console.error('Failed to switch the network:', switchError);
+      }
+    },
+    checkTokenAvailability() {
+      axios
+        .get(
+          `${configs.LOCAL_API_URL}//api/supply/tokenByName?query=${this.symbol}`
+        )
+        .then((response) => {
+          console.log(response, 'response');
+          if (response?.data && response?.data?.msg?.length > 0) {
+            this.tokenId = response?.data?.msg[0].chainId;
+            this.showButtons = true;
+          } else {
+            this.showButtons = false;
+          }
+        })
+        .catch((error) => {
+          console.error('Error fetching token data:', error);
+          this.showButtons = false;
+        });
+    },
+  },
+  async mounted() {
+    await this.fetchChainId();
+  },
+  created() {
+    this.checkTokenAvailability();
   },
 };
 </script>
 
+<style scoped>
+.iframe-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.custom-iframe {
+  width: 100%;
+  height: 600px;
+}
+</style>

@@ -34,7 +34,8 @@ import axios from 'axios';
 import CmLoader from '@/components/ui/loader/cm-loader.vue';
 import IconCheck from '../icons/icon-check.vue';
 import IconClose from '../icons/icon-close.vue';
-import SecurityData from './securityData.json'; 
+import SecurityData from './securityData.json';
+import configs from '../../../configs/configs';
 
 export default {
   name: 'coin-Security',
@@ -47,6 +48,9 @@ export default {
     slug: {
       type: String,
     },
+    symbol: {
+      type: String,
+    },
   },
   data() {
     return {
@@ -55,17 +59,19 @@ export default {
     };
   },
   methods: {
-    fetchSecurityData() {
+    async fetchSecurityData() {
       this.isLoad = true;
-      const address = '0xd9016a907dc0ecfa3ca425ab20b6b785b42f2373';
-      const chainId = '1';
-      axios
-        .get(
-          `http://localhost:5000/api/supply/distribution?address=${address}&chainId=${chainId}`
-        )
-        .then((response) => {
-          const apiData = response.data.msg[address];
+      try {
+        // Initial API call to get token details
+        const tokenResponse = await axios.get(`${configs.LOCAL_API_URL}//api/supply/tokenByName?query=${this.symbol}`);
+        const tokenData = tokenResponse.data.msg;
+        if (tokenData.length > 0) {
+          const { address, chainId } = tokenData[0];
+
+          const securityResponse = await axios.get(`${configs.LOCAL_API_URL}/api/supply/distribution?address=${address}&chainId=${chainId}`);
+          const apiData = securityResponse.data.msg[address];
           const dynamicValues = {};
+
           if (apiData.is_open_source !== undefined)
             dynamicValues['Open Source'] =
               apiData.is_open_source === '1' ? 'Yes' : 'No';
@@ -148,20 +154,23 @@ export default {
             dynamicValues['LP Holders'] = this.formatNumber(apiData.lp_holder_count);
           if (apiData.lp_total_supply !== undefined)
             dynamicValues['LP Total Supply'] = this.formatNumber(apiData.lp_total_supply);
+
           this.securityList = SecurityData
             .filter((item) => dynamicValues.hasOwnProperty(item.title))
             .map((item) => ({
               ...item,
               value: dynamicValues[item.title],
             }));
-        })
-        .catch((error) => {
-          console.error('Failed to fetch security data:', error);
-          this.$emit('error', 'Failed to fetch security data');
-        })
-        .finally(() => {
-          this.isLoad = false;
-        });
+        } else {
+          console.error('No token data found');
+          this.$emit('error', 'No token data found');
+        }
+      } catch (error) {
+        console.error('Failed to fetch security data:', error);
+        this.$emit('error', 'Failed to fetch security data');
+      } finally {
+        this.isLoad = false;
+      }
     },
     formatNumber(value) {
       if (value >= 1e9) return (value / 1e9).toFixed(1) + 'B';

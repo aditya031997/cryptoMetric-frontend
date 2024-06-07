@@ -139,12 +139,6 @@ import Web3 from 'web3';
 import { getImageCoin } from '../../utils/helpers/formatter-images';
 
 const networks = {
-  Base: {
-    chainId: '0x2105',
-    chainName: 'Base Network',
-    rpcUrls: ['https://mainnet.base.org'],
-    blockExplorerUrls: ['https://basescan.org'],
-  },
   Ethereum: {
     chainId: '0x1',
     chainName: 'Ethereum Mainnet',
@@ -158,10 +152,22 @@ const networks = {
     blockExplorerUrls: ['https://bscscan.com'],
   },
   Polygon: {
-    chainId: '0x89', 
+    chainId: '0x89',
     chainName: 'Polygon Mainnet',
     rpcUrls: ['https://rpc-mainnet.maticvigil.com/'],
     blockExplorerUrls: ['https://polygonscan.com'],
+  },
+  Base: {
+    chainId: '0x2105',
+    chainName: 'Base Network',
+    rpcUrls: ['https://mainnet.base.org'],
+    blockExplorerUrls: ['https://basescan.org'],
+  },
+  Avalanche: {
+    chainId: '0xa86a',
+    chainName: 'Avalanche Network',
+    rpcUrls: ['https://api.avax.network/ext/bc/C/rpc'],
+    blockExplorerUrls: ['https://snowtrace.io'],
   },
 };
 
@@ -187,10 +193,11 @@ export default {
       walletAddress: localStorage.getItem('walletAddress') || '',
       isDropdownVisible: false,
       dropdownItems: [
-        { name: 'Base', slug: 'base', chainId: 8453, checked: true },
-        { name: 'Ethereum', slug: 'ethereum', chainId: 1, checked: false },
+        { name: 'Ethereum', slug: 'ethereum', chainId: 1, checked: true },
         { name: 'Binance', slug: 'bnb', chainId: 56, checked: false },
         { name: 'Polygon', slug: 'polygon', chainId: 137, checked: false },
+        { name: 'Base', slug: 'base', chainId: 8453, checked: false },
+        { name: 'Avalanche', slug: 'avalanche', chainId: 43114, checked: false },
       ],
       selectedImageUrl: '',
     };
@@ -217,11 +224,11 @@ export default {
   },
   methods: {
     getImageCoin(slug) {
-    if (slug === 'base') {
-      return require('@/assets/images/base-network.png');
-    }
-    return getImageCoin(slug);
-  },
+      if (slug === 'base') {
+        return require('@/assets/images/base-network.png');
+      }
+      return getImageCoin(slug);
+    },
     handleAccountChanged(newAddress) {
       this.walletAddress = newAddress;
     },
@@ -266,6 +273,7 @@ export default {
       this.$emit('on-hide-side-bar');
     },
     async switchNetwork(networkKey) {
+      console.log(networkKey,"networkKeynetworkKey")
       if (!window.ethereum) return alert('MetaMask is not installed');
 
       const networkData = networks[networkKey];

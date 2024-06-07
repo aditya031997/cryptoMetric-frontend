@@ -245,6 +245,7 @@ export default {
   data() {
     return {
       tokens: [],
+      fetchedData: [],
       selectedFromToken: null,
       selectedReceiveToken: null,
       disableRecalculation: false,
@@ -293,6 +294,59 @@ export default {
     },
     handleSelectTo() {
       this.isSelectingFrom = false;
+    },
+    getUrlParameter(name) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
+    },
+    async fetchTokens() {
+      this.isLoadingTokens = true;
+      try {
+        const response = await axios.get(
+          `${configs.LOCAL_API_URL}/tokens/swager?chain=${this.chainId}`
+        );
+        this.fetchedData = response.data.msg.tokens; 
+      } catch (error) {
+        console.error('Error fetching tokens:', error);
+      } finally {
+        this.isLoadingTokens = false;
+      }
+    },
+    setTokenFromParams() {
+      const fromTokenSymbol = this.getUrlParameter('fromToken');
+      const toTokenSymbol = this.getUrlParameter('toToken');
+      let fromTokenSet = false;
+      let toTokenSet = false;
+
+      if (fromTokenSymbol) {
+        console.log(this.fetchedData,"this.fetchedData")
+        const fromToken = this.tokens.find(
+          (token) => token.symbol === fromTokenSymbol
+        );
+        if (fromToken) {
+          this.selectedFromToken = fromToken;
+          this.selectedFromTokenAddress = fromToken.address;
+          this.updateTokenBalance(fromToken, true);
+          fromTokenSet = true;
+        }
+      }
+
+      if (toTokenSymbol) {
+        console.log(this.fetchedData,"this.fetchedData")
+        const toToken = this.fetchedData.find(
+          (token) => token.symbol === toTokenSymbol
+        );
+        if (toToken) {
+          this.selectedReceiveToken = toToken;
+          this.selectedToTokenAddress = toToken.address;
+          this.updateTokenBalance(toToken, false);
+          toTokenSet = true;
+        }
+      }
+
+      if (!fromTokenSet) {
+        this.setDefaultToken();
+      }
     },
     // In your methods
     handleTokensFetched(tokens) {
@@ -504,7 +558,8 @@ export default {
         137: 'MATIC',
         1: 'ETH',
         56: 'BNB',
-        8453:'ETH'
+        8453: 'ETH',
+        43114: 'AVAX',
       };
       const desiredSymbol = symbolMap[this.chainId.toString()];
       const defaultToken = Object.values(this.tokens).find(
@@ -675,6 +730,7 @@ export default {
       ).toFixed(2);
     },
   },
+
   computed: {
     isDisabled() {
       return (
@@ -703,10 +759,12 @@ export default {
       }
     },
   },
-  async mounted() {
+  mounted() {
     document.addEventListener('click', this.handleClickOutside);
-    await this.getAccountBalance().then((balance) => {
-      this.balance = balance;
+    this.getAccountBalance().then(() => {
+      this.fetchTokens().then(() => {
+        this.setTokenFromParams();
+      });
     });
   },
   watch: {
