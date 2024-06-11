@@ -197,7 +197,12 @@ export default {
         { name: 'Binance', slug: 'bnb', chainId: 56, checked: false },
         { name: 'Polygon', slug: 'polygon', chainId: 137, checked: false },
         { name: 'Base', slug: 'base', chainId: 8453, checked: false },
-        { name: 'Avalanche', slug: 'avalanche', chainId: 43114, checked: false },
+        {
+          name: 'Avalanche',
+          slug: 'avalanche',
+          chainId: 43114,
+          checked: false,
+        },
       ],
       selectedImageUrl: '',
     };
@@ -259,7 +264,7 @@ export default {
     toggleDropdown() {
       this.isDropdownVisible = !this.isDropdownVisible;
     },
-    disconnectAccount() {
+    async disconnectAccount() {
       this.walletAddress = '';
       localStorage.removeItem('walletAddress');
     },
@@ -273,7 +278,6 @@ export default {
       this.$emit('on-hide-side-bar');
     },
     async switchNetwork(networkKey) {
-      console.log(networkKey,"networkKeynetworkKey")
       if (!window.ethereum) return alert('MetaMask is not installed');
 
       const networkData = networks[networkKey];
@@ -307,18 +311,36 @@ export default {
       }
     },
     async connectWallet() {
-      if (window.ethereum) {
+      if (this.walletAddress == '') {
         try {
-          const account = await window.ethereum.request({
-            method: 'eth_accounts',
+          const permissions = await window.ethereum.request({
+            method: 'wallet_requestPermissions',
+            params: [
+              {
+                eth_accounts: {},
+              },
+            ],
           });
-          if (account.length > 0) {
-            this.walletAddress = account[0];
-            this.isWalletModalVisible = false;
-          } else {
-            this.isWalletModalVisible = !this.isWalletModalVisible;
+          const approvedPermission = permissions.find(
+            (permission) =>
+              permission.parentCapability === 'eth_accounts' &&
+              permission.caveats.length === 1
+          );
+          if (approvedPermission) {
+            const account = await window.ethereum.request({
+              method: 'eth_accounts',
+            });
+            if (account.length > 0) {
+              this.walletAddress = account[0];
+              localStorage.setItem('walletAddress', account[0]);
+              this.isWalletModalVisible = false;
+            } else {
+              this.isWalletModalVisible = !this.isWalletModalVisible;
+            }
           }
-        } catch (error) {}
+        } catch (error) {
+          console.log(error, 'error');
+        }
       }
     },
     formatAddress(address) {
