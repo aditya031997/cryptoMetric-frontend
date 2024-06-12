@@ -25,7 +25,7 @@
         </p>
       </div>
 
-      <!-- <template v-if="hasButton">
+      <template v-if="hasButton">
         <div class="d-flex align-item-center coin__btn">
           <template v-if="showButtons">
             <button
@@ -54,7 +54,7 @@
             <icon-scroll />
           </button-icon>
         </div>
-      </template> -->
+      </template>
     </div>
     <div class="coin-stats__typography">
       <div class="coin-stats__popper-wrapper">

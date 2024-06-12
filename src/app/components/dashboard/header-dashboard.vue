@@ -127,7 +127,7 @@ import iconBack from '../icons/icon-back.vue';
 import iconSwitch from '../icons/icon-switch.vue';
 import ButtonIcon from '../ui/button/button-icon.vue';
 import UserProfile from './user-profile.vue';
-
+import { useNotification } from '@kyvg/vue3-notification';
 import PopperTooltip from '@/components/poppers/popper-tooltip.vue';
 import UserNotify from './user-notify.vue';
 import DashboardSettings from './dashboard-settings.vue';
@@ -137,7 +137,7 @@ import DropdownIcon from '../../components/icons/icon-dropdown.vue';
 import CheckIcon from '../../components/icons/token-check.vue';
 import Web3 from 'web3';
 import { getImageCoin } from '../../utils/helpers/formatter-images';
-
+const notification = useNotification();
 const networks = {
   Ethereum: {
     chainId: '0x1',
@@ -333,6 +333,13 @@ export default {
             if (account.length > 0) {
               this.walletAddress = account[0];
               localStorage.setItem('walletAddress', account[0]);
+              notification.notify({
+                  title: 'Sucsess',
+                  text: 'Wallet connect Successfull',
+                  type: 'success',
+                  duration: 2000,
+                  speed: 1000,
+                });
               this.isWalletModalVisible = false;
             } else {
               this.isWalletModalVisible = !this.isWalletModalVisible;

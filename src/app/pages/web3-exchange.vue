@@ -305,7 +305,7 @@ export default {
         const response = await axios.get(
           `${configs.LOCAL_API_URL}/tokens/swager?chain=${this.chainId}`
         );
-        this.fetchedData = response.data.msg.tokens; 
+        this.fetchedData = response.data.msg.tokens;
       } catch (error) {
         console.error('Error fetching tokens:', error);
       } finally {
@@ -319,10 +319,10 @@ export default {
       let toTokenSet = false;
 
       if (fromTokenSymbol) {
-        console.log(this.fetchedData,"this.fetchedData")
-        const fromToken = this.tokens.find(
+        const fromToken = Object.values(this.fetchedData).find(
           (token) => token.symbol === fromTokenSymbol
         );
+
         if (fromToken) {
           this.selectedFromToken = fromToken;
           this.selectedFromTokenAddress = fromToken.address;
@@ -332,8 +332,7 @@ export default {
       }
 
       if (toTokenSymbol) {
-        console.log(this.fetchedData,"this.fetchedData")
-        const toToken = this.fetchedData.find(
+        const toToken = Object.values(this.fetchedData).find(
           (token) => token.symbol === toTokenSymbol
         );
         if (toToken) {
