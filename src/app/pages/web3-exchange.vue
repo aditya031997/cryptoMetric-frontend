@@ -360,7 +360,7 @@ export default {
       }
 
       if (toTokenSymbol) {
-        const toToken = Object.values(this.fetchedData).find(
+        const toToken = Object.values(this.tokens).find(
           (token) => token.symbol === toTokenSymbol
         );
         if (toToken) {
