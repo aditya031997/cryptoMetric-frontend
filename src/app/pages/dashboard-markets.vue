@@ -225,7 +225,7 @@ export default {
         this.initializeFilters();
 
         const response = await axios.get(
-          `${configs.LOCAL_API_URL}/api/coins/category`
+          `${configs.NODE_API_URL}/api/coins/category`
         );
         if (
           response.data &&

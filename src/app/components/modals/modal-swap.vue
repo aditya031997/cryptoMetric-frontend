@@ -143,14 +143,16 @@ export default {
     },
     async fetchTokens(chainId) {
       this.isLoading = true;
+      await new Promise(resolve => setTimeout(resolve, 2000));
       try {
         const response = await axios.get(
-          `${configs.LOCAL_API_URL}/tokens/swager?chain=${chainId}`
+          `${configs.NODE_API_URL}/tokens/swager?chain=${chainId}`
         );
         this.apiTokens = response?.data?.msg?.tokens;
         this.topRatedToken = response?.data?.msg?.tokens;
         this.filteredApiTokens = this.apiTokens;
         this.$emit('tokens-fetched', this.apiTokens);
+        this.$emit('chainId-fetched', chainId);
         this.errorMessage = null;
       } catch (error) {
         this.errorMessage = 'Failed to load tokens';
@@ -168,7 +170,7 @@ export default {
       this.isLoading = true;
       try {
         const response = await axios.get(
-          `${configs.LOCAL_API_URL}/tokens/retriveToken?query=${query}&chain=${this.chainId}`
+          `${configs.NODE_API_URL}/tokens/retriveToken?query=${query}&chain=${this.chainId}`
         );
         this.filteredApiTokens = response?.data?.msg || [];
       } catch (error) {

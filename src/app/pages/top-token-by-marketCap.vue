@@ -89,7 +89,7 @@ export default {
     if (filter && this.filters.some((f) => f.value === filter)) {
       this.activeFilter = filter;
     }
-    this.socket = io(configs.LOCAL_API_URL);
+    this.socket = io(configs.NODE_API_URL);
     this.socket.on('InitialTableListing', (initialData) => {
       this.cryptocurrencyData = initialData.data;
       this.originalData = [...this.cryptocurrencyData];

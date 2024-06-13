@@ -105,7 +105,7 @@ export default {
       .then((response) => {
         document.dispatchEvent(new CustomEvent(queryOptions.listenerUUID, { detail: response.data }));
         if (queryOptions.url == '/login') {
-          const localOptions = { ...queryOptions, baseURL: `${configs.LOCAL_API_URL}/api` };
+          const localOptions = { ...queryOptions, baseURL: `${configs.NODE_API_URL}/api` };
           return axiosInstance
             .request(localOptions)
             .then((localResponse) => {

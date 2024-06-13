@@ -63,12 +63,12 @@ export default {
       this.isLoad = true;
       try {
         // Initial API call to get token details
-        const tokenResponse = await axios.get(`${configs.LOCAL_API_URL}/supply/tokenByName?query=${this.symbol}`);
+        const tokenResponse = await axios.get(`${configs.NODE_API_URL}/supply/tokenByName?query=${this.symbol}`);
         const tokenData = tokenResponse.data.msg;
         if (tokenData.length > 0) {
           const { address, chainId } = tokenData[0];
 
-          const securityResponse = await axios.get(`${configs.LOCAL_API_URL}/supply/distribution?address=${address}&chainId=${chainId}`);
+          const securityResponse = await axios.get(`${configs.NODE_API_URL}/supply/distribution?address=${address}&chainId=${chainId}`);
           const apiData = securityResponse.data.msg[address];
           const dynamicValues = {};
 

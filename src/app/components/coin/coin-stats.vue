@@ -214,6 +214,9 @@ export default {
           const networkId = await web3.eth.net.getId();
           console.log(networkId, 'networkId');
           this.chainId = `0x${Number(networkId).toString(16)}`;
+          console.log(this.chainId, "this.chainId");
+          // Call checkTokenAvailability after fetching the chainId
+          this.checkTokenAvailability();
         } catch (error) {
           console.error('Error fetching network ID:', error);
         }
@@ -258,12 +261,12 @@ export default {
       }
     },
     checkTokenAvailability() {
+      const decimalChainId = parseInt(this.chainId, 16); 
       axios
         .get(
-          `${configs.LOCAL_API_URL}/supply/tokenByName?query=${this.symbol}`
+          `${configs.NODE_API_URL}/supply/tokenByName?query=${this.symbol}&chainId=${decimalChainId}`
         )
         .then((response) => {
-          console.log(response, 'response');
           if (response?.data && response?.data?.msg?.length > 0) {
             this.tokenId = response?.data?.msg[0].chainId;
             this.showButtons = true;
@@ -280,9 +283,9 @@ export default {
   async mounted() {
     await this.fetchChainId();
   },
-  created() {
-    this.checkTokenAvailability();
-  },
+  // created() {
+  //   this.checkTokenAvailability();
+  // },
 };
 </script>
 

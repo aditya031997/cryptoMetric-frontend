@@ -119,7 +119,9 @@
         </button>
         <div
           class="right-side-balance-box mt-1"
-          v-if="fromFiat != 0 || fromFiat != ''"
+          v-if="
+            fromFiat != 0 || fromFiat != '' || selectedFromTokenAddress != ''
+          "
         >
           Balance: {{ fromTokenBalance }}
           <button @click="setMaxTokenQuantity">max</button>
@@ -203,7 +205,17 @@
       @hide-modal="toggleSwapModal(false)"
       @token-selected="handleTokenSelected"
       @tokens-fetched="handleTokensFetched"
+      @chainId-fetched="handleChainIdFetched"
     />
+    <div
+      v-if="isErrorModalVisible"
+      class="error-modal"
+    >
+      <div class="modal-content">
+        <p>{{ errorMessage }}</p>
+        <button @click="closeErrorModal">Close</button>
+      </div>
+    </div>
   </div>
 </template>
 <script>
@@ -249,6 +261,8 @@ export default {
       selectedFromToken: null,
       selectedReceiveToken: null,
       disableRecalculation: false,
+      isErrorModalVisible: false,
+      errorMessage: '',
       isSwapModalVisible: false,
       isLoadingTokens: false,
       isLoadingBalances: false,
@@ -289,6 +303,14 @@ export default {
     toggleSwapModal(show) {
       this.isSwapModalVisible = show;
     },
+    showErrorModal(message) {
+      this.errorMessage = message;
+      this.isErrorModalVisible = true;
+    },
+    closeErrorModal() {
+      this.isErrorModalVisible = false;
+      this.errorMessage = '';
+    },
     handleSelectFrom() {
       this.isSelectingFrom = true;
     },
@@ -301,9 +323,10 @@ export default {
     },
     async fetchTokens() {
       this.isLoadingTokens = true;
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       try {
         const response = await axios.get(
-          `${configs.LOCAL_API_URL}/tokens/swager?chain=${this.chainId}`
+          `${configs.NODE_API_URL}/tokens/swager?chain=${this.chainId}`
         );
         this.fetchedData = response.data.msg.tokens;
       } catch (error) {
@@ -312,22 +335,27 @@ export default {
         this.isLoadingTokens = false;
       }
     },
-    setTokenFromParams() {
+    async setTokenFromParams() {
       const fromTokenSymbol = this.getUrlParameter('fromToken');
       const toTokenSymbol = this.getUrlParameter('toToken');
       let fromTokenSet = false;
       let toTokenSet = false;
 
       if (fromTokenSymbol) {
-        const fromToken = Object.values(this.fetchedData).find(
+        const fromToken = Object.values(this.tokens).find(
           (token) => token.symbol === fromTokenSymbol
         );
-
         if (fromToken) {
           this.selectedFromToken = fromToken;
           this.selectedFromTokenAddress = fromToken.address;
           this.updateTokenBalance(fromToken, true);
           fromTokenSet = true;
+        } else {
+          this.showErrorModal(
+            'Token does not exist on this chain ID. Please change the chain ID.'
+          );
+          this.selectedFromToken = null;
+          this.selectedFromTokenAddress = '';
         }
       }
 
@@ -340,6 +368,12 @@ export default {
           this.selectedToTokenAddress = toToken.address;
           this.updateTokenBalance(toToken, false);
           toTokenSet = true;
+        }else {
+          this.showErrorModal(
+            'Token does not exist on this chain ID. Please change the chain ID.'
+          );
+          this.selectedToken = null;
+          this.selectedToTokenAddress = '';
         }
       }
 
@@ -347,10 +381,15 @@ export default {
         this.setDefaultToken();
       }
     },
-    // In your methods
     handleTokensFetched(tokens) {
       this.tokens = tokens;
       this.setDefaultToken();
+    },
+    handleChainIdFetched(chainId) {
+      console.log('Received chainId:', chainId);
+      if (chainId) {
+        this.setTokenFromParams();
+      }
     },
     handleTokenSelected(token) {
       if (this.isSelectingFrom) {
@@ -392,11 +431,11 @@ export default {
 
       try {
         // Simulate a small delay before fetching the balance
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
         // Fetch fiat value data from your API
         const response = await axios.get(
-          `${configs.LOCAL_API_URL}/tokens/convert?chain=${this.chainId}&addresses=${token.address}`
+          `${configs.NODE_API_URL}/tokens/convert?chain=${this.chainId}&addresses=${token.address}`
         );
         const fiatValue = response.data.msg;
 
@@ -560,6 +599,13 @@ export default {
         8453: 'ETH',
         43114: 'AVAX',
       };
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const fromToken = urlParams.get('fromToken');
+      const toToken = urlParams.get('toToken');
+      if (fromToken) {
+        return;
+      }
       const desiredSymbol = symbolMap[this.chainId.toString()];
       const defaultToken = Object.values(this.tokens).find(
         (token) => token.symbol === desiredSymbol
@@ -581,7 +627,7 @@ export default {
       const savedAccount = await web3.eth.getAccounts();
       try {
         const allowanceResponse = await axios.get(
-          `${configs.LOCAL_API_URL}/tokens/allowance`,
+          `${configs.NODE_API_URL}/tokens/allowance`,
           {
             params: {
               tokenAddress: `${this.selectedFromTokenAddress}`,
@@ -596,7 +642,7 @@ export default {
 
           if (allowance === '0') {
             const approve = await axios.get(
-              `${configs.LOCAL_API_URL}/tokens/approveTransaction?tokenAddress=${this.selectedFromTokenAddress}&chain=${this.chainId}`
+              `${configs.NODE_API_URL}/tokens/approveTransaction?tokenAddress=${this.selectedFromTokenAddress}&chain=${this.chainId}`
             );
           }
 
@@ -612,7 +658,7 @@ export default {
             ),
           };
           const swap = await axios.post(
-            `${configs.LOCAL_API_URL}/tokens/swapper`,
+            `${configs.NODE_API_URL}/tokens/swapper`,
             swapData
           );
 
@@ -791,4 +837,39 @@ export default {
 </script>
 
 <style>
+.error-modal {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+}
+.error-modal .modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 460px;
+  border: 0;
+  border-radius: 10px;
+  padding: 25px;
+  text-align: center;
+}
+.error-modal .modal-content button {
+  background: #28a5ff;
+  color: #fff;
+  border: 0;
+  padding: 7px 20px;
+  display: flex;
+  border-radius: 4px;
+  font-size: 14px;
+  width: auto !important;
+  max-width: 100px;
+  justify-content: center;
+  margin: 0 auto;
+}
 </style>
