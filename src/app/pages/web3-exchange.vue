@@ -555,7 +555,7 @@ export default {
       if (window.ethereum) {
         const web3 = new Web3(window.ethereum);
         try {
-          await window.ethereum.request({ method: 'eth_requestAccounts' });
+          // await window.ethereum.request({ method: 'eth_requestAccounts' });
           const networkId = await web3.eth.net.getId();
           this.chainId = Number(networkId);
 
@@ -665,7 +665,7 @@ export default {
           if (window.ethereum) {
             const web3 = new Web3(window.ethereum);
             try {
-              await window.ethereum.request({ method: 'eth_requestAccounts' });
+              // await window.ethereum.request({ method: 'eth_requestAccounts' });
 
               const accounts = await web3.eth.getAccounts();
               const senderAddress = accounts[0];

@@ -137,6 +137,7 @@ import DropdownIcon from '../../components/icons/icon-dropdown.vue';
 import CheckIcon from '../../components/icons/token-check.vue';
 import Web3 from 'web3';
 import { getImageCoin } from '../../utils/helpers/formatter-images';
+
 const notification = useNotification();
 const networks = {
   Ethereum: {
@@ -265,6 +266,7 @@ export default {
       this.isDropdownVisible = !this.isDropdownVisible;
     },
     async disconnectAccount() {
+      
       this.walletAddress = '';
       localStorage.removeItem('walletAddress');
     },
@@ -311,43 +313,19 @@ export default {
       }
     },
     async connectWallet() {
-      if (this.walletAddress == '') {
+      if (window.ethereum) {
         try {
-          const permissions = await window.ethereum.request({
-            method: 'wallet_requestPermissions',
-            params: [
-              {
-                eth_accounts: {},
-              },
-            ],
+          const account = await window.ethereum.request({
+            method: 'eth_accounts',
           });
-          const approvedPermission = permissions.find(
-            (permission) =>
-              permission.parentCapability === 'eth_accounts' &&
-              permission.caveats.length === 1
-          );
-          if (approvedPermission) {
-            const account = await window.ethereum.request({
-              method: 'eth_accounts',
-            });
-            if (account.length > 0) {
-              this.walletAddress = account[0];
-              localStorage.setItem('walletAddress', account[0]);
-              notification.notify({
-                  title: 'Sucsess',
-                  text: 'Wallet connect Successfull',
-                  type: 'success',
-                  duration: 2000,
-                  speed: 1000,
-                });
-              this.isWalletModalVisible = false;
-            } else {
-              this.isWalletModalVisible = !this.isWalletModalVisible;
-            }
+          if (account.length > 0) {
+            this.walletAddress = account[0];
+            localStorage.setItem('walletAddress', account[0]);
+            this.isWalletModalVisible = false;
+          } else {
+            this.isWalletModalVisible = !this.isWalletModalVisible;
           }
-        } catch (error) {
-          console.log(error, 'error');
-        }
+        } catch (error) {}
       }
     },
     formatAddress(address) {

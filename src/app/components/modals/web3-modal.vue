@@ -38,10 +38,17 @@
 </template>
     
   <script>
-import { createWeb3Modal } from '@web3modal/wagmi';
-import { reconnect, http, createConfig } from '@wagmi/core';
-import { mainnet, polygon, bsc, sepolia } from '@wagmi/core/chains';
-import { coinbaseWallet, walletConnect, injected } from '@wagmi/connectors';
+import { createWeb3Modal, defaultWagmiConfig } from '@web3modal/wagmi';
+import { reconnect, http } from '@wagmi/core';
+import {
+  mainnet,
+  polygon,
+  bsc,
+  sepolia,
+  avalanche,
+  base,
+} from '@wagmi/core/chains';
+// import { coinbaseWallet, walletConnect, metaMask, injected } from '@wagmi/connectors';
 import { watchAccount } from '@wagmi/core';
 
 export default {
@@ -66,22 +73,17 @@ export default {
         url: 'https://web3modal.com',
         icons: ['https://avatars.githubusercontent.com/u/37784886'],
       };
-      const config = createConfig({
-        chains: [mainnet, sepolia, bsc, polygon],
+      const chains = [mainnet, sepolia, bsc, polygon, avalanche, base];
+      const config = defaultWagmiConfig({
+        chains,
+        metadata,
+        projectId,
         transports: {
           [mainnet.id]: http(),
           [sepolia.id]: http(),
           [polygon.id]: http(),
           [bsc.id]: http(),
         },
-        connectors: [
-          walletConnect({ projectId, metadata, showQrModal: false }),
-          injected({ shimDisconnect: true }),
-          coinbaseWallet({
-            appName: metadata.name,
-            appLogoUrl: metadata.icons[0],
-          }),
-        ],
       });
       reconnect(config);
       const web3Modal = createWeb3Modal({
@@ -91,7 +93,6 @@ export default {
         enableOnramp: true,
       });
       await web3Modal.open();
-
       web3Modal.getWalletInfo();
       const handleAccountChange = (data) => {
         this.walletAddress = data.address;

@@ -210,7 +210,7 @@ export default {
       if (window.ethereum) {
         const web3 = new Web3(window.ethereum);
         try {
-          await window.ethereum.request({ method: 'eth_requestAccounts' });
+          // const walletInfo =  await window.ethereum.request({ method: 'eth_requestAccounts' });
           const networkId = await web3.eth.net.getId();
           console.log(networkId, 'networkId');
           this.chainId = `0x${Number(networkId).toString(16)}`;
@@ -283,9 +283,6 @@ export default {
   async mounted() {
     await this.fetchChainId();
   },
-  // created() {
-  //   this.checkTokenAvailability();
-  // },
 };
 </script>
 
