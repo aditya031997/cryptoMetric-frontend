@@ -266,6 +266,7 @@ export default {
       isSwapModalVisible: false,
       isLoadingTokens: false,
       isLoadingBalances: false,
+      initialLoadComplete: false,
       selectedToken: {},
       fromTokenQuantity: '',
       toTokenQuantity: '',
@@ -347,7 +348,7 @@ export default {
         );
         if (fromToken) {
           this.selectedFromToken = fromToken;
-          this.selectedFromTokenAddress = fromToken.address;
+          this.selectedFromTokenAddress = fromToken?.address;
           this.updateTokenBalance(fromToken, true);
           fromTokenSet = true;
         } else {
@@ -365,10 +366,10 @@ export default {
         );
         if (toToken) {
           this.selectedReceiveToken = toToken;
-          this.selectedToTokenAddress = toToken.address;
+          this.selectedToTokenAddress = toToken?.address;
           this.updateTokenBalance(toToken, false);
           toTokenSet = true;
-        }else {
+        } else {
           this.showErrorModal(
             'Token does not exist on this chain ID. Please change the chain ID.'
           );
@@ -394,23 +395,21 @@ export default {
     handleTokenSelected(token) {
       if (this.isSelectingFrom) {
         this.selectedFromToken = token;
-        this.selectedFromTokenAddress = token.address;
+        this.selectedFromTokenAddress = token?.address;
         this.updateTokenBalance(token, true);
       } else {
         this.selectedReceiveToken = token;
-        this.selectedToTokenAddress = token.address;
+        this.selectedToTokenAddress = token?.address;
         this.updateTokenBalance(token, false);
       }
       this.isSwapModalVisible = false;
     },
     async updateTokenBalance(token, isFrom) {
-      // Choose the appropriate loading flag
+    console.log(isFrom,"isFrom")
       let loadingFlag = isFrom ? 'isLoadingFromBalance' : 'isLoadingToBalance';
-
-      // Check the cache for existing balances
-      const cacheKey = token.address + (isFrom ? '_from' : '_to');
+      const cacheKey = token?.address + (isFrom ? '_from' : '_to');
       if (this.balanceCache[cacheKey]) {
-        if (isFrom) {
+        if (isFrom == true) {
           this.fromFiat = this.balanceCache[cacheKey].fiat;
           this.fromTokenBalance = this.balanceCache[cacheKey].balance;
         } else {
@@ -420,35 +419,25 @@ export default {
         this.calculateRatio();
         return;
       }
-
       // Prevent concurrent updates for this field
-      if (this[loadingFlag]) {
-        console.log('Update in progress, skipping new request');
+      if (this[loadingFlag || this.initialLoadComplete]) {
         return;
       }
 
       this[loadingFlag] = true;
 
       try {
-        // Simulate a small delay before fetching the balance
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 5000));
 
-        // Fetch fiat value data from your API
         const response = await axios.get(
-          `${configs.NODE_API_URL}/tokens/convert?chain=${this.chainId}&addresses=${token.address}`
+          `${configs.NODE_API_URL}/tokens/convert?chain=${this.chainId}&addresses=${token?.address}`
         );
         const fiatValue = response.data.msg;
-
+        const account = localStorage.getItem('walletAddress');
         const web3 = new Web3(window.ethereum);
-        const account = (await web3.eth.getAccounts())[0];
-        const provider = new ethers.BrowserProvider(window.ethereum);
-
+        const balance = await web3.eth.getBalance(account);
         let tokenBalance;
-
-        if (token.address === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
-          // Handle native cryptocurrency (e.g., Ether)
-          const signer = await provider.getSigner();
-          const balance = await provider.getBalance(signer.address);
+        if (token?.address === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
           tokenBalance = ethers.formatUnits(balance.toString(), 18);
         } else {
           // Handle ERC-20 token balance
@@ -469,7 +458,6 @@ export default {
           this.toTokenBalance = truncatedBalance;
         }
 
-        // Cache the fetched balance and calculated values
         this.balanceCache[cacheKey] = {
           balance: truncatedBalance,
           fiat: fiatValue,
@@ -480,7 +468,7 @@ export default {
       } catch (error) {
         console.error('Failed to fetch token balance:', error);
       } finally {
-        this[loadingFlag] = false; // Release the loading flag
+        this[loadingFlag] = false;
       }
     },
     sanitizeInput(event, model) {
@@ -808,10 +796,17 @@ export default {
     document.addEventListener('click', this.handleClickOutside);
     this.getAccountBalance().then(() => {
       this.fetchTokens().then(() => {
-        this.setTokenFromParams();
+        this.setTokenFromParams().then(() => {
+          if (!this.initialLoadComplete) {
+            this.updateTokenBalance(this.selectedFromToken, true);
+            this.updateTokenBalance(this.selectedReceiveToken, false);
+            this.initialLoadComplete = true;
+          }
+        });
       });
     });
   },
+
   watch: {
     selectedFromToken(newVal, oldVal) {
       if (newVal !== oldVal) this.calculateRatio('from');

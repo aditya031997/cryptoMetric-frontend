@@ -313,20 +313,20 @@ export default {
       }
     },
     async connectWallet() {
-      if (window.ethereum) {
-        try {
-          const account = await window.ethereum.request({
-            method: 'eth_accounts',
-          });
-          if (account.length > 0) {
-            this.walletAddress = account[0];
-            localStorage.setItem('walletAddress', account[0]);
-            this.isWalletModalVisible = false;
-          } else {
+      // if (window.ethereum) {
+      //   try {
+      //     const account = await window.ethereum.request({
+      //       method: 'eth_accounts',
+      //     });
+      //     if (account.length > 0) {
+      //       this.walletAddress = account[0];
+      //       localStorage.setItem('walletAddress', account[0]);
+      //       this.isWalletModalVisible = false;
+      //     } else {
             this.isWalletModalVisible = !this.isWalletModalVisible;
-          }
-        } catch (error) {}
-      }
+      //     }
+      //   } catch (error) {}
+      // }
     },
     formatAddress(address) {
       if (address) {
