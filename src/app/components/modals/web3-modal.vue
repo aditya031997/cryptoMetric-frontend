@@ -39,7 +39,7 @@
     
   <script>
 import { createWeb3Modal, defaultWagmiConfig } from '@web3modal/wagmi';
-import { reconnect, http } from '@wagmi/core';
+import { reconnect, http, createConfig } from '@wagmi/core';
 import {
   mainnet,
   polygon,
@@ -48,8 +48,10 @@ import {
   avalanche,
   base,
 } from '@wagmi/core/chains';
-// import { coinbaseWallet, walletConnect, metaMask, injected } from '@wagmi/connectors';
+import { injected } from '@wagmi/connectors';
 import { watchAccount } from '@wagmi/core';
+import { useNotification } from '@kyvg/vue3-notification';
+const notification = useNotification();
 
 export default {
   name: 'WalletModal',
@@ -59,6 +61,7 @@ export default {
   data() {
     return {
       walletAddress: null,
+      notificationShown: false,
     };
   },
   methods: {
@@ -85,20 +88,38 @@ export default {
           [bsc.id]: http(),
         },
       });
+
       reconnect(config);
       const web3Modal = createWeb3Modal({
         wagmiConfig: config,
         projectId,
         enableAnalytics: true,
         enableOnramp: true,
+        connectors: [injected],
       });
       await web3Modal.open();
       web3Modal.getWalletInfo();
       const handleAccountChange = (data) => {
+        console.log('this', this)
+        console.log(data, 'fdfdfdfdf');
         this.walletAddress = data.address;
+
         localStorage.setItem('walletAddress', data.address);
+        localStorage.setItem('rpcUrl',data.chain.rpcUrls.default.http[0])
         this.$emit('account-changed', data.address);
         this.hideModal();
+        if (data?.status == 'connected' && !this.notificationShown) {
+          notification.notify({
+            title: 'Sucsess',
+            text: 'Wallet connect Successfully',
+            type: 'success',
+            duration: 2000,
+            speed: 1000,
+          });
+          this.notificationShown = true;
+        } else if (data?.status == '"disconnected"') {
+          localStorage.removeItem('walletAddress');
+        }
       };
 
       watchAccount(config, {
@@ -108,7 +129,11 @@ export default {
   },
 };
 </script>
-   <style lang="scss" scoped>
+  
+  
+  
+  
+  <style lang="scss" scoped>
 .modal-overlay {
   position: fixed;
   top: 0;

@@ -387,7 +387,6 @@ export default {
       this.setDefaultToken();
     },
     handleChainIdFetched(chainId) {
-      console.log('Received chainId:', chainId);
       if (chainId) {
         this.setTokenFromParams();
       }
@@ -405,7 +404,7 @@ export default {
       this.isSwapModalVisible = false;
     },
     async updateTokenBalance(token, isFrom) {
-    console.log(isFrom,"isFrom")
+      console.log(token.address, 'tokentoken');
       let loadingFlag = isFrom ? 'isLoadingFromBalance' : 'isLoadingToBalance';
       const cacheKey = token?.address + (isFrom ? '_from' : '_to');
       if (this.balanceCache[cacheKey]) {
@@ -433,17 +432,23 @@ export default {
           `${configs.NODE_API_URL}/tokens/convert?chain=${this.chainId}&addresses=${token?.address}`
         );
         const fiatValue = response.data.msg;
-        const account = localStorage.getItem('walletAddress');
+
         const web3 = new Web3(window.ethereum);
-        const balance = await web3.eth.getBalance(account);
+        // const account = (await web3.eth.getAccounts())[0];
+        const accountAddress = localStorage.getItem('walletAddress');
+        // const provider = new ethers.BrowserProvider(window.ethereum);
+        const provider = new ethers.JsonRpcProvider(
+          'https://polygon-rpc.com'
+        );
         let tokenBalance;
+
         if (token?.address === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
+          const balance = await provider.getBalance(accountAddress);
           tokenBalance = ethers.formatUnits(balance.toString(), 18);
         } else {
-          // Handle ERC-20 token balance
-          const contract = new ethers.Contract(token.address, abi, provider);
+          const contract = new ethers.Contract(token?.address, abi, provider);
           const decimals = await contract.decimals();
-          const balanceAmount = await contract.balanceOf(account);
+          const balanceAmount = await contract.balanceOf(accountAddress);
           tokenBalance = ethers.formatUnits(balanceAmount.toString(), decimals);
         }
 
@@ -676,8 +681,8 @@ export default {
                   title: 'Sucsess',
                   text: 'Transaction Successfull',
                   type: 'success',
-                  duration: 2000,
-                  speed: 1000,
+                  duration: 1000,
+                  speed: 500,
                 });
                 this.isTransactionPending = false;
                 this.resetTransactionFields();
@@ -777,7 +782,11 @@ export default {
       ); // Disable button if transaction is pending
     },
     buttonText() {
-      if (this.toFiat == 0 || this.toFiat == '') {
+      const walletAddress = localStorage.getItem('walletAddress');
+
+      if (!walletAddress) {
+        return 'Connect Wallet';
+      } else if (this.toFiat == 0 || this.toFiat == '') {
         return 'Select Token';
       } else if (
         !this.fromTokenQuantity ||
