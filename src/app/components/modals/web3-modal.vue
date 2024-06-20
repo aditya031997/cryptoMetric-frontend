@@ -100,11 +100,10 @@ export default {
       await web3Modal.open();
       web3Modal.getWalletInfo();
       const handleAccountChange = (data) => {
-        console.log('this', this)
-        console.log(data, 'fdfdfdfdf');
         this.walletAddress = data.address;
 
         localStorage.setItem('walletAddress', data.address);
+        localStorage.setItem('walletName', data.connector.name);
         localStorage.setItem('rpcUrl',data.chain.rpcUrls.default.http[0])
         this.$emit('account-changed', data.address);
         this.hideModal();

@@ -18,7 +18,7 @@
         {{ getAvailableSupply }}
       </p>
     </div>
- 
+
     <div
       class="ml-4 mt-1"
       v-if="this.coin.total_supply"
@@ -35,7 +35,11 @@
       <p class="m-0 text text--caption text-secondary">% Change 24h</p>
       <p
         class="m-0 mt-1 text text-truncate"
-        :class="parseFloat(coin.percent_change_24h) < 0 ? 'text-danger' : 'text-success'"
+        :class="
+          parseFloat(coin.percent_change_24h) < 0
+            ? 'text-danger'
+            : 'text-success'
+        "
       >
         {{ getPercent24Format }}
       </p>
@@ -47,7 +51,11 @@
       <p class="m-0 text text--caption text-secondary">% Change 1w</p>
       <p
         class="m-0 mt-1 text text-truncate"
-        :class="parseFloat(coin.percent_change_7d) < 0 ? 'text-danger' : 'text-success'"
+        :class="
+          parseFloat(coin.percent_change_7d) < 0
+            ? 'text-danger'
+            : 'text-success'
+        "
       >
         {{ getPercentWeekFormat }}
       </p>
@@ -65,7 +73,11 @@
 </template>
 
 <script>
-import { simpleFormatPrice, formatPercent } from '@/utils/helpers/formatter';
+import {
+  simpleFormatPrice,
+  supplyFormatPrice,
+  formatPercent,
+} from '@/utils/helpers/formatter';
 export default {
   props: {
     coin: {
@@ -83,10 +95,10 @@ export default {
       return formatPercent(this.coin.percent_change_7d);
     },
     getTotalSupply() {
-      return this.coin.total_supply;
+      return supplyFormatPrice(this.coin.total_supply);
     },
     getAvailableSupply() {
-      return this.coin.available_supply;
+      return supplyFormatPrice(this.coin.available_supply);
     },
     getVolume() {
       return simpleFormatPrice(this.coin.volume_usd_24h);

@@ -66,6 +66,42 @@ function simpleFormatPrice(value, currency = '$', currencyPosition = true) {
   return `${fixedValue}${symbol}`;
 }
 
+function supplyFormatPrice(value, currency = '$', currencyPosition = true) {
+  let isStr = false;
+  let symbol = currency;
+  let preFixedValue = value;
+  if (typeof value === 'string') {
+    isStr = true;
+    if (Number.isNaN(parseInt(value[0]))) {
+      symbol = value[0];
+      preFixedValue = value.substring(1);
+    } else {
+      preFixedValue = value;
+    }
+  }
+  let numValue = null;
+  let numStr = null;
+  if (!isStr) {
+    numValue = parseFloat(preFixedValue);
+    numStr = `${numValue}`;
+  } else {
+    numValue = parseFloat(preFixedValue);
+    numStr = preFixedValue;
+  }
+  if (numStr.includes('e')) {
+    let strParts = numStr.split('e');
+    numStr = numValue.toFixed(strParts[0].length + Math.abs(parseInt(strParts[1])));
+  }
+  if (!numStr.includes('.')) {
+    numStr += '.0';
+  }
+  let fixedValue = numStr.replace(/\d(?=(\d{3})+\.)/g, '$&,');
+  if (fixedValue.includes('.')) {
+    fixedValue = fixedValue.replace(/\.?0+$/, '');
+  }
+  return fixedValue;
+}
+
 function formatPrice(value, currency = '$', currencyPosition = true) {
   let symbol = currency;
   let preFixedValue = value;
@@ -93,7 +129,27 @@ function formatPrice(value, currency = '$', currencyPosition = true) {
   }
   return `${formattedValue}${symbol}`;
 }
+function TotalFormatPrice(value, currency = '$', currencyPosition = true) {
+  let symbol = currency;
+  let preFixedValue = value;
+  if (typeof value === 'string' && Number.isNaN(parseInt(value[0]))) {
+    symbol = value[0];
+    preFixedValue = value.substring(1);
+  }
+  const numValue = parseFloat(preFixedValue);
+  let formattedValue = getPriceByQuantity(numValue);
+  if (formattedValue.includes('.')) {
+    formattedValue = formattedValue.replace(/\.?0+$/, '');
+  }
+  // Abbreviate the formatted value if it's a large number
+  if (Math.abs(numValue) >= 1000) {
+    formattedValue = abbreviateNumber(numValue);
+  }
+  // Ensure formattedValue is not undefined before returning
+  formattedValue = formattedValue || 'No info';
 
+  return formattedValue;
+}
 function formatPercent(value) {
   const numValue = parseFloat(value);
   let fixedValue = Decimal(numValue).toFixed(3);
@@ -120,4 +176,4 @@ function abbreviateNumber(num) {
   return num.toFixed(2);
 }
 
-export { formatPrice, formatPercent, simpleFormatPrice, simpleFormatPercent };
+export { formatPrice, formatPercent, simpleFormatPrice, supplyFormatPrice,TotalFormatPrice, simpleFormatPercent };

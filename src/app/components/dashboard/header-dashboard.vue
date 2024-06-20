@@ -266,7 +266,6 @@ export default {
       this.isDropdownVisible = !this.isDropdownVisible;
     },
     async disconnectAccount() {
-      
       this.walletAddress = '';
       localStorage.removeItem('walletAddress');
     },
@@ -281,10 +280,22 @@ export default {
     },
     async switchNetwork(networkKey) {
       if (!window.ethereum) return alert('MetaMask is not installed');
+      const wallets = [];
+      window.addEventListener('eip6963:announceProvider', (e) =>
+        wallets.push(e.detail)
+      );
+
+      // Request all EIP-6963 wallets announce themselves
+      window.dispatchEvent(new Event('eip6963:requestProvider'));
+      // await new Promise((resolve) => setTimeout(resolve, 1000));
+      const walletName = localStorage.getItem('walletName');
+      const matchedWallet = wallets.find(
+        (wallet) => wallet.info.name === walletName
+      );
 
       const networkData = networks[networkKey];
       try {
-        await window.ethereum.request({
+        await matchedWallet.provider.request({
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: networkData.chainId }],
         });
@@ -323,7 +334,7 @@ export default {
       //       localStorage.setItem('walletAddress', account[0]);
       //       this.isWalletModalVisible = false;
       //     } else {
-            this.isWalletModalVisible = !this.isWalletModalVisible;
+      this.isWalletModalVisible = !this.isWalletModalVisible;
       //     }
       //   } catch (error) {}
       // }

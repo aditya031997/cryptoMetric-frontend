@@ -127,6 +127,7 @@ import {
   formatPrice,
   formatPercent,
   simpleFormatPrice,
+  TotalFormatPrice,
   simpleFormatPercent,
 } from '@/utils/helpers/formatter';
 import buttonFavorite from '@/components/ui/button/button-favorite.vue';
@@ -242,7 +243,7 @@ export default {
       if (this.totalSupply === null) {
         return 'No info';
       }
-      return formatPrice(this.totalSupply);
+      return TotalFormatPrice(this.totalSupply);
     },
     popperTotalSupply() {
       if (this.totalSupply === null) {
@@ -254,7 +255,7 @@ export default {
       if (this.availableSupply === null) {
         return 'No info';
       }
-      return formatPrice(this.availableSupply);
+      return TotalFormatPrice(this.availableSupply);
     },
     popperAvailableSupply() {
       if (this.availableSupply === null) {
