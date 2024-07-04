@@ -61,7 +61,38 @@
           </button>
         </div>
 
+
         <div class="swap-popular-token">
+            <h4>Your tokens</h4>
+          <div class="swap-token-list">
+            <ul>
+              <li
+                v-for="token in walletTokens"
+                :key="token.id"
+                @click.stop="selectToken(token)"
+              >
+                <div class="tk-list">
+                  <img
+                    :src="getwalletTokenImage(token)"
+                    :alt="token.name"
+                    class="token-logo"
+                    @error="handleImageError($event, token.symbol)"
+                  />
+                  <div class="tokenname">
+                    <h3>{{ token.name }}</h3>
+                    <h5>{{ token.symbol }}</h5>
+                  </div>
+                </div>
+              </li>
+              <li v-if="walletTokens.length === 0">
+                <div class="tk-list">
+                  <div class="tokenname">
+                    <h3>No results found.</h3>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
           <h4>Popular tokens</h4>
           <div class="swap-token-list">
             <ul>
@@ -106,6 +137,7 @@ import CheckIcon from '../../components/icons/token-check.vue';
 import { getImageCoin } from '../../utils/helpers/formatter-images';
 import configs from '.././../../configs/configs';
 import '../../assets/scss/modal/swap-modal.scss';
+import Web3 from 'web3';
 
 export default {
   name: 'TokenModal',
@@ -115,6 +147,7 @@ export default {
       apiTokens: [],
       topRatedToken: [],
       filteredApiTokens: [],
+      existingToken: [],
       isLoading: false,
       searchText: '',
       errorMessage: null,
@@ -143,7 +176,7 @@ export default {
     },
     async fetchTokens(chainId) {
       this.isLoading = true;
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       try {
         const response = await axios.get(
           `${configs.NODE_API_URL}/tokens/swager?chain=${chainId}`
@@ -153,6 +186,13 @@ export default {
         this.filteredApiTokens = this.apiTokens;
         this.$emit('tokens-fetched', this.apiTokens);
         this.$emit('chainId-fetched', chainId);
+        const walletResponse = await axios.get(
+          `http://localhost:5000/tokens/walletToken?chain=${chainId}`
+        );
+        const verifiedTokens = walletResponse.data.msg.filter(
+          (token) => token.verified_contract
+        );
+        this.existingToken = verifiedTokens;
         this.errorMessage = null;
       } catch (error) {
         this.errorMessage = 'Failed to load tokens';
@@ -161,6 +201,7 @@ export default {
         this.isLoading = false;
       }
     },
+
     async fetchFilteredTokens(query) {
       if (!query) {
         this.filteredApiTokens = this.apiTokens;
@@ -187,7 +228,15 @@ export default {
       return getImageCoin(slug.toLowerCase());
     },
     getTokenImage(token) {
-      return token.logoURI || this.getImageCoin(token.symbol.toLowerCase());
+      return (
+        token.logoURI ||
+        this.getImageCoin(token.symbol.toLowerCase()) ||
+        token.logo
+      );
+    },
+
+    getwalletTokenImage(token) {
+      return ( token.logo);
     },
     handleImageError(event, slug) {
       event.target.src = this.getImageCoin(slug.toLowerCase());
@@ -200,6 +249,19 @@ export default {
       }
       const searchLower = this.searchText.toLowerCase();
       return Object.values(this.filteredApiTokens).filter((token) => {
+        return (
+          token.name.toLowerCase().includes(searchLower) ||
+          token.symbol.toLowerCase().includes(searchLower) ||
+          (token.address && token.address.toLowerCase().includes(searchLower))
+        );
+      });
+    },
+    walletTokens() {
+      if (!this.searchText) {
+        return Object.values(this.existingToken);
+      }
+      const searchLower = this.searchText.toLowerCase();
+      return Object.values(this.existingToken).filter((token) => {
         return (
           token.name.toLowerCase().includes(searchLower) ||
           token.symbol.toLowerCase().includes(searchLower) ||

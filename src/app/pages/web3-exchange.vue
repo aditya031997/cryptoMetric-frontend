@@ -27,7 +27,6 @@
                     class="accordion-header"
                     @click="toggleAccordion(index)"
                   >
-                    <!-- {{ item.title }} -->
                     Max. slippage
                     <div class="accrodion-right-content">
                       <p>{{ selectedOption === 'auto' ? 'Auto' : '0.5' }}</p>
@@ -61,6 +60,7 @@
                         placeholder="0.5"
                         v-model="customSlippage"
                         @focus="setToCustom"
+                        @input="setToCustom"
                       />
                     </div>
                   </div>
@@ -79,6 +79,7 @@
           >You Pay</label
         >
         <input
+          ref="fromTokenQuantityInput"
           v-model="fromTokenQuantity"
           type="text"
           min="0"
@@ -124,7 +125,7 @@
           "
         >
           Balance: {{ fromTokenBalance }}
-          <button @click="setMaxTokenQuantity">max</button>
+          <!-- <button @click="setMaxTokenQuantity">max</button> -->
         </div>
       </div>
     </div>
@@ -149,7 +150,6 @@
           @input="sanitizeInput($event, 'ratio')"
           class="form-control number-input"
         />
-
         <p
           class="pay-content"
           v-if="ratio"
@@ -158,41 +158,43 @@
         </p>
       </div>
       <div class="right-side-input-css">
-        <button
-          :class="{
-            'select-token-btn': true,
-            selected: !!selectedReceiveToken,
-          }"
-          @click="
-            isSwapModalVisible = true;
-            handleSelectTo();
-          "
-        >
-          <span v-if="!selectedReceiveToken">Select Token</span>
-          <span
-            v-else
-            class="swap-list"
+        <div v-if="isFetchingToToken">Fetching token...</div>
+        <div v-else>
+          <button
+            :class="{
+              'select-token-btn': true,
+              selected: !!selectedReceiveToken,
+            }"
+            @click="
+              isSwapModalVisible = true;
+              handleSelectTo();
+            "
           >
-            <img
-              :src="selectedReceiveToken?.logoURI"
-              :alt="selectedReceiveToken?.symbol"
-              class="token-logo"
-            />
-            <span>{{ selectedReceiveToken?.symbol }}</span>
-          </span>
-          <dropdownIcon />
-        </button>
-        <p
-          class="mt-1"
-          v-if="toFiat != 0 || toFiat != ''"
-        >
-          Balance: {{ toTokenBalance }}
-        </p>
+            <span v-if="!selectedReceiveToken && !hasToTokenParam"
+              >Select Token</span
+            >
+            <span>
+              <img
+                :src="selectedReceiveToken?.logoURI"
+                :alt="selectedReceiveToken?.symbol"
+                class="token-logo"
+              />
+              <span>{{ selectedReceiveToken?.symbol }}</span>
+            </span>
+            <dropdownIcon />
+          </button>
+          <p
+            class="mt-1"
+            v-if="toFiat != 0 || toFiat != ''"
+          >
+            Balance: {{ toTokenBalance }}
+          </p>
+        </div>
       </div>
     </div>
     <button
       class="modal-button connect-wallet btn"
-      @click="handleTrade"
+      @click="sendTrans"
       :disabled="isDisabled"
     >
       {{ buttonText }}
@@ -201,7 +203,7 @@
     <TokenModal
       ref="tokenModal"
       :is-visible="isSwapModalVisible"
-      :chain-id="chainId"
+      :chain-id="137"
       @hide-modal="toggleSwapModal(false)"
       @token-selected="handleTokenSelected"
       @tokens-fetched="handleTokensFetched"
@@ -219,9 +221,10 @@
   </div>
 </template>
 <script>
-import axios from 'axios';
-import Cookies from 'js-cookie';
+import { reactive, toRefs,ref, watch } from 'vue';
+import { useAccount, useSendTransaction, useWaitForTransactionReceipt } from '@wagmi/vue';
 import Web3 from 'web3';
+import axios from 'axios';
 import TokenModal from '../components/modals/modal-swap.vue';
 import '../assets/scss/pages/swap.scss';
 import SwapIcon from '../assets/images/zrx-icon.png';
@@ -232,6 +235,7 @@ import settingIcon from '../components/icons/icon-settings.vue';
 import { ethers } from 'ethers';
 import configs from '../../configs/configs';
 import { useNotification } from '@kyvg/vue3-notification';
+
 const notification = useNotification();
 
 const abi = [
@@ -242,6 +246,7 @@ const abi = [
 
 export default {
   name: 'web3exchange',
+
   components: {
     Multiselect,
     slipageAdd,
@@ -256,6 +261,7 @@ export default {
   },
   data() {
     return {
+      walletAddress: '',
       tokens: [],
       fetchedData: [],
       selectedFromToken: null,
@@ -266,6 +272,8 @@ export default {
       isSwapModalVisible: false,
       isLoadingTokens: false,
       isLoadingBalances: false,
+      isLoadingToBalance: false,
+      isFetchingToToken: false,
       initialLoadComplete: false,
       selectedToken: {},
       fromTokenQuantity: '',
@@ -284,7 +292,7 @@ export default {
       ratio: '',
       isSwapped: false,
       showSlippageModal: false,
-      slippage: 0.5,
+      customSlippage: 0.5,
       isTransactionPending: false,
       slippageType: 'auto',
       selectedOption: 'auto',
@@ -295,6 +303,104 @@ export default {
           content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         },
       ],
+    };
+  },
+
+  setup() {
+    const selectedOption = ref('auto')
+    const { isConnected } = useAccount();
+    const {
+      data: hash,
+      error,
+      isPending,
+      sendTransaction,
+    } = useSendTransaction();
+
+    let state = reactive({
+      isTransactionPending: false,
+      // selectedOption: 'auto',
+      customSlippage: 0.5,
+      chainId: '',
+      selectedFromTokenAddress: '',
+      selectedToTokenAddress: '',
+      fromTokenQuantity: '',
+      walletAddress: isConnected._object.address,
+    });
+
+    const sendTrans = async () => {
+      console.log(isPending, 'isPending');
+      state.isTransactionPending = isPending;
+      const slippageValue =
+        state.selectedOption === 'auto' ? 0.5 : state.customSlippage;
+      const web3 = new Web3(window.ethereum);
+
+      try {
+        const allowanceResponse = await axios.get(
+          `${configs.NODE_API_URL}/tokens/allowance`,
+          {
+            params: {
+              tokenAddress: state.selectedFromTokenAddress,
+              walletAddress: state.walletAddress,
+              chain: 137,
+            },
+          }
+        );
+        const allowance = allowanceResponse.data.allowance;
+        setTimeout(async () => {
+          let swapData;
+          if (allowance === '0') {
+            await axios.get(
+              `${configs.NODE_API_URL}/tokens/approveTransaction?tokenAddress=${
+                state.selectedFromTokenAddress
+              }&chain=${137}`
+            );
+          }
+          swapData = {
+            slippage: slippageValue,
+            src: state.selectedFromTokenAddress,
+            from: state.walletAddress,
+            origin: state.walletAddress,
+            dst: state.selectedToTokenAddress,
+            chain: 137,
+            amount: web3.utils.toWei(
+              state.fromTokenQuantity.toString(),
+              'ether'
+            ),
+          };
+
+          console.log(swapData, 'hhhhthhthhhth');
+          const swapResult = await axios.post(
+            `http://localhost:5000/tokens/swapper`,
+            swapData
+          );
+          sendTransaction({
+            from: swapResult.data.tx.from,
+            to: swapResult.data.tx.to,
+            data: swapResult.data.tx.data,
+            value: swapResult.data.tx.value,
+            gas: swapResult.data.tx.gas,
+            gasPrice: swapResult.data.tx.gasPrice,
+          });
+        });
+      } catch (error) {
+        state.isTransactionPending = false;
+        console.error('Error sending transaction:', error);
+      }
+    };
+
+    const { isLoading: isConfirming, isSuccess: isConfirmed } =
+      useWaitForTransactionReceipt({
+        hash,
+      });
+
+      
+    return {
+      ...toRefs(state),
+      hash,
+      error,
+      isPending,
+      sendTrans,
+      isConnected,
     };
   },
   methods: {
@@ -327,7 +433,7 @@ export default {
       await new Promise((resolve) => setTimeout(resolve, 2000));
       try {
         const response = await axios.get(
-          `${configs.NODE_API_URL}/tokens/swager?chain=${this.chainId}`
+          `${configs.NODE_API_URL}/tokens/swager?chain=${137}`
         );
         this.fetchedData = response.data.msg.tokens;
       } catch (error) {
@@ -349,7 +455,7 @@ export default {
         if (fromToken) {
           this.selectedFromToken = fromToken;
           this.selectedFromTokenAddress = fromToken?.address;
-          this.updateTokenBalance(fromToken, true);
+          await this.updateTokenBalance(fromToken, true);
           fromTokenSet = true;
         } else {
           this.showErrorModal(
@@ -361,13 +467,15 @@ export default {
       }
 
       if (toTokenSymbol) {
+        this.isFetchingToToken = true;
         const toToken = Object.values(this.tokens).find(
           (token) => token.symbol === toTokenSymbol
         );
         if (toToken) {
           this.selectedReceiveToken = toToken;
           this.selectedToTokenAddress = toToken?.address;
-          this.updateTokenBalance(toToken, false);
+          console.log(toToken, 'toToken');
+          await this.updateTokenBalance(toToken, false);
           toTokenSet = true;
         } else {
           this.showErrorModal(
@@ -376,6 +484,7 @@ export default {
           this.selectedToken = null;
           this.selectedToTokenAddress = '';
         }
+        this.isFetchingToToken = false;
       }
 
       if (!fromTokenSet) {
@@ -404,11 +513,10 @@ export default {
       this.isSwapModalVisible = false;
     },
     async updateTokenBalance(token, isFrom) {
-      console.log(token.address, 'tokentoken');
       let loadingFlag = isFrom ? 'isLoadingFromBalance' : 'isLoadingToBalance';
       const cacheKey = token?.address + (isFrom ? '_from' : '_to');
       if (this.balanceCache[cacheKey]) {
-        if (isFrom == true) {
+        if (isFrom) {
           this.fromFiat = this.balanceCache[cacheKey].fiat;
           this.fromTokenBalance = this.balanceCache[cacheKey].balance;
         } else {
@@ -418,58 +526,60 @@ export default {
         this.calculateRatio();
         return;
       }
-      // Prevent concurrent updates for this field
-      if (this[loadingFlag || this.initialLoadComplete]) {
+
+      if (this[loadingFlag]) {
         return;
       }
 
       this[loadingFlag] = true;
 
       try {
-        await new Promise((resolve) => setTimeout(resolve, 5000));
+        await new Promise((resolve) => setTimeout(resolve, 4000));
+        if (token?.address) {
+          const response = await axios.get(
+            `${configs.NODE_API_URL}/tokens/convert?chain=${137}&addresses=${
+              token?.address
+            }`
+          );
+          const fiatValue = response.data.msg;
+          const accountAddress = this.walletAddress;
+          const provider = new ethers.JsonRpcProvider(
+            'https://polygon-rpc.com'
+          );
+          let tokenBalance;
 
-        const response = await axios.get(
-          `${configs.NODE_API_URL}/tokens/convert?chain=${this.chainId}&addresses=${token?.address}`
-        );
-        const fiatValue = response.data.msg;
+          if (token?.address === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
+            const balance = await provider.getBalance(accountAddress);
+            tokenBalance = ethers.formatUnits(balance.toString(), 18);
+          } else {
+            const contract = new ethers.Contract(token?.address, abi, provider);
+            const decimals = await contract.decimals();
+            const balanceAmount = await contract.balanceOf(accountAddress);
+            tokenBalance = ethers.formatUnits(
+              balanceAmount.toString(),
+              decimals
+            );
+          }
 
-        const web3 = new Web3(window.ethereum);
-        // const account = (await web3.eth.getAccounts())[0];
-        const accountAddress = localStorage.getItem('walletAddress');
-        // const provider = new ethers.BrowserProvider(window.ethereum);
-        const provider = new ethers.JsonRpcProvider(
-          'https://polygon-rpc.com'
-        );
-        let tokenBalance;
+          const truncatedBalance = tokenBalance.slice(0, 4);
 
-        if (token?.address === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
-          const balance = await provider.getBalance(accountAddress);
-          tokenBalance = ethers.formatUnits(balance.toString(), 18);
-        } else {
-          const contract = new ethers.Contract(token?.address, abi, provider);
-          const decimals = await contract.decimals();
-          const balanceAmount = await contract.balanceOf(accountAddress);
-          tokenBalance = ethers.formatUnits(balanceAmount.toString(), decimals);
+          if (isFrom) {
+            this.fromFiat = fiatValue;
+            this.fromTokenBalance = truncatedBalance;
+            this.fromCalculatedFiat = fiatValue * this.fromTokenQuantity;
+          } else {
+            this.toFiat = fiatValue;
+            this.toTokenBalance = truncatedBalance;
+          }
+
+          this.balanceCache[cacheKey] = {
+            balance: truncatedBalance,
+            fiat: fiatValue,
+            calculatedFiat: isFrom ? this.fromCalculatedFiat : undefined,
+          };
+
+          this.calculateRatio();
         }
-
-        const truncatedBalance = tokenBalance.slice(0, 4);
-
-        if (isFrom) {
-          this.fromFiat = fiatValue;
-          this.fromTokenBalance = truncatedBalance;
-          this.fromCalculatedFiat = fiatValue * this.fromTokenQuantity;
-        } else {
-          this.toFiat = fiatValue;
-          this.toTokenBalance = truncatedBalance;
-        }
-
-        this.balanceCache[cacheKey] = {
-          balance: truncatedBalance,
-          fiat: fiatValue,
-          calculatedFiat: isFrom ? this.fromCalculatedFiat : undefined,
-        };
-
-        this.calculateRatio();
       } catch (error) {
         console.error('Failed to fetch token balance:', error);
       } finally {
@@ -478,9 +588,13 @@ export default {
     },
     sanitizeInput(event, model) {
       let value = event.target.value;
-      value = value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
-
-      this[model] = value;
+      console.log(value, this.fromTokenQuantity, 'dfffdff');
+      if (value === '') {
+        this[model] = '';
+      } else {
+        value = value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+        this[model] = value;
+      }
       if (this.selectedFromToken && model === 'fromTokenQuantity') {
         this.updateTokenBalance(this.selectedFromToken, true);
       }
@@ -500,15 +614,13 @@ export default {
 
       const input1 = parseFloat(this.fromTokenQuantity) || 0;
       const input2 = parseFloat(this.ratio) || 0;
-
       let rateFromMsg1 = parseFloat(this.fromFiat) || 0;
       let rateFromMsg2 = parseFloat(this.toFiat) || 0;
-
       if (this.isSwapped) {
         [rateFromMsg1, rateFromMsg2] = [rateFromMsg2, rateFromMsg1];
       }
 
-      if (origin === 'from' && !isNaN(input1) && rateFromMsg2 !== 0) {
+      if (origin === 'from' && input1 && rateFromMsg2 !== 0) {
         const result = (input1 * rateFromMsg1) / rateFromMsg2;
         this.ratio = result.toFixed(2);
         this.toCalculatedFiat = (result * rateFromMsg2).toFixed(4);
@@ -534,7 +646,9 @@ export default {
       this.selectOption('custom');
     },
     selectOption(option) {
+      console.log(option, 'optionoption');
       this.selectedOption = option;
+      console.log(this.selectedOption,"sdffddfdf")
       if (option === 'auto') {
         this.slippageType = 'auto';
       } else if (option === 'custom') {
@@ -551,7 +665,6 @@ export default {
           // await window.ethereum.request({ method: 'eth_requestAccounts' });
           const networkId = await web3.eth.net.getId();
           this.chainId = Number(networkId);
-
           // Immediately fetch tokens and set the default token
           await this.fetchAndSetDefaultToken();
 
@@ -576,7 +689,7 @@ export default {
     async fetchAndSetDefaultToken() {
       this.isLoadingTokens = true;
       try {
-        await this.$refs.tokenModal.fetchTokens(this.chainId);
+        await this.$refs.tokenModal.fetchTokens(137);
         this.setDefaultToken();
       } catch (error) {
         console.error('Error fetching tokens:', error);
@@ -599,11 +712,10 @@ export default {
       if (fromToken) {
         return;
       }
-      const desiredSymbol = symbolMap[this.chainId.toString()];
+      const desiredSymbol = symbolMap[137];
       const defaultToken = Object.values(this.tokens).find(
         (token) => token.symbol === desiredSymbol
       );
-
       if (defaultToken) {
         this.selectedFromToken = defaultToken;
         this.selectedFromTokenAddress = defaultToken.address;
@@ -612,116 +724,25 @@ export default {
     },
 
     updateStateBasedOnChainId() {},
-    async handleTrade() {
-      this.isTransactionPending = true;
-      const slippageValue =
-        this.selectedOption === 'auto' ? 0.5 : this.customSlippage;
-      const web3 = new Web3(window.ethereum);
-      const savedAccount = await web3.eth.getAccounts();
-      try {
-        const allowanceResponse = await axios.get(
-          `${configs.NODE_API_URL}/tokens/allowance`,
-          {
-            params: {
-              tokenAddress: `${this.selectedFromTokenAddress}`,
-              walletAddress: `${savedAccount}`,
-              chain: `${this.chainId}`,
-            },
-          }
-        );
-        const allowance = allowanceResponse.data.allowance;
-        setTimeout(async () => {
-          let swapData;
 
-          if (allowance === '0') {
-            const approve = await axios.get(
-              `${configs.NODE_API_URL}/tokens/approveTransaction?tokenAddress=${this.selectedFromTokenAddress}&chain=${this.chainId}`
-            );
-          }
-
-          swapData = {
-            slippage: slippageValue,
-            src: this.selectedFromTokenAddress,
-            from: savedAccount[0],
-            dst: this.selectedToTokenAddress,
-            chain: this.chainId,
-            amount: web3.utils.toWei(
-              this.fromTokenQuantity.toString(),
-              'ether'
-            ),
-          };
-          const swap = await axios.post(
-            `${configs.NODE_API_URL}/tokens/swapper`,
-            swapData
-          );
-
-          if (window.ethereum) {
-            const web3 = new Web3(window.ethereum);
-            try {
-              // await window.ethereum.request({ method: 'eth_requestAccounts' });
-
-              const accounts = await web3.eth.getAccounts();
-              const senderAddress = accounts[0];
-
-              // Transaction details
-              const transaction = {
-                from: senderAddress,
-                to: swap.data.tx.to,
-                value: swap.data.tx.value,
-                data: swap.data.tx.data,
-                gas: swap.data.tx.gas,
-                gasPrice: swap.data.tx.gasPrice,
-              };
-
-              // Send transaction
-              const txHash = await web3.eth.sendTransaction(transaction);
-              // console.log(txHash, 'txHash');
-              if (txHash) {
-                notification.notify({
-                  title: 'Sucsess',
-                  text: 'Transaction Successfull',
-                  type: 'success',
-                  duration: 1000,
-                  speed: 500,
-                });
-                this.isTransactionPending = false;
-                this.resetTransactionFields();
-                this.setDefaultToken(); // Set default token after transaction
-                this.updateTokenBalance(this.selectedFromToken, true); // Update balance
-              }
-            } catch (error) {
-              this.isTransactionPending = false;
-              const errorMsg = 'User denied transaction';
-              console.error('Error sending transaction:', error);
-              notification.notify({
-                title: 'Denied',
-                text: errorMsg,
-                type: 'warn',
-                duration: 2000,
-                speed: 1000,
-              });
-            }
-          } else {
-            alert('Please install MetaMask to use this feature.');
-          }
-        }, 1000);
-      } catch (err) {
-        console.error(err);
-        alert('Swap error.');
-      }
-    },
     resetTransactionFields() {
-      this.selectedFromToken = null;
+      // this.selectedFromToken = null;
       this.selectedToToken = null;
       this.selectedReceiveToken = null;
       this.fromTokenQuantity = '';
-      this.toTokenQuantity = '';
+      (this.fromCalculatedFiat = ''), (this.toTokenQuantity = '');
       this.ratio = '';
       this.fromTokenBalance = '';
       this.toTokenBalance = '';
       this.fromFiat = 0;
       this.toFiat = 0;
+
+      this.clearInputField();
+      this.$nextTick(() => {
+        this.$forceUpdate();
+      });
     },
+
     swapSelections() {
       const temp = this.selectedFromToken;
       this.selectedFromToken = this.selectedToToken;
@@ -767,9 +788,19 @@ export default {
         this.fromFiat * parseFloat(this.fromTokenQuantity)
       ).toFixed(2);
     },
+    clearInputField() {
+      this.fromTokenQuantity = '';
+      // Force Vue to update the DOM
+      this.$nextTick(() => {
+        this.$forceUpdate();
+      });
+    },
   },
 
   computed: {
+    hasToTokenParam() {
+      return this.getUrlParameter('toToken') !== null;
+    },
     isDisabled() {
       return (
         !this.ratio ||
@@ -782,9 +813,7 @@ export default {
       ); // Disable button if transaction is pending
     },
     buttonText() {
-      const walletAddress = localStorage.getItem('walletAddress');
-
-      if (!walletAddress) {
+      if (!this.walletAddress) {
         return 'Connect Wallet';
       } else if (this.toFiat == 0 || this.toFiat == '') {
         return 'Select Token';
@@ -836,9 +865,38 @@ export default {
         this.updateFromCalculatedFiat();
       }
     },
+    hash(newVal) {
+      if (newVal) {
+        this.resetTransactionFields();
+        console.log(this.fromTokenQuantity, 'fdcffdf');
+        if (this.selectedFromToken) {
+          this.updateTokenBalance(this.selectedFromToken, true);
+        }
+        const Msg = 'Transaction succesfully';
+        notification.notify({
+          text: Msg,
+          type: 'success',
+          duration: 2000,
+          speed: 1000,
+        });
+      }
+    },
+    error(newVal) {
+      if (newVal) {
+        console.log(newVal.TransactionExecutionError, 'newVal');
+        const Msg = 'User reject the request';
+        notification.notify({
+          text: Msg,
+          type: 'warn',
+          duration: 2000,
+          speed: 1000,
+        });
+      }
+    },
   },
 };
 </script>
+
 
 <style>
 .error-modal {

@@ -15,6 +15,10 @@ import apiClient from './utils/helpers/api-client.js';
 import configs from '#/configs/configs';
 import lodash from 'lodash';
 
+import { VueQueryPlugin, QueryClient } from '@tanstack/vue-query';
+import { WagmiPlugin } from '@wagmi/vue';
+import { config } from './components/modals/config.js';
+
 // window._ = _;
 // Object.defineProperty(Vue.prototype, '$decimal', { value: Decimal });
 // Object.defineProperty(Vue.prototype, '$_', { value: lodash });
@@ -27,11 +31,14 @@ Vue.prototype.$configs = configs;
 
 
 const app = createApp(App)
+const queryClient = new QueryClient();
 
 app.config.globalProperties.$api = apiClient;
 
 
 app.use(Notifications)
+app.use(WagmiPlugin, { config })
+app.use(VueQueryPlugin, { queryClient })
 app.use(store);
 app.use(router)
 app.mount('#app');

@@ -28,27 +28,14 @@
           {{ titleHeader }}
         </h1>
       </div>
-      <div class="border-none bg-none connect-btn">
-        <button
-          v-if="!walletAddress"
-          @click="connectWallet"
-        >
-          Connect
-        </button>
-        <button
-          v-else
-          @click="disconnectAccount"
-        >
-          <popper-tooltip
-            custom-class="header-logout"
-            placement="bottom"
-            :disabled="isDnd || poppersOff"
-          >
-            <iconSwitch />
-            <template v-slot:popper>Disconnect</template>
-          </popper-tooltip>
-        </button>
 
+      <div class="border-none bg-none connect-btn">
+      <Account v-if="isConnected" />
+      <!-- <Connect v-else /> -->
+      <button v-else @click="showConnectModal = true" >
+        Connect
+      </button>
+        
         <div class="dropdown-option">
           <button
             class="dropdown-btn-header"
@@ -74,7 +61,7 @@
               :class="{ 'is-checked': item.checked }"
               @click="
                 toggleCheck(index);
-                switchNetwork(item.name);
+                switchNetwork(item);
               "
             >
               <div>
@@ -90,55 +77,39 @@
           </ul>
         </div>
       </div>
-      <div
-        v-if="walletAddress"
-        class="header-dashboard__connected-address"
-      >
-        <div class="address-box">
-          <figure>
-            <img
-              src="../../assets/images/img-avatar.png"
-              alt=""
-            />
-          </figure>
-          <div class="content">
-            <p class="wallet-address">
-              {{ formatAddress(walletAddress) }}
-            </p>
-          </div>
-        </div>
-      </div>
+
       <div class="header-dashboard__section">
         <dashboard-settings v-if="this.$route.meta.headerName === 'Home'" />
         <user-notify />
         <user-profile />
       </div>
     </header>
-    <wallet-modal
-      :is-visible="isWalletModalVisible"
-      @hide-modal="connectWallet"
-      @account-changed="handleAccountChanged"
+    <ConnectModal
+      :isVisible="showConnectModal"
+      @close="showConnectModal = false"
     />
+    <!-- <p>{{ chainId }}</p> -->
   </div>
+  
 </template>
 
 <script>
+import { useAccount , useChainId} from "@wagmi/vue";
 import iconBack from '../icons/icon-back.vue';
-import iconSwitch from '../icons/icon-switch.vue';
 import ButtonIcon from '../ui/button/button-icon.vue';
 import UserProfile from './user-profile.vue';
 import { useNotification } from '@kyvg/vue3-notification';
-import PopperTooltip from '@/components/poppers/popper-tooltip.vue';
 import UserNotify from './user-notify.vue';
 import DashboardSettings from './dashboard-settings.vue';
+import Account from '../dashboard/Account.vue';
+import Connect from '../dashboard/Connect.vue';
 import IconBurger from '../icons/icon-burger.vue';
-import WalletModal from '../modals/web3-modal.vue';
+import ConnectModal from "../modals/wallet-modal.vue"
 import DropdownIcon from '../../components/icons/icon-dropdown.vue';
 import CheckIcon from '../../components/icons/token-check.vue';
 import Web3 from 'web3';
 import { getImageCoin } from '../../utils/helpers/formatter-images';
 
-const notification = useNotification();
 const networks = {
   Ethereum: {
     chainId: '0x1',
@@ -173,26 +144,40 @@ const networks = {
 };
 
 export default {
+
+  setup() {
+    const { isConnected } = useAccount();
+    // const notification = useNotification();
+    const chainId = useChainId()
+    return {
+      isConnected, 
+      chainId
+    };
+  },
+
   components: {
     iconBack,
-    PopperTooltip,
-    iconSwitch,
     ButtonIcon,
     UserProfile,
+    ConnectModal,
     UserNotify,
     DashboardSettings,
     IconBurger,
-    WalletModal,
     DropdownIcon,
     CheckIcon,
+    Account, 
+    Connect
   },
 
   data() {
     return {
-      isWalletModalVisible: false,
+      currentChainId:'',
       chainId: '',
+      web3: null,
+      currentNetwork: null,
       walletAddress: localStorage.getItem('walletAddress') || '',
       isDropdownVisible: false,
+      showConnectModal: false,
       dropdownItems: [
         { name: 'Ethereum', slug: 'ethereum', chainId: 1, checked: true },
         { name: 'Binance', slug: 'bnb', chainId: 56, checked: false },
@@ -229,14 +214,24 @@ export default {
     },
   },
   methods: {
+    async listenNetworkChange() {
+      this.web3.currentProvider.on('chainChanged', (chainId) => {
+        this.currentNetwork = this.web3.utils.hexToNumber(chainId);
+        console.log('Network changed:', this.currentNetwork);
+      });
+    },
     getImageCoin(slug) {
       if (slug === 'base') {
         return require('@/assets/images/base-network.png');
       }
       return getImageCoin(slug);
     },
-    handleAccountChanged(newAddress) {
-      this.walletAddress = newAddress;
+
+ 
+ 
+    handleConnect({ connector, chainId }) {
+      // Handle the connect logic here if needed
+      console.log('Connected with', connector.name, 'on chain', chainId);
     },
     updateSelectedImage() {
       const checkedItem = this.dropdownItems.find((item) => item.checked);
@@ -265,29 +260,23 @@ export default {
     toggleDropdown() {
       this.isDropdownVisible = !this.isDropdownVisible;
     },
-    async disconnectAccount() {
-      this.walletAddress = '';
-      localStorage.removeItem('walletAddress');
-    },
+ 
     onClickBack() {
       this.$router.go(-1);
     },
     onOpenSideBar() {
       this.$emit('on-open-side-bar');
     },
-    onClickOpenSideBar() {
-      this.$emit('on-hide-side-bar');
-    },
-    async switchNetwork(networkKey) {
+    async switchNetwork(item) {
+      const networkKey = item.name;
+      const chainId = item.chainId;
+      this.currentChainId = chainId;
       if (!window.ethereum) return alert('MetaMask is not installed');
       const wallets = [];
       window.addEventListener('eip6963:announceProvider', (e) =>
         wallets.push(e.detail)
       );
-
-      // Request all EIP-6963 wallets announce themselves
       window.dispatchEvent(new Event('eip6963:requestProvider'));
-      // await new Promise((resolve) => setTimeout(resolve, 1000));
       const walletName = localStorage.getItem('walletName');
       const matchedWallet = wallets.find(
         (wallet) => wallet.info.name === walletName
@@ -323,60 +312,26 @@ export default {
         }
       }
     },
-    async connectWallet() {
-      // if (window.ethereum) {
-      //   try {
-      //     const account = await window.ethereum.request({
-      //       method: 'eth_accounts',
-      //     });
-      //     if (account.length > 0) {
-      //       this.walletAddress = account[0];
-      //       localStorage.setItem('walletAddress', account[0]);
-      //       this.isWalletModalVisible = false;
-      //     } else {
-      this.isWalletModalVisible = !this.isWalletModalVisible;
-      //     }
-      //   } catch (error) {}
-      // }
-    },
-    formatAddress(address) {
-      if (address) {
-        return `${address.substring(0, 5)}...${address.substring(
-          address.length - 4
-        )}`;
+  
+  },
+  watch: {
+    isConnected(newValue) {
+      if (newValue) {
+        this.showConnectModal = false;
       }
-      return '';
-    },
-    async getWalletNetwork() {
-      if (window.ethereum) {
-        const web3 = new Web3(window.ethereum);
-        try {
-          const networkId = await web3.eth.net.getId();
-          this.chainId = Number(networkId);
-          this.updateCheckedStatus(this.chainId);
-        } catch (error) {
-          console.error('Failed to get network ID:', error);
-        }
-      } else {
-        console.log(
-          'Ethereum object not found. Please install MetaMask or another Ethereum-compatible browser extension.'
-        );
-      }
-    },
+    }, 
+    currentChainId(newChainId){
+      this.web3 = new Web3(window.ethereum);
+    }
   },
   mounted() {
-    this.getWalletNetwork();
     document.addEventListener('click', this.handleClickOutside);
-
     const defaultNetwork = this.dropdownItems.find((item) => item.checked);
     this.selectedImageUrl = this.getImageCoin(defaultNetwork.slug);
 
-    if (window.ethereum) {
-      window.ethereum.on('chainChanged', (chainIdHex) => {
-        const id = parseInt(chainIdHex, 16);
-        this.chainId = Number(id);
-        this.updateCheckedStatus(id);
-      });
+    if (typeof window.ethereum !== 'undefined') {
+      this.web3 = new Web3(window.ethereum);
+      this.listenNetworkChange();
     }
     this.updateSelectedImage();
   },
@@ -386,10 +341,7 @@ export default {
 };
 </script>
 
-<style
-  lang="scss"
-  scoped
->
+<style scoped>
 .dropdown-btn-header {
   background: #edf5fc !important;
   border: 1px solid black;
@@ -401,7 +353,7 @@ export default {
 }
 .dropdown-option {
   position: relative;
-  margin-left: 20px;
+  margin-left: 8px;
 }
 .dropdown-list {
   list-style-type: none;
