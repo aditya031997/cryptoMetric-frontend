@@ -448,13 +448,13 @@ export default {
     async fetchTokens() {
       this.isLoadingTokens = true;
       const chainId = this.getChainId ?? this.netWorkId ?? 1;
-      console.log(chainId, 'chainId333');
       try {
         const response = await axios.get(
           `http://localhost:5000/tokens/getTokensToSwapByChainId?chain=${chainId}`
         );
         console.log(response, 'response1');
         this.fetchedData = response.data;
+        this.$emit('tokens-fetched', this.fetchedData);
       } catch (error) {
         console.error('Error fetching tokens:', error);
       } finally {
@@ -533,23 +533,22 @@ export default {
     async updateTokenBalance(token, isFrom) {
       let loadingFlag = isFrom ? 'isLoadingFromBalance' : 'isLoadingToBalance';
       const chainId = this.getChainId ?? this.netWorkId;
-
+      const walletAddress = localStorage.getItem('walletAddress');
       console.log(localStorage.getItem('walletAddress'), 'chainIdchainId');
 
       try {
-        if (token?.address) {
+        if (token?.address && chainId && walletAddress) {
           const response = await axios.get(
-            `http://localhost:5000/tokens/fetchBalance?tokenAddress=${token?.address}&walletAddress=${this.walletAddress}&chain=${chainId}`
+            `http://localhost:5000/tokens/fetchBalance?tokenAddress=${token?.address}&walletAddress=${walletAddress}&chain=${chainId}`
           );
           console.log(response, 'response');
           const fiatValue = response.data;
-          const accountAddress = this.walletAddress;
+          const accountAddress = walletAddress;
           const provider = new ethers.JsonRpcProvider(rpcUrls[chainId]);
           let tokenBalance;
           if (token?.address === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
             const balance = await provider.getBalance(accountAddress);
             tokenBalance = ethers.formatUnits(balance.toString(), 18);
-            console.log(tokenBalance, 'tokenBalance');
           } else {
             const contract = new ethers.Contract(token?.address, abi, provider);
             const decimals = await contract.decimals();
