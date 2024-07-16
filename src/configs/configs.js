@@ -1,4 +1,5 @@
 const configs = {
+  INFURA_ID :'db4b7494837843777ef2fdecef3d6f17',
   API_URL: 'https://stg-api.cryptometric.com/api',
   COIN_IMG_URL: 'https://stg-api.cryptometric.com/storage/coin-icons/32x32/_slug_.png',
   COIN_BIG_IMG_URL: 'https://stg-api.cryptometric.com/storage/coin-icons/32x32/_slug_.png',

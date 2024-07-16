@@ -5,3 +5,15 @@
 .cursor-pointer {
   cursor: pointer;
 }
+.vue-notification{
+  display: inline-block!important;
+ 
+}
+.vue-notification-group .vue-notification-wrapper {
+  display: flex;
+  justify-content: flex-end;
+}
+.vue-notification-template.vue-notification.success{
+  position: relative;
+  top: 10px
+}

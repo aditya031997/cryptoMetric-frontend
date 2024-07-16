@@ -61,38 +61,7 @@
           </button>
         </div>
 
-
         <div class="swap-popular-token">
-            <h4>Your tokens</h4>
-          <div class="swap-token-list">
-            <ul>
-              <li
-                v-for="token in walletTokens"
-                :key="token.id"
-                @click.stop="selectToken(token)"
-              >
-                <div class="tk-list">
-                  <img
-                    :src="getwalletTokenImage(token)"
-                    :alt="token.name"
-                    class="token-logo"
-                    @error="handleImageError($event, token.symbol)"
-                  />
-                  <div class="tokenname">
-                    <h3>{{ token.name }}</h3>
-                    <h5>{{ token.symbol }}</h5>
-                  </div>
-                </div>
-              </li>
-              <li v-if="walletTokens.length === 0">
-                <div class="tk-list">
-                  <div class="tokenname">
-                    <h3>No results found.</h3>
-                  </div>
-                </div>
-              </li>
-            </ul>
-          </div>
           <h4>Popular tokens</h4>
           <div class="swap-token-list">
             <ul>
@@ -137,7 +106,6 @@ import CheckIcon from '../../components/icons/token-check.vue';
 import { getImageCoin } from '../../utils/helpers/formatter-images';
 import configs from '.././../../configs/configs';
 import '../../assets/scss/modal/swap-modal.scss';
-import Web3 from 'web3';
 
 export default {
   name: 'TokenModal',
@@ -146,6 +114,7 @@ export default {
       isWalletModalVisible: false,
       apiTokens: [],
       topRatedToken: [],
+      networlId :'',
       filteredApiTokens: [],
       existingToken: [],
       isLoading: false,
@@ -161,7 +130,7 @@ export default {
   props: {
     isVisible: Boolean,
     chainId: {
-      type: String,
+      type: Number,
       required: true,
     },
   },
@@ -175,45 +144,46 @@ export default {
       this.hideModal();
     },
     async fetchTokens(chainId) {
+      chainId = chainId || 1;
+      this.networlId = chainId
       this.isLoading = true;
-      await new Promise((resolve) => setTimeout(resolve, 2000));
       try {
         const response = await axios.get(
-          `${configs.NODE_API_URL}/tokens/swager?chain=${chainId}`
+          `http://localhost:5000/tokens/getTokensToSwapByChainId?chain=${chainId}`
         );
-        this.apiTokens = response?.data?.msg?.tokens;
-        this.topRatedToken = response?.data?.msg?.tokens;
+        console.log(response, 'response0');
+        this.apiTokens = response?.data;
+        this.topRatedToken = response?.data;
         this.filteredApiTokens = this.apiTokens;
         this.$emit('tokens-fetched', this.apiTokens);
         this.$emit('chainId-fetched', chainId);
-        const walletResponse = await axios.get(
-          `http://localhost:5000/tokens/walletToken?chain=${chainId}`
-        );
-        const verifiedTokens = walletResponse.data.msg.filter(
-          (token) => token.verified_contract
-        );
-        this.existingToken = verifiedTokens;
+        // const walletResponse = await axios.get(
+        //   `http://localhost:5000/tokens/walletToken?chain=${chainId}`
+        // );
+        // const verifiedTokens = walletResponse.data.msg.filter(
+        //   (token) => token.verified_contract
+        // );
+        // this.existingToken = verifiedTokens;
         this.errorMessage = null;
       } catch (error) {
-        this.errorMessage = 'Failed to load tokens';
-        console.error(this.errorMessage);
+        console.error(error, 'ffdffdf');
       } finally {
         this.isLoading = false;
       }
     },
 
-    async fetchFilteredTokens(query) {
-      if (!query) {
+    async fetchFilteredTokens(token) {
+      if (!token) {
         this.filteredApiTokens = this.apiTokens;
         return;
       }
-
       this.isLoading = true;
       try {
         const response = await axios.get(
-          `${configs.NODE_API_URL}/tokens/retriveToken?query=${query}&chain=${this.chainId}`
+          `http://localhost:5000/tokens/getTokenDetails?token=${token}&chain=${this.networlId}`
         );
-        this.filteredApiTokens = response?.data?.msg || [];
+        console.log(response, 'response');
+        this.filteredApiTokens = response?.data || [];
       } catch (error) {
         this.errorMessage = 'Failed to load filtered tokens';
         console.error(this.errorMessage);
@@ -225,21 +195,21 @@ export default {
       this.fetchFilteredTokens(this.searchText);
     },
     getImageCoin(slug) {
-      return getImageCoin(slug.toLowerCase());
+      // return getImageCoin(slug.toLowerCase());
     },
     getTokenImage(token) {
       return (
         token.logoURI ||
-        this.getImageCoin(token.symbol.toLowerCase()) ||
+        // this.getImageCoin(token.symbol.toLowerCase()) ||
         token.logo
       );
     },
 
     getwalletTokenImage(token) {
-      return ( token.logo);
+      return token.logo;
     },
     handleImageError(event, slug) {
-      event.target.src = this.getImageCoin(slug.toLowerCase());
+      // event.target.src = this.getImageCoin(slug.toLowerCase());
     },
   },
   computed: {
@@ -247,14 +217,26 @@ export default {
       if (!this.searchText) {
         return Object.values(this.apiTokens);
       }
-      const searchLower = this.searchText.toLowerCase();
-      return Object.values(this.filteredApiTokens).filter((token) => {
-        return (
-          token.name.toLowerCase().includes(searchLower) ||
-          token.symbol.toLowerCase().includes(searchLower) ||
-          (token.address && token.address.toLowerCase().includes(searchLower))
-        );
-      });
+      const searchLower = this.searchText.toLowerCase().trim();
+      console.log(searchLower, 'searchLower');
+
+      const filteredTokens = Object.values(this.filteredApiTokens).filter(
+        (token) => {
+          const name = token.name ? token.name.toLowerCase() : '';
+          const symbol = token.symbol ? token.symbol.toLowerCase() : '';
+          const address = token.address ? token.address : '';
+
+          // Log each token's properties and the comparison result
+
+          return (
+            name.includes(searchLower) ||
+            symbol.includes(searchLower) ||
+            address.includes(searchLower)
+          );
+        }
+      );
+
+      return filteredTokens;
     },
     walletTokens() {
       if (!this.searchText) {

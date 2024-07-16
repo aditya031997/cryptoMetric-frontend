@@ -30,12 +30,15 @@
       </div>
 
       <div class="border-none bg-none connect-btn">
-      <Account v-if="isConnected" />
-      <!-- <Connect v-else /> -->
-      <button v-else @click="showConnectModal = true" >
-        Connect
-      </button>
-        
+        <Account v-if="isConnected" />
+        <!-- <Connect v-else /> -->
+        <button
+          v-else
+          @click="showConnectModal = true"
+        >
+          Connect
+        </button>
+
         <div class="dropdown-option">
           <button
             class="dropdown-btn-header"
@@ -88,13 +91,12 @@
       :isVisible="showConnectModal"
       @close="showConnectModal = false"
     />
-    <!-- <p>{{ chainId }}</p> -->
   </div>
-  
 </template>
 
 <script>
-import { useAccount , useChainId} from "@wagmi/vue";
+import { useAccount, useChainId } from '@wagmi/vue';
+import { reactive, toRefs, ref, watch } from 'vue';
 import iconBack from '../icons/icon-back.vue';
 import ButtonIcon from '../ui/button/button-icon.vue';
 import UserProfile from './user-profile.vue';
@@ -104,7 +106,7 @@ import DashboardSettings from './dashboard-settings.vue';
 import Account from '../dashboard/Account.vue';
 import Connect from '../dashboard/Connect.vue';
 import IconBurger from '../icons/icon-burger.vue';
-import ConnectModal from "../modals/wallet-modal.vue"
+import ConnectModal from '../modals/wallet-modal.vue';
 import DropdownIcon from '../../components/icons/icon-dropdown.vue';
 import CheckIcon from '../../components/icons/token-check.vue';
 import Web3 from 'web3';
@@ -144,17 +146,6 @@ const networks = {
 };
 
 export default {
-
-  setup() {
-    const { isConnected } = useAccount();
-    // const notification = useNotification();
-    const chainId = useChainId()
-    return {
-      isConnected, 
-      chainId
-    };
-  },
-
   components: {
     iconBack,
     ButtonIcon,
@@ -165,14 +156,14 @@ export default {
     IconBurger,
     DropdownIcon,
     CheckIcon,
-    Account, 
-    Connect
+    Account,
+    Connect,
   },
 
   data() {
     return {
-      currentChainId:'',
-      chainId: '',
+      currentChainId: '',
+      netWorkId: '',
       web3: null,
       currentNetwork: null,
       walletAddress: localStorage.getItem('walletAddress') || '',
@@ -191,6 +182,21 @@ export default {
         },
       ],
       selectedImageUrl: '',
+    };
+  },
+
+  setup() {
+    const { isConnected } = useAccount();
+    const { address } = useAccount();
+    // const notification = useNotification();
+    const chainId = useChainId();
+    let state = reactive({
+      netWorkId: address._object.chainId,
+    });
+    return {
+      ...toRefs(state),
+      isConnected,
+      chainId,
     };
   },
   props: {
@@ -215,6 +221,7 @@ export default {
   },
   methods: {
     async listenNetworkChange() {
+      console.log(this.web3,"dffdfdffdf")
       this.web3.currentProvider.on('chainChanged', (chainId) => {
         this.currentNetwork = this.web3.utils.hexToNumber(chainId);
         console.log('Network changed:', this.currentNetwork);
@@ -227,23 +234,22 @@ export default {
       return getImageCoin(slug);
     },
 
- 
- 
-    handleConnect({ connector, chainId }) {
-      // Handle the connect logic here if needed
-      console.log('Connected with', connector.name, 'on chain', chainId);
-    },
     updateSelectedImage() {
       const checkedItem = this.dropdownItems.find((item) => item.checked);
       if (checkedItem) {
         this.selectedImageUrl = this.getImageCoin(checkedItem.slug);
       }
     },
-    updateCheckedStatus(chainId) {
-      this.dropdownItems.forEach((item) => {
-        item.checked = item.chainId === chainId;
-      });
-      this.updateSelectedImage();
+    updateCheckedStatus() {
+      const checkedItem = this.dropdownItems.find(
+        (item) => item.chainId === this.netWorkId
+      );
+      if (checkedItem) {
+        this.dropdownItems.forEach((item) => {
+          item.checked = item.chainId === this.netWorkId;
+        });
+        this.updateSelectedImage();
+      }
     },
 
     handleClickOutside(event) {
@@ -260,7 +266,7 @@ export default {
     toggleDropdown() {
       this.isDropdownVisible = !this.isDropdownVisible;
     },
- 
+
     onClickBack() {
       this.$router.go(-1);
     },
@@ -273,9 +279,9 @@ export default {
       this.currentChainId = chainId;
       if (!window.ethereum) return alert('MetaMask is not installed');
       const wallets = [];
-      window.addEventListener('eip6963:announceProvider', (e) =>
-        wallets.push(e.detail)
-      );
+      window.addEventListener('eip6963:announceProvider', (e) => {
+        wallets.push(e.detail);
+      });
       window.dispatchEvent(new Event('eip6963:requestProvider'));
       const walletName = localStorage.getItem('walletName');
       const matchedWallet = wallets.find(
@@ -288,6 +294,9 @@ export default {
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: networkData.chainId }],
         });
+        const id  = parseInt(networkData.chainId, 16);
+        this.$store.commit('setChainId', id);
+        console.log('Switched to chainId:', id);
         this.isDropdownVisible = false;
       } catch (switchError) {
         // This error code indicates that the chain has not been added to MetaMask
@@ -306,34 +315,32 @@ export default {
             });
           } catch (addError) {
             console.error('Failed to add the network:', addError);
+            return; // Return early to prevent network change
           }
         } else {
-          console.error('Failed to switch the network:', switchError);
+          console.error('Failed to switch the network:', switchError.message);
+          return; // Return early to prevent network change
         }
       }
     },
-  
   },
   watch: {
     isConnected(newValue) {
       if (newValue) {
         this.showConnectModal = false;
       }
-    }, 
-    currentChainId(newChainId){
+    },
+    currentChainId(newChainId) {
       this.web3 = new Web3(window.ethereum);
-    }
+    },
   },
   mounted() {
     document.addEventListener('click', this.handleClickOutside);
     const defaultNetwork = this.dropdownItems.find((item) => item.checked);
     this.selectedImageUrl = this.getImageCoin(defaultNetwork.slug);
-
-    if (typeof window.ethereum !== 'undefined') {
-      this.web3 = new Web3(window.ethereum);
-      this.listenNetworkChange();
-    }
-    this.updateSelectedImage();
+    this.web3 = new Web3(window.ethereum);
+    this.listenNetworkChange();
+    this.updateCheckedStatus();
   },
   beforeDestroy() {
     document.removeEventListener('click', this.handleClickOutside);

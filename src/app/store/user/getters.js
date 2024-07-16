@@ -2,6 +2,10 @@ export default {
   getUser(state) {
     return state.data;
   },
+  getChainId(state) {
+    console.log('Getter state:', state); // Debugging line
+    return state.data.networkId;
+  },
   getUserName(state) {
     if (state.data?.firstname) {
       return state.data?.firstname;

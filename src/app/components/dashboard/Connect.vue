@@ -1,6 +1,6 @@
 <script setup>
 import { useConnect, useChainId } from '@wagmi/vue';
-import { ref, watch } from 'vue'
+import { ref, watch } from 'vue';
 import IconMetamask from '../icons/icon-metamask.vue';
 import IconCoinbase from '../icons/icon-coinbase.vue';
 import IconTrustWallet from '../icons/icon-trust-wallet.vue';
@@ -10,8 +10,8 @@ const chainId = useChainId();
 const { connectors, connect } = useConnect();
 
 watch(chainId, async (newChainId, oldChainId) => {
-  console.log("HERE IS CHAIN IDs ", newChainId,oldChainId)
-})
+  console.log('HERE IS CHAIN IDs ', newChainId, oldChainId);
+});
 
 const desiredConnectors = [
   'MetaMask',
@@ -62,13 +62,13 @@ const uniqueConnectors = filteredConnectors
 .connector-list {
   display: flex;
   flex-direction: column;
-  gap: 10px; /* Adjust the gap as needed */
+  gap: 10px;
 }
 
 .connector-button {
   display: flex;
   align-items: center;
-  padding: 10px 20px; /* Adjust the padding as needed */
+  padding: 10px 20px;
   border: none;
   background-color: #fff;
   cursor: pointer;
@@ -76,7 +76,7 @@ const uniqueConnectors = filteredConnectors
 }
 
 .connector-button:hover {
-  background-color: rgba(34, 34, 34, 0.07); /* Optional: Add a hover effect */
+  background-color: rgba(34, 34, 34, 0.07);
 }
 
 .connector-button {
