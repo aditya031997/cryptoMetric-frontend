@@ -59,23 +59,22 @@
           >
             <li
               class="dropdown-item show-active"
-              v-for="(item, index) in dropdownItems"
-              :key="item.name"
-              :class="{ 'is-checked': item.checked }"
+              v-for="(chain, index) in chains"
+              :key="chain.id"
               @click="
                 toggleCheck(index);
-                switchNetwork(item);
+                switchChain({ chainId: chain.id });
               "
             >
               <div>
-                <img
+                <!-- <img
                   :src="getImageCoin(item.slug)"
-                  :alt="`Logo of ${item.name}`"
+                  :alt="hi"
                   class="icon-img"
-                />
-                {{ item.name }}
+                /> -->
+                {{ chain.name }}
               </div>
-              <CheckIcon :checked="item.checked" />
+              <!-- <CheckIcon :checked="item.checked" /> -->
             </li>
           </ul>
         </div>
@@ -95,7 +94,8 @@
 </template>
 
 <script>
-import { useAccount, useChainId } from '@wagmi/vue';
+import { useAccount, useChainId, useSwitchChain } from '@wagmi/vue';
+import { watchChainId } from '@wagmi/core';
 import { reactive, toRefs, ref, watch } from 'vue';
 import iconBack from '../icons/icon-back.vue';
 import ButtonIcon from '../ui/button/button-icon.vue';
@@ -104,6 +104,7 @@ import { useNotification } from '@kyvg/vue3-notification';
 import UserNotify from './user-notify.vue';
 import DashboardSettings from './dashboard-settings.vue';
 import Account from '../dashboard/Account.vue';
+useSwitchChain;
 import Connect from '../dashboard/Connect.vue';
 import IconBurger from '../icons/icon-burger.vue';
 import ConnectModal from '../modals/wallet-modal.vue';
@@ -111,7 +112,7 @@ import DropdownIcon from '../../components/icons/icon-dropdown.vue';
 import CheckIcon from '../../components/icons/token-check.vue';
 import Web3 from 'web3';
 import { getImageCoin } from '../../utils/helpers/formatter-images';
-
+import { config } from '../modals/config';
 const networks = {
   Ethereum: {
     chainId: '0x1',
@@ -188,15 +189,25 @@ export default {
   setup() {
     const { isConnected } = useAccount();
     const { address } = useAccount();
+    const { chains, switchChain } = useSwitchChain();
     // const notification = useNotification();
     const chainId = useChainId();
     let state = reactive({
       netWorkId: address._object.chainId,
     });
+    const unwatch = watchChainId(config, {
+      onChange(chainId) {
+        console.log('Chain ID changed!', chainId);
+        this.currentChainId = chainId;
+      },
+    });
     return {
       ...toRefs(state),
       isConnected,
       chainId,
+      chains,
+      switchChain,
+      unwatch,
     };
   },
   props: {
@@ -216,7 +227,7 @@ export default {
       return null;
     },
     titleHeader() {
-      return this.$route.meta.headerName;
+      return 'J';
     },
   },
   methods: {
@@ -240,9 +251,7 @@ export default {
       }
     },
     updateCheckedStatus() {
-      const checkedItem = this.dropdownItems.find(
-        (item) => item.chainId === this.netWorkId
-      );
+      const checkedItem = this.dropdownItems.find((item) => item.chainId === this.netWorkId);
       if (checkedItem) {
         this.dropdownItems.forEach((item) => {
           item.checked = item.chainId === this.netWorkId;
@@ -283,9 +292,7 @@ export default {
       });
       window.dispatchEvent(new Event('eip6963:requestProvider'));
       const walletName = localStorage.getItem('walletName');
-      const matchedWallet = wallets.find(
-        (wallet) => wallet.info.name === walletName
-      );
+      const matchedWallet = wallets.find((wallet) => wallet.info.name === walletName);
 
       const networkData = networks[networkKey];
       try {
@@ -293,7 +300,7 @@ export default {
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: networkData.chainId }],
         });
-        const id  = parseInt(networkData.chainId, 16);
+        const id = parseInt(networkData.chainId, 16);
         this.$store.commit('setChainId', id);
         console.log('Switched to chainId:', id);
         this.isDropdownVisible = false;
@@ -345,6 +352,9 @@ export default {
     this.web3 = new Web3(window.ethereum);
     this.listenNetworkChange();
     this.updateCheckedStatus();
+  },
+  onUnmounted() {
+    this.unwatch();
   },
   beforeDestroy() {
     document.removeEventListener('click', this.handleClickOutside);
