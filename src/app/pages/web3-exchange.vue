@@ -534,7 +534,7 @@ export default {
       let loadingFlag = isFrom ? 'isLoadingFromBalance' : 'isLoadingToBalance';
       const chainId = this.getChainId ?? this.netWorkId;
 
-      console.log(isFrom, 'chainIdchainId');
+      console.log(localStorage.getItem('walletAddress'), 'chainIdchainId');
 
       try {
         if (token?.address) {

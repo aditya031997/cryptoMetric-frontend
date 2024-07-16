@@ -221,7 +221,6 @@ export default {
   },
   methods: {
     async listenNetworkChange() {
-      console.log(this.web3,"dffdfdffdf")
       this.web3.currentProvider.on('chainChanged', (chainId) => {
         this.currentNetwork = this.web3.utils.hexToNumber(chainId);
         console.log('Network changed:', this.currentNetwork);
@@ -333,8 +332,13 @@ export default {
     currentChainId(newChainId) {
       this.web3 = new Web3(window.ethereum);
     },
+    // web3(new)
   },
   mounted() {
+    // if(!window.ethereum){
+    //   return alert("Not connected")
+    // }
+    // alert("wallet connected")
     document.addEventListener('click', this.handleClickOutside);
     const defaultNetwork = this.dropdownItems.find((item) => item.checked);
     this.selectedImageUrl = this.getImageCoin(defaultNetwork.slug);
