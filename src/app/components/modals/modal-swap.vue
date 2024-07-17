@@ -236,17 +236,17 @@ export default {
       this.fetchFilteredTokens(this.searchText);
     },
     getImageCoin(slug) {
-      // return getImageCoin(slug.toLowerCase());
+      return getImageCoin(slug.toLowerCase());
     },
     getTokenImage(token) {
       return (
         token.logoURI ||
-        // this.getImageCoin(token.symbol.toLowerCase()) ||
+        this.getImageCoin(token.symbol.toLowerCase()) ||
         token.logo
       );
     },
     getWalletTokenImage(token) {
-      // return token.logoURI || token.logo || this.getImageCoin(token.symbol.toLowerCase());
+      return token.logoURI || token.logo || this.getImageCoin(token.symbol.toLowerCase());
     },
     handleImageError(event, slug) {
       // event.target.src = this.getImageCoin(slug.toLowerCase());
