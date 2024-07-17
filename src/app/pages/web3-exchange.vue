@@ -631,7 +631,7 @@ export default {
             symbol: this.selectedReceiveToken.symbol,
             name: this.selectedReceiveToken.name,
           },
-          walletAddress: this.walletAddress,
+          walletAddress: localStorage.getItem('walletAddress'),
           chain: parseInt(localStorage.getItem('chainId')),
           amountIn: this.fromTokenQuantity,
           slippageTolerance: this.slippageValue,
