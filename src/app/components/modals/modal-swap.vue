@@ -177,6 +177,7 @@ export default {
         id: token.id,
         name: token.name,
         symbol: token.symbol,
+        decimals: token.decimals,
         address: token.token_address || token.address,
         logoURI: token.logoURI || token.logo,
         // Add any other properties that might be needed
