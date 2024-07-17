@@ -747,7 +747,7 @@ export default {
       if (fromToken) {
         return;
       }
-      const chainId = parseInt(localStorage.getItem('chainId'));
+      const chainId = parseInt(localStorage.getItem('chainId')) || 1
       const desiredSymbol = symbolMap[chainId];
       const defaultToken = this.fetchedData?.find(
         (token) => token.symbol === desiredSymbol
