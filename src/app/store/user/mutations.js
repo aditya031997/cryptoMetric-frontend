@@ -3,9 +3,7 @@ export default {
     state.data = payload;
   },
   setChainId(state, id) {
-    console.log('Before mutation:', state.data.networkId); // Debugging line
     state.data.networkId = id;
-    console.log('After mutation:', state.data.networkId); // Debugging line
   },
   getTheme(state, theme) {
     state.data.chart_theme = theme;

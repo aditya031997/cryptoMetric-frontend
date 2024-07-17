@@ -3,7 +3,7 @@ export default {
     return state.data;
   },
   getChainId(state) {
-    console.log('Getter state:', state); // Debugging line
+    // console.log('Getter state:', state); // Debugging line
     return state.data.networkId;
   },
   getUserName(state) {

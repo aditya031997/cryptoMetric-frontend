@@ -41,7 +41,7 @@
       },
     },
     mounted() {
-      console.log('Initial checked value:', this.checked);
+      // console.log('Initial checked value:', this.checked);
     },
   };
   </script>
