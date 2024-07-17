@@ -455,7 +455,7 @@ export default {
     },
     async fetchTokens() {
       this.isLoadingTokens = true;
-      const chainId = parseInt(localStorage.getItem('chainId'));
+      const chainId = parseInt(localStorage.getItem('chainId')) || 1
       try {
         const response = await axios.get(
           `${configs.NODE_API_URL}/tokens/getTokensToSwapByChainId?chain=${chainId}`

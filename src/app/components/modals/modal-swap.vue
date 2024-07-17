@@ -186,8 +186,7 @@ export default {
       this.hideModal();
     },
     async fetchTokens(chainId) {
-      const chain = localStorage.getItem('chainId');
-      chainId = chainId || 1;
+      const chain = localStorage.getItem('chainId') || 1
       const address = localStorage.getItem('walletAddress');
       this.networlId = chainId;
       this.isLoading = true;
