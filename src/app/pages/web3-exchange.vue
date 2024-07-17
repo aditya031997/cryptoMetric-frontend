@@ -242,6 +242,8 @@ import dropdownIcon from '../components/icons/icon-dropdown.vue';
 import settingIcon from '../components/icons/icon-settings.vue';
 import { ethers } from 'ethers';
 import { useNotification } from '@kyvg/vue3-notification';
+import configs from '../../configs/configs';
+
 
 const notification = useNotification();
 const abi = [
