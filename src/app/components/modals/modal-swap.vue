@@ -62,6 +62,39 @@
         </div>
 
         <div class="swap-popular-token">
+          <div v-if="walletTokens.length > 0">
+            <h4>Your tokens</h4>
+            <div class="swap-token-list">
+              <ul>
+                <li
+                  v-for="token in walletTokens"
+                  :key="token.id"
+                  @click.stop="selectToken(token)"
+                >
+                  <div class="tk-list">
+                    <img
+                      :src="getWalletTokenImage(token)"
+                      :alt="token.name"
+                      class="token-logo"
+                      @error="handleImageError($event, token.symbol)"
+                    />
+                    <div class="tokenname">
+                      <h3>{{ token.name }}</h3>
+                      <h5>{{ token.symbol }}</h5>
+                    </div>
+                  </div>
+                </li>
+                <li v-if="walletTokens.length === 0">
+                  <div class="tk-list">
+                    <div class="tokenname">
+                      <h3>No results found.</h3>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+
           <h4>Popular tokens</h4>
           <div class="swap-token-list">
             <ul>
@@ -114,7 +147,7 @@ export default {
       isWalletModalVisible: false,
       apiTokens: [],
       topRatedToken: [],
-      networlId :'',
+      networlId: '',
       filteredApiTokens: [],
       existingToken: [],
       isLoading: false,
@@ -140,38 +173,47 @@ export default {
       this.$emit('hide-modal');
     },
     selectToken(token) {
-      this.$emit('token-selected', token);
+      const selectedToken = {
+        id: token.id,
+        name: token.name,
+        symbol: token.symbol,
+        address: token.token_address || token.address,
+        logoURI: token.logoURI || token.logo,
+        // Add any other properties that might be needed
+      };
+      this.$emit('token-selected', selectedToken);
       this.hideModal();
     },
     async fetchTokens(chainId) {
+      const chain = localStorage.getItem('chainId');
       chainId = chainId || 1;
-      this.networlId = chainId
+      const address = localStorage.getItem('walletAddress');
+      this.networlId = chainId;
       this.isLoading = true;
       try {
         const response = await axios.get(
-          `http://localhost:5000/tokens/getTokensToSwapByChainId?chain=${chainId}`
+          `${configs.NODE_API_URL}/tokens/getTokensToSwapByChainId?chain=${chain}`
         );
-        console.log(response, 'response0');
         this.apiTokens = response?.data;
         this.topRatedToken = response?.data;
         this.filteredApiTokens = this.apiTokens;
         this.$emit('tokens-fetched', this.apiTokens);
         this.$emit('chainId-fetched', chainId);
-        // const walletResponse = await axios.get(
-        //   `http://localhost:5000/tokens/walletToken?chain=${chainId}`
-        // );
-        // const verifiedTokens = walletResponse.data.msg.filter(
-        //   (token) => token.verified_contract
-        // );
-        // this.existingToken = verifiedTokens;
+        const walletResponse = await axios.get(
+          `${configs.NODE_API_URL}/tokens/walletToken?chain=${chain}&address=${address}`
+        );
+        const verifiedTokens = walletResponse.data.msg.filter(
+          (token) => token.verified_contract
+        );
+        this.existingToken = verifiedTokens;
+        this.$emit('tokens-fetched', this.apiTokens);
         this.errorMessage = null;
       } catch (error) {
-        console.error(error, 'ffdffdf');
+        console.error(error);
       } finally {
         this.isLoading = false;
       }
     },
-
     async fetchFilteredTokens(token) {
       if (!token) {
         this.filteredApiTokens = this.apiTokens;
@@ -180,9 +222,8 @@ export default {
       this.isLoading = true;
       try {
         const response = await axios.get(
-          `http://localhost:5000/tokens/getTokenDetails?token=${token}&chain=${this.networlId}`
+          `${configs.NODE_API_URL}/tokens/getTokenDetails?token=${token}&chain=${this.networlId}`
         );
-        console.log(response, 'response');
         this.filteredApiTokens = response?.data || [];
       } catch (error) {
         this.errorMessage = 'Failed to load filtered tokens';
@@ -204,9 +245,8 @@ export default {
         token.logo
       );
     },
-
-    getwalletTokenImage(token) {
-      return token.logo;
+    getWalletTokenImage(token) {
+      // return token.logoURI || token.logo || this.getImageCoin(token.symbol.toLowerCase());
     },
     handleImageError(event, slug) {
       // event.target.src = this.getImageCoin(slug.toLowerCase());
@@ -218,15 +258,11 @@ export default {
         return Object.values(this.apiTokens);
       }
       const searchLower = this.searchText.toLowerCase().trim();
-      console.log(searchLower, 'searchLower');
-
       const filteredTokens = Object.values(this.filteredApiTokens).filter(
         (token) => {
           const name = token.name ? token.name.toLowerCase() : '';
           const symbol = token.symbol ? token.symbol.toLowerCase() : '';
           const address = token.address ? token.address : '';
-
-          // Log each token's properties and the comparison result
 
           return (
             name.includes(searchLower) ||
@@ -240,13 +276,13 @@ export default {
     },
     walletTokens() {
       if (!this.searchText) {
-        return Object.values(this.existingToken);
+        return this.existingToken;
       }
-      const searchLower = this.searchText.toLowerCase();
-      return Object.values(this.existingToken).filter((token) => {
+      const searchLower = this.searchText.toLowerCase().trim();
+      return this.existingToken.filter((token) => {
         return (
-          token.name.toLowerCase().includes(searchLower) ||
-          token.symbol.toLowerCase().includes(searchLower) ||
+          (token.name && token.name.toLowerCase().includes(searchLower)) ||
+          (token.symbol && token.symbol.toLowerCase().includes(searchLower)) ||
           (token.address && token.address.toLowerCase().includes(searchLower))
         );
       });

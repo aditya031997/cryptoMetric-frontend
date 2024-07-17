@@ -94,33 +94,33 @@
           ${{ fromCalculatedFiat }}
         </p> -->
       </div>
-      <div v-if="isLoadingTokens || isLoadingBalances">Loading tokens...</div>
-
-      <div
-        v-else
-        class="right-side-input-css"
-      >
-        <button
-          class="token-btn"
-          @click="
-            isSwapModalVisible = true;
-            handleSelectFrom();
-          "
+      <div>
+        <div v-if="isLoadingTokens || isLoadingBalances">Loading tokens...</div>
+        <div
+          v-else
+          class="right-side-input-css"
         >
-          <span class="swap-list">
-            <img
-              v-if="selectedFromToken && selectedFromToken.logoURI"
-              :src="selectedFromToken?.logoURI"
-              :alt="selectedFromToken?.symbol"
-              class="token-logo"
-            />
-            <span>{{ selectedFromToken?.symbol }}</span>
-          </span>
-          <span> <dropdownIcon /></span>
-        </button>
-        <div class="right-side-balance-box mt-1">
-          Balance: {{ fromTokenBalance ? fromTokenBalance : 0 }}
-          <!-- <button @click="setMaxTokenQuantity">max</button> -->
+          <button
+            class="token-btn"
+            @click="
+              isSwapModalVisible = true;
+              handleSelectFrom();
+            "
+          >
+            <span class="swap-list">
+              <img
+                v-if="selectedFromToken && selectedFromToken.logoURI"
+                :src="selectedFromToken?.logoURI"
+                :alt="selectedFromToken?.symbol"
+                class="token-logo"
+              />
+              <span>{{ selectedFromToken?.symbol }}</span>
+            </span>
+            <span> <dropdownIcon /></span>
+          </button>
+          <div class="right-side-balance-box mt-1">
+            Balance: {{ fromTokenBalance ? fromTokenBalance : 0 }}
+          </div>
         </div>
       </div>
     </div>
@@ -241,11 +241,9 @@ import slipageAdd from '../components/icons/slipage-add.vue';
 import dropdownIcon from '../components/icons/icon-dropdown.vue';
 import settingIcon from '../components/icons/icon-settings.vue';
 import { ethers } from 'ethers';
-import configs from '../../configs/configs';
 import { useNotification } from '@kyvg/vue3-notification';
 
 const notification = useNotification();
-
 const abi = [
   'function decimals() view returns (uint8)',
   'function symbol() view returns (string)',
@@ -300,7 +298,7 @@ export default {
       toTokenBalance: '',
       chainId: '',
       networkId: '',
-      fromFiat: 0,
+      // fromFiat: 0,
       toFiat: 0,
       balance: '0',
       fromCalculatedFiat: '',
@@ -328,7 +326,6 @@ export default {
   setup() {
     const { isConnected } = useAccount();
     const { address } = useAccount();
-    console.log(address, isConnected, 'addressaddress');
     const {
       data: hash,
       error,
@@ -336,16 +333,14 @@ export default {
       sendTransaction,
     } = useSendTransaction();
 
-    let state = reactive({
+    let state = ref({
       isTransactionPending: false,
       netWorkId: address._object.chainId,
       selectedFromTokenAddress: '',
-      selectedToTokenAddress: '',
       fromTokenQuantity: '',
       walletAddress: isConnected._object.address,
       quotationResponse: null,
     });
-
     const sendTrans = async () => {
       state.isTransactionPending = isPending;
       const web3 = new Web3(window.ethereum);
@@ -357,7 +352,7 @@ export default {
         );
 
         const allowanceResponse = await axios.get(
-          `http://localhost:5000/tokens/allowances`,
+          `${configs.NODE_API_URL}/tokens/allowances`,
           {
             params: {
               tokenAddress: state.selectedFromTokenAddress,
@@ -371,7 +366,7 @@ export default {
 
         if (allowance < requiredAmount) {
           const approveResult = await axios.get(
-            `http://localhost:5000/tokens/approve`,
+            `${configs.NODE_API_URL}/tokens/approve`,
             {
               params: {
                 tokenAddress: state.selectedFromTokenAddress,
@@ -406,6 +401,15 @@ export default {
       }
     };
 
+    const resetState = () => {
+      state.value = {
+        fromTokenQuantity: '',
+      };
+    };
+
+    const UpdateState = (newVal) => {
+      state.fromTokenQuantity = newVal;
+    };
     const { isLoading: isConfirming, isSuccess: isConfirmed } =
       useWaitForTransactionReceipt({
         hash,
@@ -418,6 +422,8 @@ export default {
       isPending,
       sendTrans,
       isConnected,
+      resetState,
+      UpdateState,
     };
   },
   methods: {
@@ -447,14 +453,13 @@ export default {
     },
     async fetchTokens() {
       this.isLoadingTokens = true;
-      const chainId = this.getChainId ?? this.netWorkId ?? 1;
+      const chainId = parseInt(localStorage.getItem('chainId'));
       try {
         const response = await axios.get(
-          `http://localhost:5000/tokens/getTokensToSwapByChainId?chain=${chainId}`
+          `${configs.NODE_API_URL}/tokens/getTokensToSwapByChainId?chain=${chainId}`
         );
-        console.log(response, 'response1');
         this.fetchedData = response.data;
-        this.$emit('tokens-fetched', this.fetchedData);
+        await this.$refs.tokenModal.fetchTokens(chainId);
       } catch (error) {
         console.error('Error fetching tokens:', error);
       } finally {
@@ -532,16 +537,14 @@ export default {
     },
     async updateTokenBalance(token, isFrom) {
       let loadingFlag = isFrom ? 'isLoadingFromBalance' : 'isLoadingToBalance';
-      const chainId = this.getChainId ?? this.netWorkId;
+      const chainId = parseInt(localStorage.getItem('chainId'));
       const walletAddress = localStorage.getItem('walletAddress');
-      console.log(localStorage.getItem('walletAddress'), 'chainIdchainId');
 
       try {
         if (token?.address && chainId && walletAddress) {
           const response = await axios.get(
-            `http://localhost:5000/tokens/fetchBalance?tokenAddress=${token?.address}&walletAddress=${walletAddress}&chain=${chainId}`
+            `${configs.NODE_API_URL}/tokens/fetchBalance?tokenAddress=${token?.address}&walletAddress=${walletAddress}&chain=${chainId}`
           );
-          console.log(response, 'response');
           const fiatValue = response.data;
           const accountAddress = walletAddress;
           const provider = new ethers.JsonRpcProvider(rpcUrls[chainId]);
@@ -562,7 +565,7 @@ export default {
           const truncatedBalance = tokenBalance.slice(0, 6);
 
           if (isFrom) {
-            this.fromFiat = fiatValue;
+            // this.fromFiat = fiatValue;
             this.fromTokenBalance = Number(
               parseFloat(response.data).toFixed(4)
             );
@@ -594,86 +597,80 @@ export default {
 
       this.calculateRatio(model === 'fromTokenQuantity' ? 'from' : 'to');
     },
-    async calculateRatio(origin) {
-      if (this.disableRecalculation) return;
-      if (
-        !this.selectedFromToken ||
-        !this.selectedReceiveToken ||
-        !this.fromFiat ||
-        !this.toFiat
-      ) {
-        return;
-      }
-      this.isLoadingQuotation = true;
-      const quotationData = {
-        fromTokenObj: {
-          address: this.selectedFromToken.address,
-          decimals: this.selectedFromToken.decimals,
-          symbol: this.selectedFromToken.symbol,
-          name: this.selectedFromToken.name,
-        },
-        toTokenObj: {
-          address: this.selectedReceiveToken.address,
-          decimals: this.selectedReceiveToken.decimals,
-          symbol: this.selectedReceiveToken.symbol,
-          name: this.selectedReceiveToken.name,
-        },
+    calculateRatio(origin) {
+      return new Promise((resolve, reject) => {
+        if (this.disableRecalculation) {
+          return resolve(null);
+        }
 
-        walletAddress: this.walletAddress,
-        chain: this.netWorkId,
-        amountIn: this.fromTokenQuantity,
-        slippageTolerance: this.slippageValue,
-      };
-      try {
-        const fetchQuotation = await axios.post(
-          `http://localhost:5000/tokens/buildSwapTx`,
-          quotationData
-        );
-        this.quotationResponse = fetchQuotation.data;
-        const input1 = parseFloat(this.fromTokenQuantity) || 0;
-        const input2 = parseFloat(this.ratio) || 0;
-        let rateFromMsg1 = parseFloat(this.fromFiat) || 0;
-        let rateFromMsg2 = parseFloat(this.toFiat) || 0;
-        if (this.isSwapped) {
-          [rateFromMsg1, rateFromMsg2] = [rateFromMsg2, rateFromMsg1];
-        }
-        let formatedQuotation;
-        const provider = new ethers.JsonRpcProvider('https://polygon-rpc.com');
         if (
-          quotationData.toTokenObj.address ==
-          '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+          !this.selectedFromToken ||
+          !this.selectedReceiveToken ||
+          // !this.fromFiat ||
+          !this.toFiat ||
+          this.fromTokenBalance == 0 ||
+          this.fromTokenQuantity == 0
         ) {
-          const fetchedQuotation = ethers.formatEther(
-            fetchQuotation.data.amountOut.toString()
-          );
-          formatedQuotation = fetchedQuotation.data.amountOut.toFixed(8);
-        } else {
-          const tokenInstance = new ethers.Contract(
-            quotationData.toTokenObj.address,
-            abi,
-            provider
-          );
-          formatedQuotation = fetchQuotation.data.amountOut.toString();
+          return resolve(null);
         }
-        if (origin === 'from' && input1 && rateFromMsg2 !== 0) {
-          const result = (input1 * rateFromMsg1) / rateFromMsg2;
-          console.log(formatedQuotation, 'formatedQuotation');
-          this.ratio = formatedQuotation;
-          this.toCalculatedFiat = (result * rateFromMsg2).toFixed(4);
-        } else if (origin === 'to' && !isNaN(input2) && rateFromMsg1 !== 0) {
-          const result = (input2 * rateFromMsg2) / rateFromMsg1;
-          this.fromTokenQuantity = result.toFixed(2);
-        }
-      } catch (error) {
-        console.error('Error fetching quotation:', error);
-      } finally {
-        this.isLoadingQuotation = false;
-      }
-    },
-    setMaxTokenQuantity() {
-      const maxQuantity = parseFloat(this.fromTokenBalance) - 0.01;
-      this.fromTokenQuantity = maxQuantity > 0 ? maxQuantity.toFixed(2) : '0';
-      this.calculateRatio('from');
+
+        this.isLoadingQuotation = true;
+
+        const quotationData = {
+          fromTokenObj: {
+            address: this.selectedFromToken.address,
+            decimals: this.selectedFromToken.decimals,
+            symbol: this.selectedFromToken.symbol,
+            name: this.selectedFromToken.name,
+          },
+          toTokenObj: {
+            address: this.selectedReceiveToken.address,
+            decimals: this.selectedReceiveToken.decimals,
+            symbol: this.selectedReceiveToken.symbol,
+            name: this.selectedReceiveToken.name,
+          },
+          walletAddress: this.walletAddress,
+          chain: parseInt(localStorage.getItem('chainId')),
+          amountIn: this.fromTokenQuantity,
+          slippageTolerance: this.slippageValue,
+        };
+
+        axios
+          .post(`${configs.NODE_API_URL}/tokens/buildSwapTx`, quotationData)
+          .then((response) => {
+            this.quotationResponse = response.data;
+
+            let formattedQuotation;
+
+            const provider = new ethers.JsonRpcProvider(
+              'https://polygon-rpc.com'
+            );
+            if (
+              quotationData.toTokenObj.address ==
+              '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+            ) {
+              const fetchedQuotation = response?.data?.amountOut;
+              formattedQuotation = fetchedQuotation;
+            } else {
+              const tokenInstance = new ethers.Contract(
+                quotationData.toTokenObj.address,
+                abi,
+                provider
+              );
+              formattedQuotation = response?.data?.amountOut;
+            }
+            this.ratio = formattedQuotation;
+            resolve(formattedQuotation);
+          })
+          .catch((error) => {
+            console.error('Error fetching quotation:', error);
+            this.ratio = 0; // Set ratio to 0 in case of an error
+            reject(error);
+          })
+          .finally(() => {
+            this.isLoadingQuotation = false;
+          });
+      });
     },
     toggleSlippageModal() {
       this.showSlippageModal = !this.showSlippageModal;
@@ -748,12 +745,12 @@ export default {
       if (fromToken) {
         return;
       }
-      const chainId = this.getChainId ?? this.netWorkId ?? 1;
+      const chainId = parseInt(localStorage.getItem('chainId'));
       const desiredSymbol = symbolMap[chainId];
       const defaultToken = this.fetchedData.find(
         (token) => token.symbol === desiredSymbol
       );
-      console.log(defaultToken, 'defaultToken');
+      // console.log(defaultToken, 'defaultToken');
       if (defaultToken) {
         this.selectedFromToken = defaultToken;
         this.selectedFromTokenAddress = defaultToken.address;
@@ -766,12 +763,12 @@ export default {
       // this.selectedFromToken = null;
       this.selectedToToken = null;
       this.selectedReceiveToken = null;
+      this.resetState();
       this.fromTokenQuantity = '';
       this.fromCalculatedFiat = '';
       this.ratio = '';
-      this.fromTokenBalance = '';
       this.toTokenBalance = '';
-      this.fromFiat = 0;
+      // this.fromFiat = 0;
       this.toFiat = 0;
 
       this.clearInputField();
@@ -779,9 +776,8 @@ export default {
         this.$forceUpdate();
       });
     },
-
-    swapTokens() {
-      // Temporarily disable recalculation to avoid unnecessary computations during the swap
+    async swapTokens() {
+      // Temporarily disable recalculation during the swap
       this.disableRecalculation = true;
 
       // Swap the selected tokens and their addresses
@@ -794,11 +790,11 @@ export default {
         this.selectedFromTokenAddress,
       ];
 
+      this.UpdateState(this.ratio);
+      this.fromTokenQuantity = this.ratio;
       // Swap the input quantities
-      [this.fromTokenQuantity, this.ratio] = [
-        this.ratio,
-        this.fromTokenQuantity,
-      ];
+      const tempQuantity = this.fromTokenQuantity;
+      this.ratio = tempQuantity;
 
       // Swap the token balances
       [this.fromTokenBalance, this.toTokenBalance] = [
@@ -807,21 +803,21 @@ export default {
       ];
 
       // Swap the fiat values
-      [this.fromFiat, this.toFiat] = [this.toFiat, this.fromFiat];
+      // [this.fromFiat, this.toFiat] = [this.toFiat, this.fromFiat];
 
       // Recalculate the fiat values based on the new token quantities
-      this.fromCalculatedFiat = (
-        this.fromFiat * parseFloat(this.fromTokenQuantity)
-      ).toFixed(2);
-      this.toCalculatedFiat = (this.toFiat * parseFloat(this.ratio)).toFixed(2);
+      // this.fromCalculatedFiat = (
+      //   this.fromFiat * parseFloat(this.fromTokenQuantity)
+      // ).toFixed(2);
+      // this.toCalculatedFiat = (this.toFiat * parseFloat(this.ratio)).toFixed(2);
 
+      // Wait for the calculated ratio and update fromTokenQuantity
       // Re-enable recalculation
       this.disableRecalculation = false;
 
       // Update the display without calling the API
       this.$nextTick(() => {
         this.updateFromCalculatedFiat();
-        this.calculateRatio('from');
       });
 
       // Force a component update to reflect the changes
@@ -878,7 +874,10 @@ export default {
     buttonText() {
       if (!this.isConnected) {
         return 'Connect Wallet';
-      } else if (this.toFiat == 0 || this.toFiat == '') {
+      } else if (
+        this.selectedToTokenAddress == null ||
+        this.selectedToTokenAddress == ''
+      ) {
         return 'Select Token';
       } else if (
         !this.fromTokenQuantity ||
@@ -886,7 +885,10 @@ export default {
         this.fromTokenQuantity === ''
       ) {
         return 'Enter an Amount';
-      } else if (this.fromTokenQuantity >= this.fromTokenBalance) {
+      } else if (
+        this.fromTokenQuantity >= this.fromTokenBalance ||
+        this.fromTokenBalance == 0
+      ) {
         return 'Insufficient balance';
       } else {
         return this.isTransactionPending ? 'Processing...' : 'Swap';
@@ -898,7 +900,6 @@ export default {
   },
   watch: {
     isConnected(newVal) {
-      console.log(newVal, 'newVal');
       if (newVal) {
         this.initializeData();
       }
@@ -929,7 +930,7 @@ export default {
     },
     hash(newVal) {
       if (newVal) {
-        // this.resetTransactionFields();
+        this.resetTransactionFields();
         // this.resetState();
         const Msg = 'Transaction successfully';
         notification.notify({
@@ -939,21 +940,19 @@ export default {
           speed: 1000,
         });
 
-        // Delay the API call by 2 seconds
         setTimeout(async () => {
           try {
             const chainId = this.getChainId ?? this.netWorkId;
             const response = await axios.get(
-              `http://localhost:5000/tokens/fetchBalance?tokenAddress=${this.selectedFromToken.address}&walletAddress=${this.walletAddress}&chain=${chainId}`
+              `${configs.NODE_API_URL}/tokens/fetchBalance?tokenAddress=${this.selectedFromToken.address}&walletAddress=${this.walletAddress}&chain=${chainId}`
             );
             this.fromTokenBalance = Number(
               parseFloat(response.data).toFixed(4)
             );
-            console.log(this.fromTokenBalance, 'ysuyfusuvyv');
           } catch (error) {
             console.error('Error fetching balance:', error);
           }
-        }, 2000);
+        }, 35000);
         // window.location.reload()
       }
     },

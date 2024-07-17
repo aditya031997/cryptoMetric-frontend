@@ -9,8 +9,6 @@ const notification = useNotification();
 const { address, isConnected } = useAccount();
 const { disconnect } = useDisconnect();
 
-console.log(isConnected, 'isConnected');
-
 const formattedAddress = computed(() => {
   if (!address.value) return null;
   return `${address.value.slice(0, 6)}…${address.value.slice(38, 42)}`;
@@ -18,9 +16,9 @@ const formattedAddress = computed(() => {
 
 // Function to update localStorage
 const updateLocalStorage = () => {
-  console.log(isConnected, 'Updating localStorage');
 
   localStorage.setItem('walletAddress', isConnected._object.address);
+  localStorage.setItem('chainId', isConnected._object.chainId);
   localStorage.setItem('walletName', isConnected._object.connector.name);
 };
 
@@ -28,7 +26,6 @@ const updateLocalStorage = () => {
 watch(
   () => isConnected.value,
   (newIsConnected) => {
-    console.log('Watch triggered', newIsConnected);
     updateLocalStorage();
   },
   { immediate: true }
@@ -44,6 +41,7 @@ const handleDisconnect = async () => {
     await disconnect();
     localStorage.removeItem('walletAddress');
     localStorage.removeItem('walletName');
+    localStorage.removeItem('chainId')
 
     const Msg = 'Wallet disconnected successfully';
     notification.notify({

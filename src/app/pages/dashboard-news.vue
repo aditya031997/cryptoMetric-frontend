@@ -91,6 +91,7 @@ import ModalAccept from '../components/modals/modal-accept.vue';
 import ModalMixin from '@/utils/mixins/modal';
 import { getListenerEcho, stopListenerEcho } from '../utils/echo';
 import { pagination } from '../utils/helpers/pagination-create';
+
 export default {
   mixins: [ModalMixin],
   components: {
@@ -150,7 +151,7 @@ export default {
     changePage(page) {
       this.isLoad = true;
       this.$router.replace({ query: { ...this.$route.query, page } });
-      this.getNews();
+      this.getNews(page, this.search, this.itemsValue);
     },
     changeItemValue(items) {
       if (items) {
@@ -167,7 +168,7 @@ export default {
           },
         });
       }
-      this.getNews();
+      this.getNews(1, this.search, this.itemsValue);
     },
     changeSearchValue(value) {
       const searchValue = value.trim();
@@ -194,7 +195,7 @@ export default {
       if (value && this.valueSelect !== value) {
         this.valueSelectSaved = value;
         this.isModal = true;
-         document.body.classList.add('modal-open');
+        document.body.classList.add('modal-open');
       }
     },
     onCloseModal() {
@@ -247,7 +248,4 @@ export default {
 };
 </script>
 
-<style
-  lang="scss"
-  scoped
-></style>
+<style lang="scss" scoped></style>

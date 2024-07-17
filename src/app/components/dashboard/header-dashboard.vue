@@ -59,22 +59,23 @@
           >
             <li
               class="dropdown-item show-active"
-              v-for="(chain, index) in chains"
-              :key="chain.id"
+              v-for="(item, index) in dropdownItems"
+              :key="item.name"
+              :class="{ 'is-checked': item.checked }"
               @click="
                 toggleCheck(index);
-                switchChain({ chainId: chain.id });
+                switchNetwork(item);
               "
             >
               <div>
-                <!-- <img
+                <img
                   :src="getImageCoin(item.slug)"
-                  :alt="hi"
+                  :alt="`Logo of ${item.name}`"
                   class="icon-img"
-                /> -->
-                {{ chain.name }}
+                />
+                {{ item.name }}
               </div>
-              <!-- <CheckIcon :checked="item.checked" /> -->
+              <CheckIcon :checked="item.checked" />
             </li>
           </ul>
         </div>
@@ -94,9 +95,9 @@
 </template>
 
 <script>
-import { useAccount, useChainId, useSwitchChain } from '@wagmi/vue';
+import { useAccount, useChainId } from '@wagmi/vue';
+import { reactive, toRefs, ref, watch, inject } from 'vue';
 import { watchChainId } from '@wagmi/core';
-import { reactive, toRefs, ref, watch } from 'vue';
 import iconBack from '../icons/icon-back.vue';
 import ButtonIcon from '../ui/button/button-icon.vue';
 import UserProfile from './user-profile.vue';
@@ -104,7 +105,6 @@ import { useNotification } from '@kyvg/vue3-notification';
 import UserNotify from './user-notify.vue';
 import DashboardSettings from './dashboard-settings.vue';
 import Account from '../dashboard/Account.vue';
-useSwitchChain;
 import Connect from '../dashboard/Connect.vue';
 import IconBurger from '../icons/icon-burger.vue';
 import ConnectModal from '../modals/wallet-modal.vue';
@@ -113,6 +113,7 @@ import CheckIcon from '../../components/icons/token-check.vue';
 import Web3 from 'web3';
 import { getImageCoin } from '../../utils/helpers/formatter-images';
 import { config } from '../modals/config';
+
 const networks = {
   Ethereum: {
     chainId: '0x1',
@@ -161,53 +162,35 @@ export default {
     Connect,
   },
 
-  data() {
-    return {
-      currentChainId: '',
-      netWorkId: '',
-      web3: null,
-      currentNetwork: null,
-      walletAddress: localStorage.getItem('walletAddress') || '',
-      isDropdownVisible: false,
-      showConnectModal: false,
-      dropdownItems: [
-        { name: 'Ethereum', slug: 'ethereum', chainId: 1, checked: true },
-        { name: 'Binance', slug: 'bnb', chainId: 56, checked: false },
-        { name: 'Polygon', slug: 'polygon', chainId: 137, checked: false },
-        { name: 'Base', slug: 'base', chainId: 8453, checked: false },
-        {
-          name: 'Avalanche',
-          slug: 'avalanche',
-          chainId: 43114,
-          checked: false,
-        },
-      ],
-      selectedImageUrl: '',
-    };
-  },
-
   setup() {
     const { isConnected } = useAccount();
     const { address } = useAccount();
-    const { chains, switchChain } = useSwitchChain();
-    // const notification = useNotification();
     const chainId = useChainId();
+    const globalState = inject('globalState');
+
     let state = reactive({
-      netWorkId: address._object.chainId,
+      netWorkId: null,
     });
-    const unwatch = watchChainId(config, {
-      onChange(chainId) {
-        console.log('Chain ID changed!', chainId);
-        this.currentChainId = chainId;
+    watchChainId(config, {
+      onChange(newChainId) {
+        state.netWorkId = newChainId;
       },
     });
     return {
       ...toRefs(state),
       isConnected,
       chainId,
-      chains,
-      switchChain,
-      unwatch,
+    };
+  },
+  data() {
+    return {
+      netWorkId: null,
+      web3: null,
+      currentNetwork: null,
+      isDropdownVisible: false,
+      showConnectModal: false,
+      dropdownItems: this.initializeDropdownItems(),
+      selectedImageUrl: '',
     };
   },
   props: {
@@ -227,15 +210,39 @@ export default {
       return null;
     },
     titleHeader() {
-      return 'J';
+      return this.$route.meta.headerName;
     },
   },
   methods: {
-    async listenNetworkChange() {
-      this.web3.currentProvider.on('chainChanged', (chainId) => {
-        this.currentNetwork = this.web3.utils.hexToNumber(chainId);
-        console.log('Network changed:', this.currentNetwork);
-      });
+    initializeDropdownItems() {
+      const storedChainId = parseInt(localStorage.getItem('chainId'));
+      const items = [
+        { name: 'Ethereum', slug: 'ethereum', chainId: 1, checked: false },
+        { name: 'Binance', slug: 'bnb', chainId: 56, checked: false },
+        { name: 'Polygon', slug: 'polygon', chainId: 137, checked: false },
+        { name: 'Base', slug: 'base', chainId: 8453, checked: false },
+        {
+          name: 'Avalanche',
+          slug: 'avalanche',
+          chainId: 43114,
+          checked: false,
+        },
+      ];
+
+      if (storedChainId) {
+        const matchedItem = items.find(
+          (item) => item.chainId === storedChainId
+        );
+        if (matchedItem) {
+          matchedItem.checked = true;
+        } else {
+          items[0].checked = true;
+        }
+      } else {
+        items[0].checked = true;
+      }
+
+      return items;
     },
     getImageCoin(slug) {
       if (slug === 'base') {
@@ -251,7 +258,9 @@ export default {
       }
     },
     updateCheckedStatus() {
-      const checkedItem = this.dropdownItems.find((item) => item.chainId === this.netWorkId);
+      const checkedItem = this.dropdownItems.find(
+        (item) => item.chainId === this.netWorkId
+      );
       if (checkedItem) {
         this.dropdownItems.forEach((item) => {
           item.checked = item.chainId === this.netWorkId;
@@ -282,9 +291,7 @@ export default {
       this.$emit('on-open-side-bar');
     },
     async switchNetwork(item) {
-      const networkKey = item.name;
-      const chainId = item.chainId;
-      this.currentChainId = chainId;
+      const networkKey = item?.name;
       if (!window.ethereum) return alert('MetaMask is not installed');
       const wallets = [];
       window.addEventListener('eip6963:announceProvider', (e) => {
@@ -292,41 +299,47 @@ export default {
       });
       window.dispatchEvent(new Event('eip6963:requestProvider'));
       const walletName = localStorage.getItem('walletName');
-      const matchedWallet = wallets.find((wallet) => wallet.info.name === walletName);
+      const matchedWallet = wallets.find(
+        (wallet) => wallet.info.name === walletName
+      );
 
       const networkData = networks[networkKey];
-      try {
-        await matchedWallet.provider.request({
-          method: 'wallet_switchEthereumChain',
-          params: [{ chainId: networkData.chainId }],
-        });
-        const id = parseInt(networkData.chainId, 16);
-        this.$store.commit('setChainId', id);
-        console.log('Switched to chainId:', id);
-        this.isDropdownVisible = false;
-      } catch (switchError) {
-        // This error code indicates that the chain has not been added to MetaMask
-        if (switchError.code === 4902) {
-          try {
-            await window.ethereum.request({
-              method: 'wallet_addEthereumChain',
-              params: [
-                {
-                  chainId: networkData.chainId,
-                  chainName: networkData.chainName,
-                  rpcUrls: networkData.rpcUrls,
-                  blockExplorerUrls: networkData.blockExplorerUrls,
-                },
-              ],
-            });
-          } catch (addError) {
-            console.error('Failed to add the network:', addError);
+      if (networkData) {
+        try {
+          await matchedWallet.provider.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: networkData.chainId }],
+          });
+          this.$store.commit('setChainId', this.netWorkId);
+          localStorage.setItem('chainId', this.netWorkId);
+          this.isDropdownVisible = false;
+        } catch (switchError) {
+          if (switchError.code === 4902) {
+            try {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [
+                  {
+                    chainId: networkData.chainId,
+                    chainName: networkData.chainName,
+                    rpcUrls: networkData.rpcUrls,
+                    blockExplorerUrls: networkData.blockExplorerUrls,
+                  },
+                ],
+              });
+            } catch (addError) {
+              console.error('Failed to add the network:', addError);
+              return; // Return early to prevent network change
+            }
+          } else {
+            console.error('Failed to switch the network:', switchError.message);
             return; // Return early to prevent network change
           }
-        } else {
-          console.error('Failed to switch the network:', switchError.message);
-          return; // Return early to prevent network change
         }
+      } else {
+        this.$store.commit('setChainId', this.netWorkId);
+        localStorage.setItem('chainId', this.netWorkId);
+        this.updateCheckedStatus();
       }
     },
   },
@@ -336,21 +349,15 @@ export default {
         this.showConnectModal = false;
       }
     },
-    currentChainId(newChainId) {
-      this.web3 = new Web3(window.ethereum);
+    netWorkId(newValue) {
+      this.switchNetwork();
     },
-    // web3(new)
   },
   mounted() {
-    // if(!window.ethereum){
-    //   return alert("Not connected")
-    // }
-    // alert("wallet connected")
     document.addEventListener('click', this.handleClickOutside);
     const defaultNetwork = this.dropdownItems.find((item) => item.checked);
     this.selectedImageUrl = this.getImageCoin(defaultNetwork.slug);
     this.web3 = new Web3(window.ethereum);
-    this.listenNetworkChange();
     this.updateCheckedStatus();
   },
   onUnmounted() {
