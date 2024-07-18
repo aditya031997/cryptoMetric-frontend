@@ -118,7 +118,20 @@
             </span>
             <span> <dropdownIcon /></span>
           </button>
-          <div class="right-side-balance-box mt-1">Balance: {{ fromTokenBalance ? fromTokenBalance : 0 }}</div>
+
+          <div
+            v-if="selectedFromToken && fromTokenBalance !== ''"
+            class="right-side-balance-box mt-1"
+          >
+            Balance: {{ fromTokenBalance ? fromTokenBalance : 0 }}
+          </div>
+
+          <div
+            class="mt-1"
+            v-else-if="selectedFromToken && fromTokenBalance === ''"
+          >
+            Fetching Balance...
+          </div>
         </div>
       </div>
     </div>
@@ -187,6 +200,12 @@
           >
             Balance: {{ toTokenBalance }}
           </p>
+          <p
+            class="mt-1"
+            v-else-if="toFiat == 0 && selectedReceiveToken"
+          >
+            Fetching Balance...
+          </p>
         </div>
       </div>
     </div>
@@ -250,7 +269,6 @@ const rpcUrls = {
   8453: 'https://base.drpc.org',
   43114: 'https://avax.meowrpc.com',
 };
-
 export default {
   name: 'web3exchange',
 
@@ -320,7 +338,6 @@ export default {
     const { isConnected } = useAccount();
     const { address } = useAccount();
     const { data: hash, error, isPending, sendTransaction } = useSendTransaction();
-
     let state = ref({
       isTransactionPending: false,
       netWorkId: address._object.chainId,
@@ -392,7 +409,6 @@ export default {
     const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
       hash,
     });
-
     return {
       ...toRefs(state),
       hash,

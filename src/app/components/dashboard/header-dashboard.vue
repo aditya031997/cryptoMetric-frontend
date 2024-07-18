@@ -118,31 +118,31 @@ const networks = {
   Ethereum: {
     chainId: '0x1',
     chainName: 'Ethereum Mainnet',
-    rpcUrls: ['https://eth.llamarpc.com'],
+    rpcUrls: ['https://site1.moralis-nodes.com/eth/02b906dd2ce242bba445b6e6477cb824'],
     blockExplorerUrls: ['https://etherscan.io'],
   },
   Binance: {
     chainId: '0x38',
     chainName: 'BNB Chain',
-    rpcUrls: ['https://bsc-dataseed.binance.org/'],
+    rpcUrls: ['https://site1.moralis-nodes.com/bsc/984bbee2a2ee4aafbed34ee755910f0e'],
     blockExplorerUrls: ['https://bscscan.com'],
   },
   Polygon: {
     chainId: '0x89',
     chainName: 'Polygon Mainnet',
-    rpcUrls: ['https://rpc-mainnet.maticvigil.com/'],
+    rpcUrls: ['https://site1.moralis-nodes.com/polygon/8b4fb5cb45d14446a9a0348cc08274e9'],
     blockExplorerUrls: ['https://polygonscan.com'],
   },
   Base: {
     chainId: '0x2105',
     chainName: 'Base Network',
-    rpcUrls: ['https://mainnet.base.org'],
+    rpcUrls: ['https://site1.moralis-nodes.com/base/7a1036f6fbdd434a839ec2b35771e941'],
     blockExplorerUrls: ['https://basescan.org'],
   },
   Avalanche: {
     chainId: '0xa86a',
     chainName: 'Avalanche Network',
-    rpcUrls: ['https://api.avax.network/ext/bc/C/rpc'],
+    rpcUrls: ['https://site1.moralis-nodes.com/avalanche/43d7dfdaa10c4428a5392f07f6814a86'],
     blockExplorerUrls: ['https://snowtrace.io'],
   },
 };
@@ -230,9 +230,7 @@ export default {
       ];
 
       if (storedChainId) {
-        const matchedItem = items.find(
-          (item) => item.chainId === storedChainId
-        );
+        const matchedItem = items.find((item) => item.chainId === storedChainId);
         if (matchedItem) {
           matchedItem.checked = true;
         } else {
@@ -258,9 +256,7 @@ export default {
       }
     },
     updateCheckedStatus() {
-      const checkedItem = this.dropdownItems.find(
-        (item) => item.chainId === this.netWorkId
-      );
+      const checkedItem = this.dropdownItems.find((item) => item.chainId === this.netWorkId);
       if (checkedItem) {
         this.dropdownItems.forEach((item) => {
           item.checked = item.chainId === this.netWorkId;
@@ -299,9 +295,7 @@ export default {
       });
       window.dispatchEvent(new Event('eip6963:requestProvider'));
       const walletName = localStorage.getItem('walletName');
-      const matchedWallet = wallets.find(
-        (wallet) => wallet.info.name === walletName
-      );
+      const matchedWallet = wallets.find((wallet) => wallet.info.name === walletName);
 
       const networkData = networks[networkKey];
       if (networkData) {
