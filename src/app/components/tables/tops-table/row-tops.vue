@@ -8,13 +8,20 @@
       />
     </td>
     <td class="text d-flex align-items">
-      <default-image
-        class="table__image"
-        :src="getCoinImageUrl"
-        alt="Coin"
-      />
-      <p class="table-col--name table__row-text">{{ name }}</p>
-      <p class="table-col--symbol d-none d-sm-block table__row-text">{{ symbol }}</p>
+        <router-link
+          :to="getLink(slug)"
+          class="d-flex justify-content-space-between table__link"
+          @click="navigateToLink(getLink(slug))"
+        >
+         
+        <default-image
+          class="table__image"
+          :src="getCoinImageUrl"
+          alt="Coin"
+        />
+        <p class="table-col--name table__row-text">{{ name }}</p>
+        <p class="table-col--symbol d-none d-sm-block table__row-text">{{ symbol }}</p>
+        </router-link>
       <popper-tooltip class="table-col--symbol d-block d-xs-none d-sm-none d-md-none table__row-text">
         {{ symbol }}
         <template v-slot:popper>
@@ -98,6 +105,15 @@ export default {
     slug: {
       type: String,
     },
+  },
+  setup() {
+    const getLink = (slug) => {
+      return `/crypto-markets/${slug}`;
+    };
+  
+    return {
+      getLink,
+    };
   },
   computed: {
     getCoinImageUrl() {
