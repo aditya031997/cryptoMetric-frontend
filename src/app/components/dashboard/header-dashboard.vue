@@ -59,23 +59,23 @@
           >
             <li
               class="dropdown-item show-active"
-              v-for="(item, index) in dropdownItems"
-              :key="item.name"
-              :class="{ 'is-checked': item.checked }"
+              :class="{ 'is-checked': selectedChain === chain.id }"
+              v-for="(chain, index) in chains"
+              :key="chain.id"
               @click="
-                toggleCheck(index);
-                switchNetwork(item);
+                // toggleCheck(chain.id);
+                switchChain({ chainId: chain.id })
               "
             >
               <div>
                 <img
-                  :src="getImageCoin(item.slug)"
-                  :alt="`Logo of ${item.name}`"
+                  :src="getImageCoin(chain.name.split(' ')[0].toLowerCase())"
+                  :alt="hi"
                   class="icon-img"
                 />
-                {{ item.name }}
+                {{ chain.name }}
               </div>
-              <CheckIcon :checked="item.checked" />
+              <CheckIcon :checked="selectedChain === chain.id" />
             </li>
           </ul>
         </div>
@@ -95,7 +95,7 @@
 </template>
 
 <script>
-import { useAccount, useChainId } from '@wagmi/vue';
+import { useAccount, useChainId, useSwitchChain } from '@wagmi/vue';
 import { reactive, toRefs, ref, watch, inject } from 'vue';
 import { watchChainId } from '@wagmi/core';
 import iconBack from '../icons/icon-back.vue';
@@ -166,6 +166,7 @@ export default {
     const { isConnected } = useAccount();
     const { address } = useAccount();
     const chainId = useChainId();
+    const { chains, switchChain } = useSwitchChain();
     const globalState = inject('globalState');
 
     let state = reactive({
@@ -180,12 +181,15 @@ export default {
       ...toRefs(state),
       isConnected,
       chainId,
+      chains,
+      switchChain,
     };
   },
   data() {
     return {
       netWorkId: null,
       web3: null,
+      selectedChain: 0,
       currentNetwork: null,
       isDropdownVisible: false,
       showConnectModal: false,
@@ -230,6 +234,7 @@ export default {
       ];
 
       if (storedChainId) {
+        this.selectedChain = storedChainId;
         const matchedItem = items.find((item) => item.chainId === storedChainId);
         if (matchedItem) {
           matchedItem.checked = true;
@@ -252,7 +257,9 @@ export default {
     updateSelectedImage() {
       const checkedItem = this.dropdownItems.find((item) => item.checked);
       if (checkedItem) {
+        this.selectedChain = checkedItem.chainId;
         this.selectedImageUrl = this.getImageCoin(checkedItem.slug);
+        this.isDropdownVisible = false;
       }
     },
     updateCheckedStatus() {
@@ -271,10 +278,11 @@ export default {
       }
     },
     toggleCheck(index) {
-      this.dropdownItems.forEach((item, i) => {
-        item.checked = i === index;
-      });
-      this.selectedImageUrl = this.getImageCoin(this.dropdownItems[index].slug);
+      this.selectedChain = index;
+      // this.dropdownItems.forEach((item, i) => {
+      //   item.checked = i === index;
+      // });
+      // this.selectedImageUrl = this.getImageCoin(this.dropdownItems[index].slug);
     },
     toggleDropdown() {
       this.isDropdownVisible = !this.isDropdownVisible;
@@ -353,6 +361,8 @@ export default {
     this.selectedImageUrl = this.getImageCoin(defaultNetwork.slug);
     this.web3 = new Web3(window.ethereum);
     this.updateCheckedStatus();
+    const storedChainId = parseInt(localStorage.getItem('chainId'));
+    this.selectedChain = storedChainId;
   },
   onUnmounted() {
     this.unwatch();
