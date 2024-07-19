@@ -59,23 +59,23 @@
           >
             <li
               class="dropdown-item show-active"
-              v-for="(item, index) in dropdownItems"
-              :key="item.name"
-              :class="{ 'is-checked': item.checked }"
+              :class="{ 'is-checked': selectedChain === chain.id }"
+              v-for="(chain, index) in chains"
+              :key="chain.id"
               @click="
-                toggleCheck(index);
-                switchNetwork(item);
+                // toggleCheck(chain.id);
+                switchChain({ chainId: chain.id })
               "
             >
               <div>
                 <img
-                  :src="getImageCoin(item.slug)"
-                  :alt="`Logo of ${item.name}`"
+                  :src="getImageCoin(chain.name.split(' ')[0].toLowerCase())"
+                  :alt="hi"
                   class="icon-img"
                 />
-                {{ item.name }}
+                {{ chain.name }}
               </div>
-              <CheckIcon :checked="item.checked" />
+              <CheckIcon :checked="selectedChain === chain.id" />
             </li>
           </ul>
         </div>
@@ -95,7 +95,7 @@
 </template>
 
 <script>
-import { useAccount, useChainId } from '@wagmi/vue';
+import { useAccount, useChainId, useSwitchChain } from '@wagmi/vue';
 import { reactive, toRefs, ref, watch, inject } from 'vue';
 import { watchChainId } from '@wagmi/core';
 import iconBack from '../icons/icon-back.vue';
@@ -118,31 +118,31 @@ const networks = {
   Ethereum: {
     chainId: '0x1',
     chainName: 'Ethereum Mainnet',
-    rpcUrls: ['https://eth.llamarpc.com'],
+    rpcUrls: ['https://site1.moralis-nodes.com/eth/02b906dd2ce242bba445b6e6477cb824'],
     blockExplorerUrls: ['https://etherscan.io'],
   },
   Binance: {
     chainId: '0x38',
     chainName: 'BNB Chain',
-    rpcUrls: ['https://bsc-dataseed.binance.org/'],
+    rpcUrls: ['https://site1.moralis-nodes.com/bsc/984bbee2a2ee4aafbed34ee755910f0e'],
     blockExplorerUrls: ['https://bscscan.com'],
   },
   Polygon: {
     chainId: '0x89',
     chainName: 'Polygon Mainnet',
-    rpcUrls: ['https://rpc-mainnet.maticvigil.com/'],
+    rpcUrls: ['https://site1.moralis-nodes.com/polygon/8b4fb5cb45d14446a9a0348cc08274e9'],
     blockExplorerUrls: ['https://polygonscan.com'],
   },
   Base: {
     chainId: '0x2105',
     chainName: 'Base Network',
-    rpcUrls: ['https://mainnet.base.org'],
+    rpcUrls: ['https://site1.moralis-nodes.com/base/7a1036f6fbdd434a839ec2b35771e941'],
     blockExplorerUrls: ['https://basescan.org'],
   },
   Avalanche: {
     chainId: '0xa86a',
     chainName: 'Avalanche Network',
-    rpcUrls: ['https://api.avax.network/ext/bc/C/rpc'],
+    rpcUrls: ['https://site1.moralis-nodes.com/avalanche/43d7dfdaa10c4428a5392f07f6814a86'],
     blockExplorerUrls: ['https://snowtrace.io'],
   },
 };
@@ -166,6 +166,7 @@ export default {
     const { isConnected } = useAccount();
     const { address } = useAccount();
     const chainId = useChainId();
+    const { chains, switchChain } = useSwitchChain();
     const globalState = inject('globalState');
 
     let state = reactive({
@@ -180,12 +181,15 @@ export default {
       ...toRefs(state),
       isConnected,
       chainId,
+      chains,
+      switchChain,
     };
   },
   data() {
     return {
       netWorkId: null,
       web3: null,
+      selectedChain: 0,
       currentNetwork: null,
       isDropdownVisible: false,
       showConnectModal: false,
@@ -230,9 +234,8 @@ export default {
       ];
 
       if (storedChainId) {
-        const matchedItem = items.find(
-          (item) => item.chainId === storedChainId
-        );
+        this.selectedChain = storedChainId;
+        const matchedItem = items.find((item) => item.chainId === storedChainId);
         if (matchedItem) {
           matchedItem.checked = true;
         } else {
@@ -254,13 +257,13 @@ export default {
     updateSelectedImage() {
       const checkedItem = this.dropdownItems.find((item) => item.checked);
       if (checkedItem) {
+        this.selectedChain = checkedItem.chainId;
         this.selectedImageUrl = this.getImageCoin(checkedItem.slug);
+        this.isDropdownVisible = false;
       }
     },
     updateCheckedStatus() {
-      const checkedItem = this.dropdownItems.find(
-        (item) => item.chainId === this.netWorkId
-      );
+      const checkedItem = this.dropdownItems.find((item) => item.chainId === this.netWorkId);
       if (checkedItem) {
         this.dropdownItems.forEach((item) => {
           item.checked = item.chainId === this.netWorkId;
@@ -275,10 +278,11 @@ export default {
       }
     },
     toggleCheck(index) {
-      this.dropdownItems.forEach((item, i) => {
-        item.checked = i === index;
-      });
-      this.selectedImageUrl = this.getImageCoin(this.dropdownItems[index].slug);
+      this.selectedChain = index;
+      // this.dropdownItems.forEach((item, i) => {
+      //   item.checked = i === index;
+      // });
+      // this.selectedImageUrl = this.getImageCoin(this.dropdownItems[index].slug);
     },
     toggleDropdown() {
       this.isDropdownVisible = !this.isDropdownVisible;
@@ -299,9 +303,7 @@ export default {
       });
       window.dispatchEvent(new Event('eip6963:requestProvider'));
       const walletName = localStorage.getItem('walletName');
-      const matchedWallet = wallets.find(
-        (wallet) => wallet.info.name === walletName
-      );
+      const matchedWallet = wallets.find((wallet) => wallet.info.name === walletName);
 
       const networkData = networks[networkKey];
       if (networkData) {
@@ -359,6 +361,8 @@ export default {
     this.selectedImageUrl = this.getImageCoin(defaultNetwork.slug);
     this.web3 = new Web3(window.ethereum);
     this.updateCheckedStatus();
+    const storedChainId = parseInt(localStorage.getItem('chainId'));
+    this.selectedChain = storedChainId;
   },
   onUnmounted() {
     this.unwatch();
