@@ -26,8 +26,11 @@
       </div>
 
       <template v-if="hasButton">
-        <div class="d-flex align-item-center coin__btn">
-          <template v-if="showButtons">
+        <div
+          class="d-flex align-item-center coin__btn"
+          v-if="showButtons"
+        >
+          <template>
             <button
               class="btn cm-button btn-outline-primary is-line cm-button--sm"
               @click="handleBuy"
@@ -53,6 +56,9 @@
           >
             <icon-scroll />
           </button-icon>
+        </div>
+        <div v-else>
+          <p>Loading...</p>
         </div>
       </template>
     </div>
@@ -212,9 +218,7 @@ export default {
         try {
           // const walletInfo =  await window.ethereum.request({ method: 'eth_requestAccounts' });
           const networkId = await web3.eth.net.getId();
-          console.log(networkId, 'networkId');
           this.chainId = `0x${Number(networkId).toString(16)}`;
-          console.log(this.chainId, "this.chainId");
           // Call checkTokenAvailability after fetching the chainId
           this.checkTokenAvailability();
         } catch (error) {
@@ -225,10 +229,10 @@ export default {
     async handleBuy() {
       this.selectedCoinName = this.name;
       this.selectedCoinSymbol = this.symbol;
-      // Switch network if tokenId is not equal to chainId
-      if (this.tokenId !== this.chainId) {
-        await this.switchNetwork();
-      }
+      // // Switch network if tokenId is not equal to chainId
+      // if (this.tokenId !== this.chainId) {
+      //   await this.switchNetwork();
+      // }
       // Redirect to the swap page with the symbol as a query parameter
       const url = new URL('/swap', window.location.origin);
       url.searchParams.set('fromToken', this.symbol);
@@ -238,37 +242,48 @@ export default {
       this.selectedCoinName = this.name;
       this.selectedCoinSymbol = this.symbol;
       // Redirect to the swap page with the symbol as a query parameter
-      if (this.tokenId !== this.chainId) {
-        await this.switchNetwork();
-      }
+      // if (this.tokenId !== this.chainId) {
+      //   await this.switchNetwork();
+      // }
       const url = new URL('/swap', window.location.origin);
       url.searchParams.set('toToken', this.symbol);
       window.location.href = url.toString();
     },
-    async switchNetwork() {
-      if (!window.ethereum) return alert('MetaMask is not installed');
+    // async switchNetwork() {
+    //   if (!window.ethereum) return alert('MetaMask is not installed');
 
-      const hexChainId = `0x${parseInt(this.tokenId, 10).toString(16)}`;
+    //   const hexChainId = `0x${parseInt(this.tokenId, 10).toString(16)}`;
 
-      try {
-        await window.ethereum.request({
-          method: 'wallet_switchEthereumChain',
-          params: [{ chainId: hexChainId }],
-        });
-        this.isDropdownVisible = false;
-      } catch (switchError) {
-        console.error('Failed to switch the network:', switchError);
-      }
-    },
+    //   try {
+    //     await window.ethereum.request({
+    //       method: 'wallet_switchEthereumChain',
+    //       params: [{ chainId: hexChainId }],
+    //     });
+    //     this.isDropdownVisible = false;
+    //   } catch (switchError) {
+    //     console.error('Failed to switch the network:', switchError);
+    //   }
+    // },
     checkTokenAvailability() {
-      const decimalChainId = parseInt(this.chainId, 16); 
+      const decimalChainId = parseInt(this.chainId, 16);
       axios
-        .get(
-          `${configs.NODE_API_URL}/supply/tokenByName?query=${this.symbol}&chainId=${decimalChainId}`
-        )
+        .get(`http://localhost:5000/supply/tokenDetail?symbol=${this.symbol}`)
         .then((response) => {
-          if (response?.data && response?.data?.msg?.length > 0) {
-            this.tokenId = response?.data?.msg[0].chainId;
+          const validSymbols = ['MATIC', 'BNB', 'BASE', 'AVAX', 'ETH'];
+          const symbol = response?.data?.msg[0]?.symbol;
+          const isValidSymbol = validSymbols.includes(symbol);
+          // if (isValidSymbol) {
+          //   console.log(`Symbol ${symbol} is valid.`);
+          // } else {
+          //   console.log(`Symbol ${symbol} is not valid.`);
+          // }
+
+          if (
+            (response?.data && response?.data?.msg[0]?.category == 'token') ||
+            (response?.data &&
+              response?.data?.msg[0]?.category == 'coin' &&
+              validSymbols.includes(response?.data?.msg[0]?.symbol))
+          ) {
             this.showButtons = true;
           } else {
             this.showButtons = false;

@@ -63,11 +63,12 @@ export default {
       this.isLoad = true;
       try {
         // Initial API call to get token details
-        const tokenResponse = await axios.get(`${configs.NODE_API_URL}/supply/tokenByName?query=${this.symbol}`);
+        const tokenResponse = await axios.get(`${configs.NODE_API_URL}/supply/tokenDetail?symbol=${this.symbol}`);
         const tokenData = tokenResponse.data.msg;
-        if (tokenData.length > 0) {
-          const { address, chainId } = tokenData[0];
-
+        console.log(tokenData,"tokenData7777")
+          // const { address, chainId } = tokenData[0];
+          const address = '0xd5f7838f5c461feff7fe49ea5ebaf7728bb0adfa'
+          const chainId = '1' 
           const securityResponse = await axios.get(`${configs.NODE_API_URL}/supply/distribution?address=${address}&chainId=${chainId}`);
           const apiData = securityResponse.data.msg[address];
           const dynamicValues = {};
@@ -161,10 +162,7 @@ export default {
               ...item,
               value: dynamicValues[item.title],
             }));
-        } else {
-          console.error('No token data found');
-          this.$emit('error', 'No token data found');
-        }
+        
       } catch (error) {
         console.error('Failed to fetch security data:', error);
         this.$emit('error', 'Failed to fetch security data');

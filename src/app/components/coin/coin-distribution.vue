@@ -34,13 +34,15 @@ export default {
       this.isLoad = true;
       try {
         const tokenResponse = await axios.get(
-          `${configs.NODE_API_URL}/supply/tokenByName?query=${this.symbol}`
+          `${configs.NODE_API_URL}/supply/tokenDetail?symbol=${this.symbol}`
         );
-        const tokenData = tokenResponse.data.msg;
+        // console.log(tokenResponse,"tokenResponsetokenResponse")
+        const tokenData = tokenResponse.data.msg[0];
+        console.log(tokenData.platform,"tokenDataeee")
         if (tokenData) {
-          const symbol = tokenData.symbol;
-          const tokenAddress = tokenData.tokenAddress;
-          this.iframeSrc = `https://app.bubblemaps.io/${symbol}/token/${tokenAddress}`;
+          const chain = "eth";
+          const tokenAddress = "0xdac17f958d2ee523a2206206994597c13d831ec7";
+          this.iframeSrc = `https://app.bubblemaps.io/${chain}/token/${tokenAddress}`;
         }
       } catch (error) {
         console.error('Error fetching token data:', error);

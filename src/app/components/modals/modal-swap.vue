@@ -186,7 +186,7 @@ export default {
       this.hideModal();
     },
     async fetchTokens(chainId) {
-      const chain = localStorage.getItem('chainId') || 1
+      const chain = localStorage.getItem('chainId') || 1;
       const address = localStorage.getItem('walletAddress');
       this.networlId = chainId;
       this.isLoading = true;
@@ -194,13 +194,23 @@ export default {
         const response = await axios.get(
           `${configs.NODE_API_URL}/tokens/getTokensToSwapByChainId?chain=${chain}`
         );
+        const dataArray = response?.data || [];
+        const filteredData = dataArray.filter(
+          (item) => item.tags && item.tags.includes('native')
+        );
+        console.log(filteredData, 'filteredData');
         this.apiTokens = response?.data;
         this.topRatedToken = response?.data;
         this.filteredApiTokens = this.apiTokens;
         this.$emit('tokens-fetched', this.apiTokens);
         this.$emit('chainId-fetched', chainId);
-        const walletResponse = await axios.get(
-          `${configs.NODE_API_URL}/tokens/walletToken?chain=${chain}&address=${address}`
+        const walletResponse = await axios.post(
+          `${configs.NODE_API_URL}/tokens/walletToken`,
+          {
+            chain: chain,
+            address: address,
+            nativeToken: filteredData[0],
+          }
         );
         const verifiedTokens = walletResponse.data.msg.filter(
           (token) => token.verified_contract
@@ -246,7 +256,11 @@ export default {
       );
     },
     getWalletTokenImage(token) {
-      return token.logoURI || token.logo || this.getImageCoin(token.symbol.toLowerCase());
+      return (
+        token.logoURI ||
+        token.logo ||
+        this.getImageCoin(token.symbol.toLowerCase())
+      );
     },
     handleImageError(event, slug) {
       // event.target.src = this.getImageCoin(slug.toLowerCase());
