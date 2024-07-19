@@ -486,8 +486,9 @@ export default {
           fromTokenSet = true;
         } else {
           this.showErrorModal('Token does not exist on this chain ID. Please change the chain ID.');
-          this.selectedFromToken = null;
-          this.selectedFromTokenAddress = '';
+          this.setDefaultToken();
+          // this.selectedFromToken = null;
+          // this.selectedFromTokenAddress = '';
         }
       }
 
@@ -541,6 +542,7 @@ export default {
           const response = await axios.get(
             `${configs.NODE_API_URL}/tokens/fetchBalance?tokenAddress=${token?.address}&walletAddress=${walletAddress}&chain=${chainId}`
           );
+          console.log(response.data,"sdffdfdf")
           const fiatValue = response.data;
           const accountAddress = walletAddress;
           const provider = new ethers.JsonRpcProvider(rpcUrls[chainId]);
@@ -775,6 +777,7 @@ export default {
       }
     },
     setDefaultToken() {
+      console.log("hererere")
       const symbolMap = {
         137: 'MATIC',
         1: 'ETH',
@@ -786,9 +789,9 @@ export default {
       const urlParams = new URLSearchParams(window.location.search);
       const fromToken = urlParams.get('fromToken');
       const toToken = urlParams.get('toToken');
-      if (fromToken) {
-        return;
-      }
+      // if (fromToken) {
+      //   return;
+      // }
       const chainId = parseInt(localStorage.getItem('chainId')) || this.lastSelectedChainId || 1;
       const desiredSymbol = symbolMap[chainId];
       const defaultToken = this.fetchedData?.find((token) => token.symbol === desiredSymbol);

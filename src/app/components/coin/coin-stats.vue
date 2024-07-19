@@ -26,11 +26,8 @@
       </div>
 
       <template v-if="hasButton">
-        <div
-          class="d-flex align-item-center coin__btn"
-          v-if="showButtons"
-        >
-          <template>
+        <div class="d-flex align-item-center coin__btn">
+          <template v-if="showButtons">
             <button
               class="btn cm-button btn-outline-primary is-line cm-button--sm"
               @click="handleBuy"
@@ -44,6 +41,9 @@
               Sell
             </button>
           </template>
+          <div v-else>
+            <p>Loading</p>
+          </div>
           <button-favorite
             v-if="!isDnd"
             :is-short="!isCoinPage"
@@ -56,9 +56,6 @@
           >
             <icon-scroll />
           </button-icon>
-        </div>
-        <div v-else>
-          <p>Loading...</p>
         </div>
       </template>
     </div>
@@ -89,6 +86,9 @@
 </template>
 
 <script>
+import { ref, watch } from 'vue';
+import { useSwitchChain } from '@wagmi/vue';
+import { watchChainId } from '@wagmi/core';
 import axios from 'axios';
 import {
   getImageCoin,
@@ -100,6 +100,7 @@ import IconScroll from '@/components/icons/icon-scroll.vue';
 import ButtonIcon from '@/components/ui/button/button-icon.vue';
 import Web3 from 'web3';
 import configs from '../../../configs/configs';
+import { config } from '../modals/config';
 
 import {
   formatPrice,
@@ -107,6 +108,13 @@ import {
   simpleFormatPrice,
 } from '@/utils/helpers/formatter';
 import DefaultImage from '../default-image.vue';
+const symbolChainIdMap = [
+  { symbol: 'MATIC', chainId: 137 },
+  { symbol: 'BNB', chainId: 56 },
+  { symbol: 'BASE', chainId: 8453 },
+  { symbol: 'AVAX', chainId: 43114 },
+  { symbol: 'ETH', chainId: 1 },
+];
 export default {
   name: 'coin-stats',
   components: {
@@ -173,6 +181,27 @@ export default {
       showButtons: false,
       tokenId: '',
       chainId: '',
+      isValidSymbol: false,
+      currentChainId: '',
+    };
+  },
+  setup(props) {
+    const { switchChain } = useSwitchChain();
+
+    watchChainId(config, {
+      onChange(newChainId) {
+        if (newChainId) {
+          const url = new URL('/swap', window.location.origin);
+        console.log(props.symbol, 'newChainIdryty');
+          url.searchParams.set('fromToken', props.symbol);
+          window.location.href = url.toString();
+        }
+        this.currentChainId = newChainId;
+      },
+    });
+
+    return {
+      switchChain,
     };
   },
   computed: {
@@ -193,15 +222,15 @@ export default {
     },
   },
   methods: {
-    resetValue() {
-      if (this.isFilter) {
-        this.modelValue = { name: 'All', value: null };
-        this.onChange(this.defaultValue, this.index);
-        if (this.resetOption) {
-          this.resetOption();
-        }
-      }
+    getChainIdFromSymbol(symbol) {
+      const entry = symbolChainIdMap.find((item) => item.symbol === symbol);
+      return entry ? entry.chainId : null;
     },
+    getSymbolFromChainId(chainId) {
+      const entry = symbolChainIdMap.find((item) => item.chainId === chainId);
+      return entry ? entry.symbol : null;
+    },
+
     getImageCoin(slug) {
       if (slug) {
         return getImageCoin(slug);
@@ -216,7 +245,6 @@ export default {
       if (window.ethereum) {
         const web3 = new Web3(window.ethereum);
         try {
-          // const walletInfo =  await window.ethereum.request({ method: 'eth_requestAccounts' });
           const networkId = await web3.eth.net.getId();
           this.chainId = `0x${Number(networkId).toString(16)}`;
           // Call checkTokenAvailability after fetching the chainId
@@ -229,41 +257,33 @@ export default {
     async handleBuy() {
       this.selectedCoinName = this.name;
       this.selectedCoinSymbol = this.symbol;
-      // // Switch network if tokenId is not equal to chainId
-      // if (this.tokenId !== this.chainId) {
-      //   await this.switchNetwork();
+      const targetChainId = this.getChainIdFromSymbol(this.symbol);
+
+      if (this.isValidSymbol) {
+        this.switchChain({ chainId: targetChainId });
+      }
+      console.log(this.currentChainId, 'dfdfdfdfdffd');
+      // if (updatedChainId === targetChainId.toString()) {
+      //   const url = new URL('/swap', window.location.origin);
+      //   url.searchParams.set('fromToken', this.symbol);
+      //   window.location.href = url.toString();
       // }
-      // Redirect to the swap page with the symbol as a query parameter
-      const url = new URL('/swap', window.location.origin);
-      url.searchParams.set('fromToken', this.symbol);
-      window.location.href = url.toString();
     },
     async handleSell() {
       this.selectedCoinName = this.name;
       this.selectedCoinSymbol = this.symbol;
-      // Redirect to the swap page with the symbol as a query parameter
-      // if (this.tokenId !== this.chainId) {
-      //   await this.switchNetwork();
-      // }
-      const url = new URL('/swap', window.location.origin);
-      url.searchParams.set('toToken', this.symbol);
-      window.location.href = url.toString();
+      if (this.isValidSymbol) {
+        const targetChainId = this.getChainIdFromSymbol(this.symbol);
+        if (targetChainId) {
+          this.switchChain({ chainId: targetChainId });
+        }
+      }
+      if (this.currentChainId) {
+        const url = new URL('/swap', window.location.origin);
+        url.searchParams.set('toToken', this.symbol);
+        window.location.href = url.toString();
+      }
     },
-    // async switchNetwork() {
-    //   if (!window.ethereum) return alert('MetaMask is not installed');
-
-    //   const hexChainId = `0x${parseInt(this.tokenId, 10).toString(16)}`;
-
-    //   try {
-    //     await window.ethereum.request({
-    //       method: 'wallet_switchEthereumChain',
-    //       params: [{ chainId: hexChainId }],
-    //     });
-    //     this.isDropdownVisible = false;
-    //   } catch (switchError) {
-    //     console.error('Failed to switch the network:', switchError);
-    //   }
-    // },
     checkTokenAvailability() {
       const decimalChainId = parseInt(this.chainId, 16);
       axios
@@ -271,18 +291,18 @@ export default {
         .then((response) => {
           const validSymbols = ['MATIC', 'BNB', 'BASE', 'AVAX', 'ETH'];
           const symbol = response?.data?.msg[0]?.symbol;
-          const isValidSymbol = validSymbols.includes(symbol);
-          // if (isValidSymbol) {
-          //   console.log(`Symbol ${symbol} is valid.`);
-          // } else {
-          //   console.log(`Symbol ${symbol} is not valid.`);
-          // }
+          this.isValidSymbol = validSymbols.includes(symbol);
+          if (this.isValidSymbol) {
+            console.log(`Symbol ${symbol} is valid.`);
+          } else {
+            console.log(`Symbol ${symbol} is not valid.`);
+          }
 
           if (
             (response?.data && response?.data?.msg[0]?.category == 'token') ||
             (response?.data &&
               response?.data?.msg[0]?.category == 'coin' &&
-              validSymbols.includes(response?.data?.msg[0]?.symbol))
+              this.isValidSymbol)
           ) {
             this.showButtons = true;
           } else {
@@ -295,11 +315,18 @@ export default {
         });
     },
   },
+  watch: {
+    currentChainId(val) {
+      console.log(val, 'ITS VAL');
+    },
+  },
   async mounted() {
     await this.fetchChainId();
   },
 };
 </script>
+
+
 
 <style scoped>
 .iframe-container {
@@ -312,3 +339,4 @@ export default {
   height: 600px;
 }
 </style>
+

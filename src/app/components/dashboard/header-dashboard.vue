@@ -66,7 +66,7 @@
                   selectedChain === chain.id,
                 'is-disabled': !isConnected,
               }"
-              v-for="(chain, index) in chains"
+              v-for="(chain) in chains"
               :key="chain.id"
               @click="
                 // toggleCheck(chain.id);
