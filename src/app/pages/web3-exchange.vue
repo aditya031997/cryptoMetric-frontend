@@ -78,7 +78,16 @@
           class="form-label"
           >You Pay</label
         >
-        <div v-if="isLoadingFromQuotation">Fetching quotation...</div>
+
+        <div
+          v-if="isLoadingFromQuotation"
+          class="spinner-border spinner-border-sm text-info ml-2"
+          role="status"
+        >
+          <span class="sr-only">Loading...</span>
+        </div>
+
+        <!-- <div v-if="isLoadingFromQuotation">Fetching quotation...</div> -->
         <div v-else>
           <input
             ref="fromTokenQuantityInput"
@@ -151,7 +160,14 @@
           class="form-label"
           >You Receive</label
         >
-        <div v-if="isLoadingQuotation">Fetching quotation...</div>
+        <!-- <div v-if="isLoadingQuotation">Fetching quotation...</div> -->
+        <div
+          v-if="isLoadingQuotation"
+          class="spinner-border spinner-border-sm text-info ml-2"
+          role="status"
+        >
+          <span class="sr-only">Loading...</span>
+        </div>
         <div v-else>
           <input
             v-model="ratio"
@@ -591,7 +607,7 @@ export default {
       this.calculateRatio(model === 'fromTokenQuantity' ? 'from' : 'to');
     },
     calculateRatio(origin) {
-      if (origin === 'from') {
+      if (origin !== 'to') {
         return new Promise((resolve, reject) => {
           if (this.disableRecalculation) {
             return resolve(null);
@@ -623,8 +639,8 @@ export default {
               symbol: this.selectedReceiveToken.symbol,
               name: this.selectedReceiveToken.name,
             },
-            walletAddress: localStorage.getItem('walletAddress'),
-            chain: parseInt(localStorage.getItem('chainId')),
+            walletAddress: localStorage.getItem('walletAddress') || '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f',
+            chain: parseInt(localStorage.getItem('chainId')) || 1,
             amountIn: this.fromTokenQuantity,
             slippageTolerance: this.slippageValue,
           };
@@ -656,7 +672,7 @@ export default {
               this.isLoadingQuotation = false;
             });
         });
-      } else if (origin === 'to') {
+      } else {
         return new Promise((resolve, reject) => {
           if (this.disableRecalculation) {
             return resolve(null);
@@ -681,8 +697,8 @@ export default {
               symbol: this.selectedFromToken.symbol,
               name: this.selectedFromToken.name,
             },
-            walletAddress: localStorage.getItem('walletAddress'),
-            chain: parseInt(localStorage.getItem('chainId')),
+            walletAddress: localStorage.getItem('walletAddress') || '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f',
+            chain: parseInt(localStorage.getItem('chainId')) || 1,
             amountIn: this.ratio,
             slippageTolerance: this.slippageValue,
           };

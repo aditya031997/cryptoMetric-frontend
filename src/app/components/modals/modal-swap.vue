@@ -33,7 +33,7 @@
               v-model="searchText"
               aria-describedby="basic-addon1"
             />
-            <div class="input-group-append">
+            <!-- <div class="input-group-append">
               <button
                 class="btn btn-primary"
                 type="button"
@@ -42,7 +42,7 @@
               >
                 Search
               </button>
-            </div>
+            </div> -->
           </div>
         </div>
         <div class="swap-logo-list">
@@ -71,17 +71,20 @@
                   :key="token.id"
                   @click.stop="selectToken(token)"
                 >
-                  <div class="tk-list">
-                    <img
-                      :src="getWalletTokenImage(token)"
-                      :alt="token.name"
-                      class="token-logo"
-                      @error="handleImageError($event, token.symbol)"
-                    />
-                    <div class="tokenname">
-                      <h3>{{ token.name }}</h3>
-                      <h5>{{ token.symbol }}</h5>
+                  <div class="tk-list-container">
+                    <div class="tk-list">
+                      <img
+                        :src="getWalletTokenImage(token)"
+                        :alt="token.name"
+                        class="token-logo"
+                        @error="handleImageError($event, token.symbol)"
+                      />
+                      <div class="tokenname">
+                        <h3>{{ token.name }}</h3>
+                        <h5>{{ token.symbol }}</h5>
+                      </div>
                     </div>
+                    <h6>{{ Number(token?.balance)?.toFixed(4) }}</h6>
                   </div>
                 </li>
                 <li v-if="walletTokens.length === 0">
@@ -119,7 +122,11 @@
               <li v-if="filteredTokens.length === 0">
                 <div class="tk-list">
                   <div class="tokenname">
-                    <h3>No results found.</h3>
+                    <h3 v-if="isLoading">Fetching Tokens....</h3>
+
+                    <h3 v-else>
+                      No results found! Please try again with valid address
+                    </h3>
                   </div>
                 </div>
               </li>
@@ -204,20 +211,22 @@ export default {
         this.filteredApiTokens = this.apiTokens;
         this.$emit('tokens-fetched', this.apiTokens);
         this.$emit('chainId-fetched', chainId);
-        const walletResponse = await axios.post(
-          `${configs.NODE_API_URL}/tokens/walletToken`,
-          {
-            chain: chain,
-            address: address,
-            nativeToken: filteredData[0],
-          }
-        );
-        const verifiedTokens = walletResponse.data.msg.filter(
-          (token) => token.verified_contract
-        );
-        this.existingToken = verifiedTokens;
-        this.$emit('tokens-fetched', this.apiTokens);
-        this.errorMessage = null;
+        if (address) {
+          const walletResponse = await axios.post(
+            `${configs.NODE_API_URL}/tokens/walletToken`,
+            {
+              chain: chain,
+              address: address,
+              nativeToken: filteredData[0],
+            }
+          );
+          const verifiedTokens = walletResponse.data.msg.filter(
+            (token) => token.verified_contract
+          );
+          this.existingToken = verifiedTokens;
+          this.$emit('tokens-fetched', this.apiTokens);
+          this.errorMessage = null;
+        }
       } catch (error) {
         console.error(error);
       } finally {
@@ -265,6 +274,11 @@ export default {
     handleImageError(event, slug) {
       // event.target.src = this.getImageCoin(slug.toLowerCase());
     },
+    formatTokenBalance(value, decimals = 8) {
+      // Convert value to a BigInt
+      return Number(parseFloat(value).toFixed(4));
+      return balanceString;
+    },
   },
   computed: {
     filteredTokens() {
@@ -286,6 +300,7 @@ export default {
         }
       );
 
+      if (!filteredTokens.length) this.searchTokens();
       return filteredTokens;
     },
     walletTokens() {
@@ -312,5 +327,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.tk-list-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 /* Your existing styles */
 </style>
