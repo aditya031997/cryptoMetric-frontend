@@ -64,13 +64,11 @@ export default {
       try {
         // Initial API call to get token details
         const tokenResponse = await axios.get(`${configs.NODE_API_URL}/supply/tokenDetail?symbol=${this.symbol}`);
-        const tokenData = tokenResponse.data.msg;
-        console.log(tokenData,"tokenData7777")
-          // const { address, chainId } = tokenData[0];
-          const address = '0xd5f7838f5c461feff7fe49ea5ebaf7728bb0adfa'
-          const chainId = '1' 
-          const securityResponse = await axios.get(`${configs.NODE_API_URL}/supply/distribution?address=${address}&chainId=${chainId}`);
-          const apiData = securityResponse.data.msg[address];
+        const tokenData = tokenResponse.data.msg[0];
+          const { tokenAddress, chainId } = tokenData.platform[0];
+
+          const securityResponse = await axios.get(`${configs.NODE_API_URL}/supply/distribution?address=${tokenAddress}&chainId=${chainId}`);
+          const apiData = securityResponse.data.msg[tokenAddress];
           const dynamicValues = {};
 
           if (apiData.is_open_source !== undefined)

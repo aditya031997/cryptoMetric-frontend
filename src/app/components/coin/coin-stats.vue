@@ -27,23 +27,29 @@
 
       <template v-if="hasButton">
         <div class="d-flex align-item-center coin__btn">
-          <template v-if="showButtons">
+          <div
+            v-if="isLoading"
+            class="spinner-border spinner-border text-info mx-4"
+            role="status"
+          >
+            <span class="sr-only">Loading...</span>
+          </div>
+          <template v-else>
             <button
               class="btn cm-button btn-outline-primary is-line cm-button--sm"
               @click="handleBuy"
+              v-if="showButtons"
             >
               Buy
             </button>
             <button
               class="btn cm-button btn-outline-primary is-line cm-button--sm"
               @click="handleSell"
+              v-if="showButtons && showSellButton"
             >
               Sell
             </button>
           </template>
-          <div v-else>
-            <p>Loading</p>
-          </div>
           <button-favorite
             v-if="!isDnd"
             :is-short="!isCoinPage"
@@ -86,7 +92,7 @@
 </template>
 
 <script>
-import { ref, watch } from 'vue';
+import { reactive, ref, toRefs, watch } from 'vue';
 import { useSwitchChain } from '@wagmi/vue';
 import { watchChainId } from '@wagmi/core';
 import axios from 'axios';
@@ -179,29 +185,40 @@ export default {
       selectedCoinName: '',
       selectedCoinSymbol: '',
       showButtons: false,
+      showSellButton: true,
       tokenId: '',
       chainId: '',
       isValidSymbol: false,
-      currentChainId: '',
+      buyOrSell: '',
+      isLoading: true,
     };
   },
   setup(props) {
     const { switchChain } = useSwitchChain();
-
+    let state = ref({
+      buyOrSell: '',
+    });
+    const setBugOrSell = (val) => {
+      state.buyOrSell = val;
+    };
+    console.log(state.buyOrSell, 'buyOrSell');
     watchChainId(config, {
       onChange(newChainId) {
-        if (newChainId) {
+        console.log(state.buyOrSell, newChainId, 'buyOrSell');
+        if (newChainId && state.buyOrSell) {
           const url = new URL('/swap', window.location.origin);
-        console.log(props.symbol, 'newChainIdryty');
-          url.searchParams.set('fromToken', props.symbol);
+          url.searchParams.set(state.buyOrSell, props.symbol);
+          console.log(url, 'url');
           window.location.href = url.toString();
+          state.buyOrSell = '';
         }
-        this.currentChainId = newChainId;
       },
     });
 
     return {
+      ...toRefs(state),
       switchChain,
+      setBugOrSell,
     };
   },
   computed: {
@@ -247,7 +264,6 @@ export default {
         try {
           const networkId = await web3.eth.net.getId();
           this.chainId = `0x${Number(networkId).toString(16)}`;
-          // Call checkTokenAvailability after fetching the chainId
           this.checkTokenAvailability();
         } catch (error) {
           console.error('Error fetching network ID:', error);
@@ -258,30 +274,36 @@ export default {
       this.selectedCoinName = this.name;
       this.selectedCoinSymbol = this.symbol;
       const targetChainId = this.getChainIdFromSymbol(this.symbol);
+      const currentChainId = localStorage.getItem('chainId');
+      this.setBugOrSell('fromToken');
 
       if (this.isValidSymbol) {
         this.switchChain({ chainId: targetChainId });
       }
-      console.log(this.currentChainId, 'dfdfdfdfdffd');
-      // if (updatedChainId === targetChainId.toString()) {
-      //   const url = new URL('/swap', window.location.origin);
-      //   url.searchParams.set('fromToken', this.symbol);
-      //   window.location.href = url.toString();
-      // }
+
+      if (currentChainId.toString() === targetChainId.toString()) {
+        const url = new URL('/swap', window.location.origin);
+        url.searchParams.set('fromToken', this.symbol);
+        window.location.href = url.toString();
+        this.setBugOrSell('');
+      }
     },
     async handleSell() {
       this.selectedCoinName = this.name;
       this.selectedCoinSymbol = this.symbol;
+      const targetChainId = this.getChainIdFromSymbol(this.symbol);
+      const currentChainId = localStorage.getItem('chainId');
+      this.setBugOrSell('toToken');
+
       if (this.isValidSymbol) {
-        const targetChainId = this.getChainIdFromSymbol(this.symbol);
-        if (targetChainId) {
-          this.switchChain({ chainId: targetChainId });
-        }
+        this.switchChain({ chainId: targetChainId });
       }
-      if (this.currentChainId) {
+
+      if (currentChainId.toString() === targetChainId.toString()) {
         const url = new URL('/swap', window.location.origin);
         url.searchParams.set('toToken', this.symbol);
         window.location.href = url.toString();
+        this.setBugOrSell('');
       }
     },
     checkTokenAvailability() {
@@ -292,32 +314,26 @@ export default {
           const validSymbols = ['MATIC', 'BNB', 'BASE', 'AVAX', 'ETH'];
           const symbol = response?.data?.msg[0]?.symbol;
           this.isValidSymbol = validSymbols.includes(symbol);
-          if (this.isValidSymbol) {
-            console.log(`Symbol ${symbol} is valid.`);
-          } else {
-            console.log(`Symbol ${symbol} is not valid.`);
-          }
+          const category = response?.data?.msg[0]?.category;
 
-          if (
-            (response?.data && response?.data?.msg[0]?.category == 'token') ||
-            (response?.data &&
-              response?.data?.msg[0]?.category == 'coin' &&
-              this.isValidSymbol)
-          ) {
-            this.showButtons = true;
+          if (category === 'token') {
+            this.showButtons = true; // Show both Buy and Sell buttons
+          } else if (category === 'coin' && this.isValidSymbol) {
+            this.showButtons = true; // Show only Buy button
+            this.showSellButton = false;
           } else {
-            this.showButtons = false;
+            this.showButtons = false; // Hide both buttons
+            this.showSellButton = false;
           }
         })
         .catch((error) => {
           console.error('Error fetching token data:', error);
           this.showButtons = false;
+          this.showSellButton = false;
+        })
+        .finally(() => {
+          this.isLoading = false; // Set isLoading to false after the API request is completed
         });
-    },
-  },
-  watch: {
-    currentChainId(val) {
-      console.log(val, 'ITS VAL');
     },
   },
   async mounted() {
@@ -325,8 +341,6 @@ export default {
   },
 };
 </script>
-
-
 
 <style scoped>
 .iframe-container {
@@ -339,4 +353,3 @@ export default {
   height: 600px;
 }
 </style>
-
