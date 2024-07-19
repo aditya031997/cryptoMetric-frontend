@@ -78,15 +78,19 @@
           class="form-label"
           >You Pay</label
         >
-        <input
-          ref="fromTokenQuantityInput"
-          v-model="fromTokenQuantity"
-          type="text"
-          min="0"
-          placeholder="0"
-          @input="sanitizeInput($event, 'fromTokenQuantity')"
-          class="form-control number-input"
-        />
+        <div v-if="isLoadingFromQuotation">Fetching quotation...</div>
+        <div v-else>
+          <input
+            ref="fromTokenQuantityInput"
+            v-model="fromTokenQuantity"
+            type="text"
+            min="0"
+            placeholder="0"
+            @input="sanitizeInput($event, 'fromTokenQuantity')"
+            class="form-control number-input"
+          />
+        </div>
+
         <!-- <p
           class="pay-content"
           v-if="fromTokenQuantity > 0 && fromCalculatedFiat"
@@ -120,12 +124,11 @@
           </button>
 
           <div
-            v-if="selectedFromToken && fromTokenBalance !== ''"
+            v-if="(selectedFromToken && fromTokenBalance !== '') || !isConnected"
             class="right-side-balance-box mt-1"
           >
             Balance: {{ fromTokenBalance ? fromTokenBalance : 0 }}
           </div>
-
           <div
             class="mt-1"
             v-else-if="selectedFromToken && fromTokenBalance === ''"
@@ -196,9 +199,15 @@
           </button>
           <p
             class="mt-1"
-            v-if="toFiat != 0 || toFiat != ''"
+            v-if="!isConnected && selectedReceiveToken"
           >
-            Balance: {{ toTokenBalance }}
+            Balance: 0
+          </p>
+          <p
+            class="mt-1"
+            v-else-if="(toFiat != 0 || toFiat != '') && selectedReceiveToken && isConnected"
+          >
+            Balance: {{ toTokenBalance || 0 }}
           </p>
           <p
             class="mt-1"
@@ -241,7 +250,7 @@
 import { reactive, toRefs, ref, watch } from 'vue';
 import { mapGetters } from 'vuex';
 
-import { useAccount, useSendTransaction, useWaitForTransactionReceipt } from '@wagmi/vue';
+import { useAccount, useChainId, useSendTransaction, useWaitForTransactionReceipt } from '@wagmi/vue';
 import Web3 from 'web3';
 import axios from 'axios';
 import TokenModal from '../components/modals/modal-swap.vue';
@@ -301,6 +310,7 @@ export default {
       isFetchingToToken: false,
       initialLoadComplete: false,
       isLoadingQuotation: false,
+      isLoadingFromQuotation: false,
       quotationResponse: null,
       selectedToken: {},
       fromTokenQuantity: '',
@@ -337,6 +347,8 @@ export default {
   setup() {
     const { isConnected } = useAccount();
     const { address } = useAccount();
+    const lastSelectedChainId = useChainId();
+    // this.chainId = lastSelectedChainId;
     const { data: hash, error, isPending, sendTransaction } = useSendTransaction();
     let state = ref({
       isTransactionPending: false,
@@ -417,6 +429,7 @@ export default {
       sendTrans,
       isConnected,
       resetState,
+      lastSelectedChainId,
       UpdateState,
     };
   },
@@ -447,7 +460,7 @@ export default {
     },
     async fetchTokens() {
       this.isLoadingTokens = true;
-      const chainId = parseInt(localStorage.getItem('chainId')) || 1;
+      const chainId = parseInt(localStorage.getItem('chainId')) || this.lastSelectedChainId || 1;
       try {
         const response = await axios.get(`${configs.NODE_API_URL}/tokens/getTokensToSwapByChainId?chain=${chainId}`);
         this.fetchedData = response.data;
@@ -521,9 +534,8 @@ export default {
     },
     async updateTokenBalance(token, isFrom) {
       let loadingFlag = isFrom ? 'isLoadingFromBalance' : 'isLoadingToBalance';
-      const chainId = parseInt(localStorage.getItem('chainId'));
-      const walletAddress = localStorage.getItem('walletAddress');
-
+      const chainId = parseInt(localStorage.getItem('chainId')) || 1;
+      const walletAddress = localStorage.getItem('walletAddress') || '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f';
       try {
         if (token?.address && chainId && walletAddress) {
           const response = await axios.get(
@@ -577,70 +589,130 @@ export default {
       this.calculateRatio(model === 'fromTokenQuantity' ? 'from' : 'to');
     },
     calculateRatio(origin) {
-      return new Promise((resolve, reject) => {
-        if (this.disableRecalculation) {
-          return resolve(null);
-        }
+      if (origin === 'from') {
+        return new Promise((resolve, reject) => {
+          if (this.disableRecalculation) {
+            return resolve(null);
+          }
 
-        if (
-          !this.selectedFromToken ||
-          !this.selectedReceiveToken ||
-          // !this.fromFiat ||
-          !this.toFiat ||
-          this.fromTokenBalance == 0 ||
-          this.fromTokenQuantity == 0
-        ) {
-          return resolve(null);
-        }
+          if (
+            !this.selectedFromToken ||
+            !this.selectedReceiveToken ||
+            // !this.fromFiat ||
+            !this.toFiat ||
+            // this.fromTokenBalance == 0 ||
+            this.fromTokenQuantity == 0
+          ) {
+            return resolve(null);
+          }
 
-        this.isLoadingQuotation = true;
+          this.isLoadingQuotation = true;
 
-        const quotationData = {
-          fromTokenObj: {
-            address: this.selectedFromToken.address,
-            decimals: this.selectedFromToken.decimals,
-            symbol: this.selectedFromToken.symbol,
-            name: this.selectedFromToken.name,
-          },
-          toTokenObj: {
-            address: this.selectedReceiveToken.address,
-            decimals: this.selectedReceiveToken.decimals,
-            symbol: this.selectedReceiveToken.symbol,
-            name: this.selectedReceiveToken.name,
-          },
-          walletAddress: localStorage.getItem('walletAddress'),
-          chain: parseInt(localStorage.getItem('chainId')),
-          amountIn: this.fromTokenQuantity,
-          slippageTolerance: this.slippageValue,
-        };
+          const quotationData = {
+            fromTokenObj: {
+              address: this.selectedFromToken.address,
+              decimals: this.selectedFromToken.decimals,
+              symbol: this.selectedFromToken.symbol,
+              name: this.selectedFromToken.name,
+            },
+            toTokenObj: {
+              address: this.selectedReceiveToken.address,
+              decimals: this.selectedReceiveToken.decimals,
+              symbol: this.selectedReceiveToken.symbol,
+              name: this.selectedReceiveToken.name,
+            },
+            walletAddress: localStorage.getItem('walletAddress'),
+            chain: parseInt(localStorage.getItem('chainId')),
+            amountIn: this.fromTokenQuantity,
+            slippageTolerance: this.slippageValue,
+          };
 
-        axios
-          .post(`${configs.NODE_API_URL}/tokens/buildSwapTx`, quotationData)
-          .then((response) => {
-            this.quotationResponse = response.data;
+          axios
+            .post(`${configs.NODE_API_URL}/tokens/buildSwapTx`, quotationData)
+            .then((response) => {
+              this.quotationResponse = response.data;
 
-            let formattedQuotation;
+              let formattedQuotation;
 
-            const provider = new ethers.JsonRpcProvider('https://polygon-rpc.com');
-            if (quotationData.toTokenObj.address == '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
-              const fetchedQuotation = response?.data?.amountOut;
-              formattedQuotation = fetchedQuotation;
-            } else {
-              const tokenInstance = new ethers.Contract(quotationData.toTokenObj.address, abi, provider);
-              formattedQuotation = response?.data?.amountOut;
-            }
-            this.ratio = formattedQuotation;
-            resolve(formattedQuotation);
-          })
-          .catch((error) => {
-            console.error('Error fetching quotation:', error);
-            this.ratio = 0; // Set ratio to 0 in case of an error
-            reject(error);
-          })
-          .finally(() => {
-            this.isLoadingQuotation = false;
-          });
-      });
+              const provider = new ethers.JsonRpcProvider('https://polygon-rpc.com');
+              if (quotationData.toTokenObj.address == '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
+                const fetchedQuotation = response?.data?.amountOut;
+                formattedQuotation = fetchedQuotation;
+              } else {
+                const tokenInstance = new ethers.Contract(quotationData.toTokenObj.address, abi, provider);
+                formattedQuotation = response?.data?.amountOut;
+              }
+              this.ratio = formattedQuotation;
+              resolve(formattedQuotation);
+            })
+            .catch((error) => {
+              console.error('Error fetching quotation:', error);
+              this.ratio = 0; // Set ratio to 0 in case of an error
+              reject(error);
+            })
+            .finally(() => {
+              this.isLoadingQuotation = false;
+            });
+        });
+      } else if (origin === 'to') {
+        return new Promise((resolve, reject) => {
+          if (this.disableRecalculation) {
+            return resolve(null);
+          }
+
+          if (!this.selectedFromToken || !this.selectedReceiveToken || !+this.ratio) {
+            return resolve(null);
+          }
+
+          this.isLoadingFromQuotation = true;
+
+          const quotationData = {
+            fromTokenObj: {
+              address: this.selectedReceiveToken.address,
+              decimals: this.selectedReceiveToken.decimals,
+              symbol: this.selectedReceiveToken.symbol,
+              name: this.selectedReceiveToken.name,
+            },
+            toTokenObj: {
+              address: this.selectedFromToken.address,
+              decimals: this.selectedFromToken.decimals,
+              symbol: this.selectedFromToken.symbol,
+              name: this.selectedFromToken.name,
+            },
+            walletAddress: localStorage.getItem('walletAddress'),
+            chain: parseInt(localStorage.getItem('chainId')),
+            amountIn: this.ratio,
+            slippageTolerance: this.slippageValue,
+          };
+
+          axios
+            .post(`${configs.NODE_API_URL}/tokens/buildSwapTx`, quotationData)
+            .then((response) => {
+              this.quotationResponse = response.data;
+
+              let formattedQuotation;
+
+              const provider = new ethers.JsonRpcProvider('https://polygon-rpc.com');
+              if (quotationData.toTokenObj.address == '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
+                const fetchedQuotation = response?.data?.amountOut;
+                formattedQuotation = fetchedQuotation;
+              } else {
+                const tokenInstance = new ethers.Contract(quotationData.toTokenObj.address, abi, provider);
+                formattedQuotation = response?.data?.amountOut;
+              }
+              this.fromTokenQuantity = formattedQuotation;
+              resolve(formattedQuotation);
+            })
+            .catch((error) => {
+              console.error('Error fetching quotation:', error);
+              this.ratio = 0; // Set ratio to 0 in case of an error
+              reject(error);
+            })
+            .finally(() => {
+              this.isLoadingFromQuotation = false;
+            });
+        });
+      }
     },
     toggleSlippageModal() {
       this.showSlippageModal = !this.showSlippageModal;
@@ -717,7 +789,7 @@ export default {
       if (fromToken) {
         return;
       }
-      const chainId = parseInt(localStorage.getItem('chainId')) || 1;
+      const chainId = parseInt(localStorage.getItem('chainId')) || this.lastSelectedChainId || 1;
       const desiredSymbol = symbolMap[chainId];
       const defaultToken = this.fetchedData?.find((token) => token.symbol === desiredSymbol);
       console.log(defaultToken, 'defaultToken');

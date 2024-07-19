@@ -59,12 +59,18 @@
           >
             <li
               class="dropdown-item show-active"
-              :class="{ 'is-checked': selectedChain === chain.id }"
+              :class="{
+                'is-checked':
+                  (!isConnected && !selectedChain && chain.id === 1) ||
+                  (isConnected && chain.id === chainId) ||
+                  selectedChain === chain.id,
+                'is-disabled': !isConnected,
+              }"
               v-for="(chain, index) in chains"
               :key="chain.id"
               @click="
                 // toggleCheck(chain.id);
-                switchChain({ chainId: chain.id })
+                isConnected ? switchChain({ chainId: chain.id }) : ''
               "
             >
               <div>
@@ -75,7 +81,13 @@
                 />
                 {{ chain.name }}
               </div>
-              <CheckIcon :checked="selectedChain === chain.id" />
+              <CheckIcon
+                :checked="
+                  (!isConnected && !selectedChain && chain.id === 1) ||
+                  (isConnected && chain.id === chainId) ||
+                  selectedChain === chain.id
+                "
+              />
             </li>
           </ul>
         </div>
@@ -295,6 +307,7 @@ export default {
       this.$emit('on-open-side-bar');
     },
     async switchNetwork(item) {
+      console.log(item, 'NETWORK SWITCHED');
       const networkKey = item?.name;
       if (!window.ethereum) return alert('MetaMask is not installed');
       const wallets = [];
@@ -348,6 +361,12 @@ export default {
   watch: {
     isConnected(newValue) {
       if (newValue) {
+        for (let chain in this.chains) {
+          if (this.chains[chain].id === this.chainId) {
+            const slug = this.chains[chain].name.split(' ')[0].toLowerCase();
+            this.selectedImageUrl = this.getImageCoin(slug);
+          }
+        }
         this.showConnectModal = false;
       }
     },
@@ -362,7 +381,13 @@ export default {
     this.web3 = new Web3(window.ethereum);
     this.updateCheckedStatus();
     const storedChainId = parseInt(localStorage.getItem('chainId'));
-    this.selectedChain = storedChainId;
+    this.selectedChain = storedChainId || this.chainId;
+    for (let chain in this.chains) {
+      if (this.chains[chain].id === this.chainId) {
+        const slug = this.chains[chain].name.split(' ')[0].toLowerCase();
+        this.selectedImageUrl = this.getImageCoin(slug);
+      }
+    }
   },
   onUnmounted() {
     this.unwatch();
@@ -442,5 +467,11 @@ export default {
 
 .dropdown-item:hover {
   background: rgba(34, 34, 34, 0.07);
+}
+.is-disabled {
+  cursor: no-drop;
+}
+.is-disabled:hover {
+  background-color: transparent !important;
 }
 </style>
