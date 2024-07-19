@@ -33,7 +33,7 @@
               v-model="searchText"
               aria-describedby="basic-addon1"
             />
-            <div class="input-group-append">
+            <!-- <div class="input-group-append">
               <button
                 class="btn btn-primary"
                 type="button"
@@ -42,7 +42,7 @@
               >
                 Search
               </button>
-            </div>
+            </div> -->
           </div>
         </div>
         <div class="swap-logo-list">
@@ -71,17 +71,20 @@
                   :key="token.id"
                   @click.stop="selectToken(token)"
                 >
-                  <div class="tk-list">
-                    <img
-                      :src="getWalletTokenImage(token)"
-                      :alt="token.name"
-                      class="token-logo"
-                      @error="handleImageError($event, token.symbol)"
-                    />
-                    <div class="tokenname">
-                      <h3>{{ token.name }}</h3>
-                      <h5>{{ token.symbol }}</h5>
+                  <div class="tk-list-container">
+                    <div class="tk-list">
+                      <img
+                        :src="getWalletTokenImage(token)"
+                        :alt="token.name"
+                        class="token-logo"
+                        @error="handleImageError($event, token.symbol)"
+                      />
+                      <div class="tokenname">
+                        <h3>{{ token.name }}</h3>
+                        <h5>{{ token.symbol }}</h5>
+                      </div>
                     </div>
+                    <h6>{{ Number(token?.balance)?.toFixed(4) }}</h6>
                   </div>
                 </li>
                 <li v-if="walletTokens.length === 0">
@@ -119,7 +122,9 @@
               <li v-if="filteredTokens.length === 0">
                 <div class="tk-list">
                   <div class="tokenname">
-                    <h3>No results found.</h3>
+                    <h3 v-if="isLoading">Fetching Tokens....</h3>
+
+                    <h3 v-else="isLoading">No results found! Please try again with valid address</h3>
                   </div>
                 </div>
               </li>
@@ -186,28 +191,28 @@ export default {
       this.hideModal();
     },
     async fetchTokens(chainId) {
-      const chain = localStorage.getItem('chainId') || 1
+      const chain = localStorage.getItem('chainId') || 1;
       const address = localStorage.getItem('walletAddress');
       this.networlId = chainId;
       this.isLoading = true;
       try {
-        const response = await axios.get(
-          `${configs.NODE_API_URL}/tokens/getTokensToSwapByChainId?chain=${chain}`
-        );
+        const response = await axios.get(`${configs.NODE_API_URL}/tokens/getTokensToSwapByChainId?chain=${chain}`);
         this.apiTokens = response?.data;
         this.topRatedToken = response?.data;
         this.filteredApiTokens = this.apiTokens;
         this.$emit('tokens-fetched', this.apiTokens);
         this.$emit('chainId-fetched', chainId);
-        const walletResponse = await axios.get(
-          `${configs.NODE_API_URL}/tokens/walletToken?chain=${chain}&address=${address}`
-        );
-        const verifiedTokens = walletResponse.data.msg.filter(
-          (token) => token.verified_contract
-        );
-        this.existingToken = verifiedTokens;
-        this.$emit('tokens-fetched', this.apiTokens);
-        this.errorMessage = null;
+        if (address) {
+          const walletResponse = await axios.get(
+            `${
+              configs.NODE_API_URL
+            }/tokens/walletToken?chain=${chain}&address=${'0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f'}`
+          );
+          const verifiedTokens = walletResponse.data.msg.filter((token) => token.verified_contract);
+          this.existingToken = verifiedTokens;
+          this.$emit('tokens-fetched', this.apiTokens);
+          this.errorMessage = null;
+        }
       } catch (error) {
         console.error(error);
       } finally {
@@ -239,17 +244,18 @@ export default {
       return getImageCoin(slug.toLowerCase());
     },
     getTokenImage(token) {
-      return (
-        token.logoURI ||
-        this.getImageCoin(token.symbol.toLowerCase()) ||
-        token.logo
-      );
+      return token.logoURI || this.getImageCoin(token.symbol.toLowerCase()) || token.logo;
     },
     getWalletTokenImage(token) {
       return token.logoURI || token.logo || this.getImageCoin(token.symbol.toLowerCase());
     },
     handleImageError(event, slug) {
       // event.target.src = this.getImageCoin(slug.toLowerCase());
+    },
+    formatTokenBalance(value, decimals = 8) {
+      // Convert value to a BigInt
+      return Number(parseFloat(value).toFixed(4));
+      return balanceString;
     },
   },
   computed: {
@@ -258,20 +264,15 @@ export default {
         return Object.values(this.apiTokens);
       }
       const searchLower = this.searchText.toLowerCase().trim();
-      const filteredTokens = Object.values(this.filteredApiTokens).filter(
-        (token) => {
-          const name = token.name ? token.name.toLowerCase() : '';
-          const symbol = token.symbol ? token.symbol.toLowerCase() : '';
-          const address = token.address ? token.address : '';
+      const filteredTokens = Object.values(this.filteredApiTokens).filter((token) => {
+        const name = token.name ? token.name.toLowerCase() : '';
+        const symbol = token.symbol ? token.symbol.toLowerCase() : '';
+        const address = token.address ? token.address : '';
 
-          return (
-            name.includes(searchLower) ||
-            symbol.includes(searchLower) ||
-            address.includes(searchLower)
-          );
-        }
-      );
+        return name.includes(searchLower) || symbol.includes(searchLower) || address.includes(searchLower);
+      });
 
+      if (!filteredTokens.length) this.searchTokens();
       return filteredTokens;
     },
     walletTokens() {
@@ -298,5 +299,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.tk-list-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 /* Your existing styles */
 </style>
