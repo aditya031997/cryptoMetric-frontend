@@ -201,7 +201,6 @@ export default {
     const setBugOrSell = (val) => {
       state.buyOrSell = val;
     };
-    console.log(state.buyOrSell, 'buyOrSell');
     watchChainId(config, {
       onChange(newChainId) {
         console.log(state.buyOrSell, newChainId, 'buyOrSell');
@@ -309,7 +308,7 @@ export default {
     checkTokenAvailability() {
       const decimalChainId = parseInt(this.chainId, 16);
       axios
-        .get(`http://localhost:5000/supply/tokenDetail?symbol=${this.symbol}`)
+        .get(`${configs.NODE_API_URL}/supply/tokenDetail?symbol=${this.symbol}`)
         .then((response) => {
           const validSymbols = ['MATIC', 'BNB', 'BASE', 'AVAX', 'ETH'];
           const symbol = response?.data?.msg[0]?.symbol;
@@ -317,9 +316,9 @@ export default {
           const category = response?.data?.msg[0]?.category;
 
           if (category === 'token') {
-            this.showButtons = true; // Show both Buy and Sell buttons
+            this.showButtons = true; 
           } else if (category === 'coin' && this.isValidSymbol) {
-            this.showButtons = true; // Show only Buy button
+            this.showButtons = true; 
             this.showSellButton = false;
           } else {
             this.showButtons = false; // Hide both buttons
