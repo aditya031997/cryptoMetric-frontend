@@ -270,7 +270,7 @@
   </div>
 </template>
 <script>
-import { reactive, toRefs, ref, watch } from 'vue';
+import { reactive, toRefs, ref, watch, computed } from 'vue';
 import { mapGetters } from 'vuex';
 
 import { useAccount, useChainId, useSendTransaction, useWaitForTransactionReceipt } from '@wagmi/vue';
@@ -301,8 +301,7 @@ const rpcUrls = {
   56: 'https://site1.moralis-nodes.com/bsc/984bbee2a2ee4aafbed34ee755910f0e',
   1: 'https://site1.moralis-nodes.com/eth/02b906dd2ce242bba445b6e6477cb824',
   8453: 'https://site1.moralis-nodes.com/base/7a1036f6fbdd434a839ec2b35771e941',
-  43114:
-    'https://site1.moralis-nodes.com/avalanche/43d7dfdaa10c4428a5392f07f6814a86',
+  43114: 'https://site1.moralis-nodes.com/avalanche/43d7dfdaa10c4428a5392f07f6814a86',
 };
 export default {
   name: 'web3exchange',
@@ -358,7 +357,7 @@ export default {
       showSlippageModal: false,
       slippageValue: 0.5,
       isTransactionPending: false,
-      allowanceResponse : '',
+      allowanceResponse: '',
       slippageType: 'auto',
       selectedOption: 'auto',
       activeIndex: null,
@@ -373,16 +372,19 @@ export default {
   },
 
   setup() {
-    const { isConnected } = useAccount();
-    const { address } = useAccount();
+    const { isConnected, address } = useAccount();
     const lastSelectedChainId = useChainId();
-    // this.chainId = lastSelectedChainId;
+
+    const formattedAddress = computed(() => {
+      if (!address.value) return null;
+      return address.value;
+    });
     const { data: hash, error, isPending, sendTransaction } = useSendTransaction();
     let state = ref({
       isTransactionPending: false,
       netWorkId: address._object.chainId,
       selectedFromTokenAddress: '',
-      allowanceResponse:'',
+      allowanceResponse: '',
       fromTokenQuantity: '',
       walletAddress: isConnected._object.address,
       quotationResponse: null,
@@ -397,7 +399,6 @@ export default {
       state.selectedFromTokenAddress = val;
     };
     const setTokenAllowance = (val) => {
-      console.log(val,"dffdfdfdff")
       state.allowanceResponse = val;
     };
     const sendTrans = async () => {
@@ -406,14 +407,10 @@ export default {
       const chain = parseInt(localStorage.getItem('chainId'));
       const wAddre = localStorage.getItem('walletAddress');
       try {
-        const fromTokenQuantityWei = web3.utils.toWei(
-          state?.fromTokenQuantity?.toString(),
-          'ether'
-        );
+        const fromTokenQuantityWei = web3.utils.toWei(state?.fromTokenQuantity?.toString(), 'ether');
         const allowance = BigInt(state.allowanceResponse?.data);
         const requiredAmount = BigInt(fromTokenQuantityWei);
 
-        console.log(allowance, requiredAmount, 'dffdffd');
         if (allowance < requiredAmount) {
           let approvalValue;
           if (allowance === 0) {
@@ -421,17 +418,13 @@ export default {
           } else {
             approvalValue = allowance - requiredAmount;
           }
-          console.log(approvalValue, 'approvalValue');
-          const approveResult = await axios.get(
-            `${configs.NODE_API_URL}/tokens/grantApproval`,
-            {
-              params: {
-                tokenAddress: state.selectedFromTokenAddress,
-                value: fromTokenQuantityWei,
-                chain: chain,
-              },
-            }
-          );
+          const approveResult = await axios.get(`${configs.NODE_API_URL}/tokens/grantApproval`, {
+            params: {
+              tokenAddress: state.selectedFromTokenAddress,
+              value: fromTokenQuantityWei,
+              chain: chain,
+            },
+          });
           await sendTransaction({
             from: wAddre,
             to: approveResult?.data?.to,
@@ -458,7 +451,7 @@ export default {
         fromTokenQuantity: '',
         quotationResponse: '',
         selectedFromTokenAddress: '',
-        allowanceResponse:''
+        allowanceResponse: '',
       };
     };
 
@@ -481,7 +474,8 @@ export default {
       setQuotationResponse,
       setTokenQuantity,
       setTokenAddress,
-      setTokenAllowance
+      setTokenAllowance,
+      formattedAddress,
     };
   },
   methods: {
@@ -705,47 +699,29 @@ export default {
           };
 
           try {
-            const tokenAllowance = await axios.get(
-              `${configs.NODE_API_URL}/tokens/allowances`,
-              {
-                params: {
-                  tokenAddress: this.selectedFromToken.address,
-                  walletAddress:
-                    localStorage.getItem('walletAddress') ||
-                    '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f',
-                  chain: parseInt(localStorage.getItem('chainId')) || 1,
-                },
-              }
-            );
+            const tokenAllowance = await axios.get(`${configs.NODE_API_URL}/tokens/allowances`, {
+              params: {
+                tokenAddress: this.selectedFromToken.address,
+                walletAddress: localStorage.getItem('walletAddress') || '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f',
+                chain: parseInt(localStorage.getItem('chainId')) || 1,
+              },
+            });
 
-            this.setTokenAllowance(tokenAllowance)
+            this.setTokenAllowance(tokenAllowance);
 
-
-            const response = await axios.post(
-              `${configs.NODE_API_URL}/tokens/buildSwapTx`,
-              quotationData
-            );
+            const response = await axios.post(`${configs.NODE_API_URL}/tokens/buildSwapTx`, quotationData);
 
             this.quotationResponse = response.data;
             this.setQuotationResponse(response.data);
 
             let formattedQuotation;
 
-            const provider = new ethers.JsonRpcProvider(
-              'https://polygon-rpc.com'
-            );
-            if (
-              quotationData.toTokenObj.address ===
-              configs.DEFAULT_TOKEN_ADDRESS
-            ) {
+            const provider = new ethers.JsonRpcProvider('https://polygon-rpc.com');
+            if (quotationData.toTokenObj.address === configs.DEFAULT_TOKEN_ADDRESS) {
               const fetchedQuotation = response?.data?.amountOut;
               formattedQuotation = fetchedQuotation;
             } else {
-              const tokenInstance = new ethers.Contract(
-                quotationData.toTokenObj.address,
-                abi,
-                provider
-              );
+              const tokenInstance = new ethers.Contract(quotationData.toTokenObj.address, abi, provider);
               formattedQuotation = response?.data?.amountOut;
             }
 
@@ -793,44 +769,27 @@ export default {
           };
 
           try {
-            const tokenAllowance = await axios.get(
-              `${configs.NODE_API_URL}/tokens/allowances`,
-              {
-                params: {
-                  tokenAddress: this.selectedFromToken.address,
-                  walletAddress:
-                    localStorage.getItem('walletAddress') ||
-                    '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f',
-                  chain: parseInt(localStorage.getItem('chainId')) || 1,
-                },
-              }
-            );
-            this.setTokenAllowance(tokenAllowance)
-            const response = await axios.post(
-              `${configs.NODE_API_URL}/tokens/buildSwapTx`,
-              quotationData
-            );
+            const tokenAllowance = await axios.get(`${configs.NODE_API_URL}/tokens/allowances`, {
+              params: {
+                tokenAddress: this.selectedFromToken.address,
+                walletAddress: localStorage.getItem('walletAddress') || '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f',
+                chain: parseInt(localStorage.getItem('chainId')) || 1,
+              },
+            });
+            this.setTokenAllowance(tokenAllowance);
+            const response = await axios.post(`${configs.NODE_API_URL}/tokens/buildSwapTx`, quotationData);
 
             this.quotationResponse = response.data;
             this.setQuotationResponse(response.data);
 
             let formattedQuotation;
 
-            const provider = new ethers.JsonRpcProvider(
-              'https://polygon-rpc.com'
-            );
-            if (
-              quotationData.toTokenObj.address ===
-              configs.DEFAULT_TOKEN_ADDRESS
-            ) {
+            const provider = new ethers.JsonRpcProvider('https://polygon-rpc.com');
+            if (quotationData.toTokenObj.address === configs.DEFAULT_TOKEN_ADDRESS) {
               const fetchedQuotation = response?.data?.amountOut;
               formattedQuotation = fetchedQuotation;
             } else {
-              const tokenInstance = new ethers.Contract(
-                quotationData.toTokenObj.address,
-                abi,
-                provider
-              );
+              const tokenInstance = new ethers.Contract(quotationData.toTokenObj.address, abi, provider);
               formattedQuotation = response?.data?.amountOut;
             }
 
@@ -1061,6 +1020,11 @@ export default {
         this.initializeData();
       }
     },
+    formattedAddress(address) {
+      if (!address) return;
+      localStorage.setItem('walletAddress', address);
+      this.initializeData();
+    },
     getChainId(newChainId) {
       this.fetchTokens().then(() => {
         this.setDefaultToken();
@@ -1086,7 +1050,6 @@ export default {
       }
     },
     hash(newVal) {
-      console.log;
       if (newVal) {
         this.resetTransactionFields();
         // this.resetState();
@@ -1113,7 +1076,6 @@ export default {
       }
     },
     error(newVal) {
-      console.log(newVal, 'errorVal');
       if (newVal) {
         const errorMessage = newVal.message ? newVal.message : 'No message available';
         const userRejectedMessage = 'User rejected the request';

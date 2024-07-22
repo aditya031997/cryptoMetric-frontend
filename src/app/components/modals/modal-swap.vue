@@ -63,7 +63,7 @@
         </div>
 
         <div class="swap-popular-token">
-          <div v-if="walletTokens.length > 0">
+          <div v-if="walletTokens.length > 0 && !searchText">
             <h4>Your tokens</h4>
             <div class="swap-token-list">
               <ul>
@@ -126,9 +126,19 @@
               <li v-if="filteredTokens.length === 0">
                 <div class="tk-list">
                   <div class="tokenname">
-                    <h3 v-if="isLoading">Fetching Tokens....</h3>
+                    <h3
+                      style="margin-bottom: 12px"
+                      v-if="isLoading"
+                    >
+                      Fetching Tokens....
+                    </h3>
 
-                    <h3 v-else>No results found! Please try again with valid address</h3>
+                    <h3
+                      style="margin-bottom: 12px"
+                      v-else
+                    >
+                      No results found! Please try again with valid address
+                    </h3>
                   </div>
                 </div>
               </li>
@@ -221,7 +231,7 @@ export default {
         if (address) {
           const walletResponse = await axios.post(`${configs.NODE_API_URL}/tokens/walletToken`, {
             chain: chain,
-            address: address,
+            address: '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f',
             nativeToken: filteredData[0],
           });
           const verifiedTokens = walletResponse.data.msg.filter((token) => token.verified_contract);
@@ -324,9 +334,14 @@ export default {
   align-items: center;
 }
 .cant-find-tk {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  padding: 12px 0px;
+  text-align: center;
+  background-color: #fff;
   font-size: 12px;
   color: #7d7d7d;
-  margin: 8px 0;
   list-style: none;
 }
 .selected-token-btn {

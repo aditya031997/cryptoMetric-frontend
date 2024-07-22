@@ -16,7 +16,6 @@ const formattedAddress = computed(() => {
 
 // Function to update localStorage
 const updateLocalStorage = () => {
-
   localStorage.setItem('walletAddress', isConnected._object.address);
   localStorage.setItem('chainId', isConnected._object.chainId);
   localStorage.setItem('walletName', isConnected._object.connector.name);
@@ -41,7 +40,7 @@ const handleDisconnect = async () => {
     await disconnect();
     localStorage.removeItem('walletAddress');
     localStorage.removeItem('walletName');
-    localStorage.removeItem('chainId')
+    localStorage.removeItem('chainId');
 
     const Msg = 'Wallet disconnected successfully';
     notification.notify({

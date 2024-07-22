@@ -96,10 +96,7 @@ import { reactive, ref, toRefs, watch } from 'vue';
 import { useSwitchChain } from '@wagmi/vue';
 import { watchChainId } from '@wagmi/core';
 import axios from 'axios';
-import {
-  getImageCoin,
-  getBigImageCoin,
-} from '@/utils/helpers/formatter-images';
+import { getImageCoin, getBigImageCoin } from '@/utils/helpers/formatter-images';
 import ButtonFavorite from '@/components/ui/button/button-favorite.vue';
 import PopperTooltip from '@/components/poppers/popper-tooltip.vue';
 import IconScroll from '@/components/icons/icon-scroll.vue';
@@ -108,11 +105,7 @@ import Web3 from 'web3';
 import configs from '../../../configs/configs';
 import { config } from '../modals/config';
 
-import {
-  formatPrice,
-  formatPercent,
-  simpleFormatPrice,
-} from '@/utils/helpers/formatter';
+import { formatPrice, formatPercent, simpleFormatPrice } from '@/utils/helpers/formatter';
 import DefaultImage from '../default-image.vue';
 const symbolChainIdMap = [
   { symbol: 'MATIC', chainId: 137 },
@@ -203,11 +196,9 @@ export default {
     };
     watchChainId(config, {
       onChange(newChainId) {
-        console.log(state.buyOrSell, newChainId, 'buyOrSell');
         if (newChainId && state.buyOrSell) {
           const url = new URL('/swap', window.location.origin);
           url.searchParams.set(state.buyOrSell, props.symbol);
-          console.log(url, 'url');
           window.location.href = url.toString();
           state.buyOrSell = '';
         }
@@ -242,10 +233,6 @@ export default {
       const entry = symbolChainIdMap.find((item) => item.symbol === symbol);
       return entry ? entry.chainId : null;
     },
-    getSymbolFromChainId(chainId) {
-      const entry = symbolChainIdMap.find((item) => item.chainId === chainId);
-      return entry ? entry.symbol : null;
-    },
 
     getImageCoin(slug) {
       if (slug) {
@@ -257,18 +244,7 @@ export default {
       this.modelValue = value;
       this.onChange(value, this.index);
     },
-    async fetchChainId() {
-      if (window.ethereum) {
-        const web3 = new Web3(window.ethereum);
-        try {
-          const networkId = await web3.eth.net.getId();
-          this.chainId = `0x${Number(networkId).toString(16)}`;
-          this.checkTokenAvailability();
-        } catch (error) {
-          console.error('Error fetching network ID:', error);
-        }
-      }
-    },
+
     async handleBuy() {
       this.selectedCoinName = this.name;
       this.selectedCoinSymbol = this.symbol;
@@ -306,7 +282,6 @@ export default {
       }
     },
     checkTokenAvailability() {
-      const decimalChainId = parseInt(this.chainId, 16);
       axios
         .get(`${configs.NODE_API_URL}/supply/tokenDetail?symbol=${this.symbol}`)
         .then((response) => {
@@ -316,9 +291,9 @@ export default {
           const category = response?.data?.msg[0]?.category;
 
           if (category === 'token') {
-            this.showButtons = true; 
+            this.showButtons = true;
           } else if (category === 'coin' && this.isValidSymbol) {
-            this.showButtons = true; 
+            this.showButtons = true;
             this.showSellButton = false;
           } else {
             this.showButtons = false; // Hide both buttons
@@ -336,7 +311,7 @@ export default {
     },
   },
   async mounted() {
-    await this.fetchChainId();
+    await this.checkTokenAvailability();
   },
 };
 </script>
