@@ -363,6 +363,7 @@ export default {
       showSlippageModal: false,
       slippageValue: 0.5,
       isTransactionPending: false,
+      allowanceResponse : '',
       slippageType: 'auto',
       selectedOption: 'auto',
       activeIndex: null,
@@ -390,6 +391,7 @@ export default {
       isTransactionPending: false,
       netWorkId: address._object.chainId,
       selectedFromTokenAddress: '',
+      allowanceResponse:'',
       fromTokenQuantity: '',
       walletAddress: isConnected._object.address,
       quotationResponse: null,
@@ -403,6 +405,10 @@ export default {
     const setTokenAddress = (val) => {
       state.selectedFromTokenAddress = val;
     };
+    const setTokenAllowance = (val) => {
+      console.log(val,"dffdfdfdff")
+      state.allowanceResponse = val;
+    };
     const sendTrans = async () => {
       state.isTransactionPending = isPending;
       const web3 = new Web3(window.ethereum);
@@ -413,21 +419,18 @@ export default {
           state?.fromTokenQuantity?.toString(),
           'ether'
         );
-        // console.log(state.selectedFromTokenAddress, 'ggfgfgfg');
-        const allowanceResponse = await axios.get(
-          `${configs.NODE_API_URL}/tokens/allowances`,
-          {
-            params: {
-              tokenAddress: state.selectedFromTokenAddress,
-              walletAddress: wAddre,
-              chain: chain,
-            },
-          }
-        );
-        const allowance = BigInt(allowanceResponse?.data);
+        const allowance = BigInt(state.allowanceResponse?.data);
         const requiredAmount = BigInt(fromTokenQuantityWei);
 
+        console.log(allowance, requiredAmount, 'dffdffd');
         if (allowance < requiredAmount) {
+          let approvalValue;
+          if (allowance === 0) {
+            approvalValue = requiredAmount;
+          } else {
+            approvalValue = allowance - requiredAmount;
+          }
+          console.log(approvalValue, 'approvalValue');
           const approveResult = await axios.get(
             `${configs.NODE_API_URL}/tokens/grantApproval`,
             {
@@ -464,6 +467,7 @@ export default {
         fromTokenQuantity: '',
         quotationResponse: '',
         selectedFromTokenAddress: '',
+        allowanceResponse:''
       };
     };
 
@@ -487,6 +491,7 @@ export default {
       setQuotationResponse,
       setTokenQuantity,
       setTokenAddress,
+      setTokenAllowance
     };
   },
   methods: {
@@ -606,8 +611,7 @@ export default {
     async updateTokenBalance(token, isFrom) {
       let loadingFlag = isFrom ? 'isLoadingFromBalance' : 'isLoadingToBalance';
       const chainId = parseInt(localStorage.getItem('chainId')) || 1;
-      const walletAddress =
-        localStorage.getItem('walletAddress')
+      const walletAddress = localStorage.getItem('walletAddress');
       try {
         if (token?.address && chainId && walletAddress) {
           const response = await axios.get(
@@ -666,10 +670,17 @@ export default {
 
       this.calculateRatio(model === 'fromTokenQuantity' ? 'from' : 'to');
     },
-    calculateRatio(origin) {
+    async calculateRatio(origin) {
+      if (this.isCalculatingRatio) {
+        return;
+      }
+
+      this.isCalculatingRatio = true;
+
       if (origin !== 'to') {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
           if (this.disableRecalculation) {
+            this.isCalculatingRatio = false;
             return resolve(null);
           }
 
@@ -681,6 +692,7 @@ export default {
             // this.fromTokenBalance == 0 ||
             this.fromTokenQuantity == 0
           ) {
+            this.isCalculatingRatio = false;
             return resolve(null);
           }
 
@@ -707,46 +719,66 @@ export default {
             slippageTolerance: this.slippageValue,
           };
 
-          axios
-            .post(`${configs.NODE_API_URL}/tokens/buildSwapTx`, quotationData)
-            .then((response) => {
-              this.quotationResponse = response.data;
-              this.setQuotationResponse(response.data);
-
-              let formattedQuotation;
-
-              const provider = new ethers.JsonRpcProvider(
-                'https://polygon-rpc.com'
-              );
-              if (
-                quotationData.toTokenObj.address ==
-                '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
-              ) {
-                const fetchedQuotation = response?.data?.amountOut;
-                formattedQuotation = fetchedQuotation;
-              } else {
-                const tokenInstance = new ethers.Contract(
-                  quotationData.toTokenObj.address,
-                  abi,
-                  provider
-                );
-                formattedQuotation = response?.data?.amountOut;
+          try {
+            const tokenAllowance = await axios.get(
+              `${configs.NODE_API_URL}/tokens/allowances`,
+              {
+                params: {
+                  tokenAddress: this.selectedFromToken.address,
+                  walletAddress:
+                    localStorage.getItem('walletAddress') ||
+                    '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f',
+                  chain: parseInt(localStorage.getItem('chainId')) || 1,
+                },
               }
-              this.ratio = formattedQuotation;
-              resolve(formattedQuotation);
-            })
-            .catch((error) => {
-              console.error('Error fetching quotation:', error);
-              this.ratio = 0; // Set ratio to 0 in case of an error
-              reject(error);
-            })
-            .finally(() => {
-              this.isLoadingQuotation = false;
-            });
+            );
+
+            this.setTokenAllowance(tokenAllowance)
+
+
+            const response = await axios.post(
+              `${configs.NODE_API_URL}/tokens/buildSwapTx`,
+              quotationData
+            );
+
+            this.quotationResponse = response.data;
+            this.setQuotationResponse(response.data);
+
+            let formattedQuotation;
+
+            const provider = new ethers.JsonRpcProvider(
+              'https://polygon-rpc.com'
+            );
+            if (
+              quotationData.toTokenObj.address ===
+              '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+            ) {
+              const fetchedQuotation = response?.data?.amountOut;
+              formattedQuotation = fetchedQuotation;
+            } else {
+              const tokenInstance = new ethers.Contract(
+                quotationData.toTokenObj.address,
+                abi,
+                provider
+              );
+              formattedQuotation = response?.data?.amountOut;
+            }
+
+            this.ratio = formattedQuotation;
+            resolve(formattedQuotation);
+          } catch (error) {
+            console.error('Error fetching quotation:', error);
+            this.ratio = 0; // Set ratio to 0 in case of an error
+            reject(error);
+          } finally {
+            this.isLoadingQuotation = false;
+            this.isCalculatingRatio = false;
+          }
         });
       } else {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
           if (this.disableRecalculation) {
+            this.isCalculatingRatio = false;
             return resolve(null);
           }
 
@@ -755,6 +787,7 @@ export default {
             !this.selectedReceiveToken ||
             !+this.ratio
           ) {
+            this.isCalculatingRatio = false;
             return resolve(null);
           }
 
@@ -781,41 +814,58 @@ export default {
             slippageTolerance: this.slippageValue,
           };
 
-          axios
-            .post(`${configs.NODE_API_URL}/tokens/buildSwapTx`, quotationData)
-            .then((response) => {
-              this.quotationResponse = response.data;
-              this.setQuotationResponse(response.data);
-              let formattedQuotation;
-
-              const provider = new ethers.JsonRpcProvider(
-                'https://polygon-rpc.com'
-              );
-              if (
-                quotationData.toTokenObj.address ==
-                '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
-              ) {
-                const fetchedQuotation = response?.data?.amountOut;
-                formattedQuotation = fetchedQuotation;
-              } else {
-                const tokenInstance = new ethers.Contract(
-                  quotationData.toTokenObj.address,
-                  abi,
-                  provider
-                );
-                formattedQuotation = response?.data?.amountOut;
+          try {
+            const tokenAllowance = await axios.get(
+              `${configs.NODE_API_URL}/tokens/allowances`,
+              {
+                params: {
+                  tokenAddress: this.selectedFromToken.address,
+                  walletAddress:
+                    localStorage.getItem('walletAddress') ||
+                    '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f',
+                  chain: parseInt(localStorage.getItem('chainId')) || 1,
+                },
               }
-              this.fromTokenQuantity = formattedQuotation;
-              resolve(formattedQuotation);
-            })
-            .catch((error) => {
-              console.error('Error fetching quotation:', error);
-              this.ratio = 0; // Set ratio to 0 in case of an error
-              reject(error);
-            })
-            .finally(() => {
-              this.isLoadingFromQuotation = false;
-            });
+            );
+            this.setTokenAllowance(tokenAllowance)
+            const response = await axios.post(
+              `${configs.NODE_API_URL}/tokens/buildSwapTx`,
+              quotationData
+            );
+
+            this.quotationResponse = response.data;
+            this.setQuotationResponse(response.data);
+
+            let formattedQuotation;
+
+            const provider = new ethers.JsonRpcProvider(
+              'https://polygon-rpc.com'
+            );
+            if (
+              quotationData.toTokenObj.address ===
+              '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+            ) {
+              const fetchedQuotation = response?.data?.amountOut;
+              formattedQuotation = fetchedQuotation;
+            } else {
+              const tokenInstance = new ethers.Contract(
+                quotationData.toTokenObj.address,
+                abi,
+                provider
+              );
+              formattedQuotation = response?.data?.amountOut;
+            }
+
+            this.fromTokenQuantity = formattedQuotation;
+            resolve(formattedQuotation);
+          } catch (error) {
+            console.error('Error fetching quotation:', error);
+            this.ratio = 0; // Set ratio to 0 in case of an error
+            reject(error);
+          } finally {
+            this.isLoadingFromQuotation = false;
+            this.isCalculatingRatio = false;
+          }
         });
       }
     },
@@ -1082,6 +1132,7 @@ export default {
       }
     },
     hash(newVal) {
+      console.log;
       if (newVal) {
         this.resetTransactionFields();
         // this.resetState();
@@ -1110,7 +1161,7 @@ export default {
       }
     },
     error(newVal) {
-      console.log(newVal, 'newVal');
+      console.log(newVal, 'errorVal');
       if (newVal) {
         const errorMessage = newVal.message
           ? newVal.message
@@ -1125,6 +1176,10 @@ export default {
           speed: 1000,
         });
       }
+    },
+    isPending(newVal) {
+      this.isTransactionPending = newVal;
+      console.log(newVal, 'newVal2222');
     },
   },
 };

@@ -4,7 +4,7 @@
     v-if="!isLoad"
   >
     <form
-      class="modal-alert"
+      class="modal-creating-alert"
       @submit.prevent="onSubmit"
     >
       <search-select
@@ -229,4 +229,6 @@ export default {
 <style
   lang="scss"
   scoped
-></style>
+>
+
+</style>
