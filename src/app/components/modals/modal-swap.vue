@@ -230,8 +230,8 @@ export default {
         this.$emit('chainId-fetched', chainId);
         if (address) {
           const walletResponse = await axios.post(`${configs.NODE_API_URL}/tokens/walletToken`, {
-            chain: chain,
-            address: '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f',
+            chain,
+            address,
             nativeToken: filteredData[0],
           });
           const verifiedTokens = walletResponse.data.msg.filter((token) => token.verified_contract);
