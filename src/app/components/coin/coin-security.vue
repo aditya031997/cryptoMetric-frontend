@@ -5,19 +5,15 @@
       class="dropdown-container"
     >
       <label for="platform-select">Select Platform:</label>
-      <select
+      <v-select
         id="platform-select"
         v-model="selectedPlatform"
-        @change="fetchSecurityData"
-      >
-        <option
-          v-for="(platform, index) in platforms"
-          :key="index"
-          :value="platform"
-        >
-          {{ platform.chainName }}
-        </option>
-      </select>
+        :options="platforms"
+        :reduce="platform => platform"
+        label="chainName"
+        :limit="4"
+        @input="fetchSecurityData"
+      />
     </div>
     <div
       ref="coin-security"
@@ -75,6 +71,8 @@ import IconCheck from '../icons/icon-check.vue';
 import IconClose from '../icons/icon-close.vue';
 import SecurityData from './securityData.json';
 import configs from '../../../configs/configs';
+import vSelect from 'vue-select';
+import 'vue-select/dist/vue-select.css';
 
 export default {
   name: 'coin-Security',
@@ -82,6 +80,7 @@ export default {
     CmLoader,
     IconCheck,
     IconClose,
+    vSelect
   },
   props: {
     slug: {
@@ -218,4 +217,10 @@ export default {
   margin-bottom: 20px;
   /* text-align: center; */
 }
+.v-select {
+  width: 100%;
+  max-width: 300px;
+  max-height: 180px;
+}
+
 </style>
