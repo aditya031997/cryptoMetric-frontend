@@ -281,7 +281,7 @@
   </div>
 </template>
 <script>
-import { reactive, toRefs, ref, watch } from 'vue';
+import { reactive, toRefs, ref, watch, computed } from 'vue';
 import { mapGetters } from 'vuex';
 
 import {
@@ -317,8 +317,7 @@ const rpcUrls = {
   56: 'https://site1.moralis-nodes.com/bsc/984bbee2a2ee4aafbed34ee755910f0e',
   1: 'https://site1.moralis-nodes.com/eth/02b906dd2ce242bba445b6e6477cb824',
   8453: 'https://site1.moralis-nodes.com/base/7a1036f6fbdd434a839ec2b35771e941',
-  43114:
-    'https://site1.moralis-nodes.com/avalanche/43d7dfdaa10c4428a5392f07f6814a86',
+  43114: 'https://site1.moralis-nodes.com/avalanche/43d7dfdaa10c4428a5392f07f6814a86',
 };
 export default {
   name: 'web3exchange',
@@ -389,16 +388,14 @@ export default {
   },
 
   setup() {
-    const { isConnected } = useAccount();
-    const { address } = useAccount();
+    const { isConnected, address } = useAccount();
     const lastSelectedChainId = useChainId();
-    // this.chainId = lastSelectedChainId;
-    const {
-      data: hash,
-      error,
-      isPending,
-      sendTransaction,
-    } = useSendTransaction();
+
+    const formattedAddress = computed(() => {
+      if (!address.value) return null;
+      return address.value;
+    });
+    const { data: hash, error, isPending, sendTransaction } = useSendTransaction();
     let state = ref({
       isTransactionPending: false,
       netWorkId: address._object.chainId,
@@ -503,6 +500,7 @@ export default {
       setTokenQuantity,
       setTokenAddress,
       setTokenAllowance,
+      formattedAddress,
     };
   },
   methods: {
@@ -785,11 +783,7 @@ export default {
               const fetchedQuotation = response?.data?.amountOut;
               formattedQuotation = fetchedQuotation;
             } else {
-              const tokenInstance = new ethers.Contract(
-                quotationData.toTokenObj.address,
-                abi,
-                provider
-              );
+              const tokenInstance = new ethers.Contract(quotationData.toTokenObj.address, abi, provider);
               formattedQuotation = response?.data?.amountOut;
             }
 
@@ -876,11 +870,7 @@ export default {
               const fetchedQuotation = response?.data?.amountOut;
               formattedQuotation = fetchedQuotation;
             } else {
-              const tokenInstance = new ethers.Contract(
-                quotationData.toTokenObj.address,
-                abi,
-                provider
-              );
+              const tokenInstance = new ethers.Contract(quotationData.toTokenObj.address, abi, provider);
               formattedQuotation = response?.data?.amountOut;
             }
 
@@ -1104,6 +1094,11 @@ export default {
       if (newVal) {
         this.initializeData();
       }
+    },
+    formattedAddress(address) {
+      if (!address) return;
+      localStorage.setItem('walletAddress', address);
+      this.initializeData();
     },
     getChainId(newChainId) {
       this.fetchTokens().then(() => {
