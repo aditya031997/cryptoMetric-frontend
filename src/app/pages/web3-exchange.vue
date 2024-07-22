@@ -302,11 +302,12 @@ const abi = [
 ];
 
 const rpcUrls = {
-  137: 'https://site1.moralis-nodes.com/polygon/0cb949e1d801432f9e58f3fd2686140b',
-  56: 'https://bsc-rpc.publicnode.com',
-  1: 'https://ethereum-rpc.publicnode.com',
-  8453: 'https://base.drpc.org',
-  43114: 'https://avax.meowrpc.com',
+  137: 'https://site1.moralis-nodes.com/polygon/8b4fb5cb45d14446a9a0348cc08274e9',
+  56: 'https://site1.moralis-nodes.com/bsc/984bbee2a2ee4aafbed34ee755910f0e',
+  1: 'https://site1.moralis-nodes.com/eth/02b906dd2ce242bba445b6e6477cb824',
+  8453: 'https://site1.moralis-nodes.com/base/7a1036f6fbdd434a839ec2b35771e941',
+  43114:
+    'https://site1.moralis-nodes.com/avalanche/43d7dfdaa10c4428a5392f07f6814a86',
 };
 export default {
   name: 'web3exchange',
@@ -405,20 +406,20 @@ export default {
     const sendTrans = async () => {
       state.isTransactionPending = isPending;
       const web3 = new Web3(window.ethereum);
-      const  chain = parseInt(localStorage.getItem('chainId'))
-      const wAddre = localStorage.getItem('walletAddress')
+      const chain = parseInt(localStorage.getItem('chainId'));
+      const wAddre = localStorage.getItem('walletAddress');
       try {
         const fromTokenQuantityWei = web3.utils.toWei(
           state?.fromTokenQuantity?.toString(),
           'ether'
         );
-
+        // console.log(state.selectedFromTokenAddress, 'ggfgfgfg');
         const allowanceResponse = await axios.get(
           `${configs.NODE_API_URL}/tokens/allowances`,
           {
             params: {
               tokenAddress: state.selectedFromTokenAddress,
-              walletAddress:wAddre,
+              walletAddress: wAddre,
               chain: chain,
             },
           }
@@ -442,17 +443,15 @@ export default {
             to: approveResult?.data?.to,
             data: approveResult?.data?.data,
           });
-          
-        } else {
-          await sendTransaction({
-            from: wAddre,
-            to: state.quotationResponse?.to,
-            data: state.quotationResponse?.data,
-            value: state.quotationResponse?.value,
-            gasPrice: state.quotationResponse?.gasPrice,
-            chainId: chain,
-          });
         }
+        await sendTransaction({
+          from: wAddre,
+          to: state.quotationResponse?.to,
+          data: state.quotationResponse?.data,
+          value: state.quotationResponse?.value,
+          gasPrice: state.quotationResponse?.gasPrice,
+          chainId: chain,
+        });
       } catch (error) {
         console.error(error);
       } finally {
@@ -537,7 +536,6 @@ export default {
       const fromTokenSymbol = this.getUrlParameter('fromToken');
       const toTokenSymbol = this.getUrlParameter('toToken');
       let fromTokenSet = false;
-      let toTokenSet = false;
 
       if (fromTokenSymbol) {
         const fromToken = Object.values(this.tokens).find(
@@ -609,8 +607,7 @@ export default {
       let loadingFlag = isFrom ? 'isLoadingFromBalance' : 'isLoadingToBalance';
       const chainId = parseInt(localStorage.getItem('chainId')) || 1;
       const walletAddress =
-        localStorage.getItem('walletAddress') ||
-        '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f';
+        localStorage.getItem('walletAddress')
       try {
         if (token?.address && chainId && walletAddress) {
           const response = await axios.get(
@@ -1113,7 +1110,7 @@ export default {
       }
     },
     error(newVal) {
-      console.log(newVal,"newVal")
+      console.log(newVal, 'newVal');
       if (newVal) {
         const errorMessage = newVal.message
           ? newVal.message
