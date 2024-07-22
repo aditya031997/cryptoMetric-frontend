@@ -1,9 +1,10 @@
 const configs = {
-  INFURA_ID :'db4b7494837843777ef2fdecef3d6f17',
+  INFURA_ID: 'db4b7494837843777ef2fdecef3d6f17',
   API_URL: 'https://stg-api.cryptometric.com/api',
   COIN_IMG_URL: 'https://stg-api.cryptometric.com/storage/coin-icons/32x32/_slug_.png',
   COIN_BIG_IMG_URL: 'https://stg-api.cryptometric.com/storage/coin-icons/32x32/_slug_.png',
-  NODE_API_URL:'https://stg-node-api.cryptometric.com',
+  // NODE_API_URL:'https://stg-node-api.cryptometric.com',
+  NODE_API_URL: 'http://localhost:5000',
   NEWS_IMG_URL: '	https://stg-api.cryptometric.com/storage/news/_slug_',
   LARAVEL_API_URL: 'https://stg-api.cryptometric.com/api',
   ICO_IMG_URL: '',
@@ -13,6 +14,8 @@ const configs = {
   PUSHER_APP_SECRET: '',
   PUSHER_APP_CLUSTER: '',
   PUSHER_APP_CHANNEL: '',
+  DEFAULT_TOKEN_ADDRESS: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+  DEFAULT_WALLET_ADDRESS: '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f',
+  DEFAULT_CHAIN_ID: 1,
 };
 export default configs;
-

@@ -1,17 +1,37 @@
 <template>
   <div>
-    <div v-if="platforms.length > 1" class="dropdown-container">
+    <div
+      v-if="platforms.length > 1"
+      class="dropdown-container"
+    >
       <label for="platform-select">Select Platform:</label>
-      <select id="platform-select" v-model="selectedPlatform" @change="fetchSecurityData">
-        <option v-for="(platform, index) in platforms" :key="index" :value="platform">
+      <select
+        id="platform-select"
+        v-model="selectedPlatform"
+        @change="fetchSecurityData"
+      >
+        <option
+          v-for="(platform, index) in platforms"
+          :key="index"
+          :value="platform"
+        >
           {{ platform.chainName }}
         </option>
       </select>
     </div>
-    <div ref="coin-security" v-if="!isLoad">
+    <div
+      ref="coin-security"
+      v-if="!isLoad"
+    >
       <div class="security-list">
-        <ul id="v-for-security" class="demo">
-          <li v-for="(item, index) in securityList" :key="index">
+        <ul
+          id="v-for-security"
+          class="demo"
+        >
+          <li
+            v-for="(item, index) in securityList"
+            :key="index"
+          >
             <div class="security-field">
               <div class="sec-title-value">
                 <h4 class="sub-title">{{ item.title }}</h4>
@@ -22,8 +42,14 @@
                   <div class="sec-value-field">
                     <span>{{ item.value }}</span>
                     <template v-if="item.check !== null">
-                      <IconCheck v-if="item.check" class="check-icon" />
-                      <IconClose v-else class="close-icon" />
+                      <IconCheck
+                        v-if="item.check"
+                        class="check-icon"
+                      />
+                      <IconClose
+                        v-else
+                        class="close-icon"
+                      />
                     </template>
                   </div>
                 </span>
@@ -33,7 +59,10 @@
         </ul>
       </div>
     </div>
-    <div class="loader-wrapper" v-else>
+    <div
+      class="loader-wrapper"
+      v-else
+    >
       <cm-loader />
     </div>
   </div>
@@ -91,32 +120,29 @@ export default {
       this.isLoad = true;
       try {
         const { tokenAddress, chainId } = this.selectedPlatform;
-        const securityResponse = await axios.get(`${configs.NODE_API_URL}/supply/distribution?address=${tokenAddress}&chainId=${chainId}`);
+        const securityResponse = await axios.get(
+          `${configs.NODE_API_URL}/supply/distribution?address=${tokenAddress}&chainId=${chainId}`
+        );
         const apiData = securityResponse.data.msg[tokenAddress];
         const dynamicValues = {};
 
         if (apiData.is_open_source !== undefined)
           dynamicValues['Open Source'] = apiData.is_open_source === '1' ? 'Yes' : 'No';
-        if (apiData.is_proxy !== undefined)
-          dynamicValues['Proxy Contract'] = apiData.is_proxy === '1' ? 'Yes' : 'No';
-        if (apiData.is_mintable !== undefined)
-          dynamicValues['Mintable'] = apiData.is_mintable === '1' ? 'Yes' : 'No';
+        if (apiData.is_proxy !== undefined) dynamicValues['Proxy Contract'] = apiData.is_proxy === '1' ? 'Yes' : 'No';
+        if (apiData.is_mintable !== undefined) dynamicValues['Mintable'] = apiData.is_mintable === '1' ? 'Yes' : 'No';
         if (apiData.owner_address !== undefined)
           dynamicValues['Owner Address'] = this.formatAddress(apiData.owner_address);
         if (apiData.can_take_back_ownership !== undefined)
           dynamicValues['Retrieve Ownership'] = apiData.can_take_back_ownership || 'No';
-        if (apiData.balance_modifiable !== undefined)
-          dynamicValues['Balance Mod'] = apiData.balance_modifiable || 'No';
+        if (apiData.balance_modifiable !== undefined) dynamicValues['Balance Mod'] = apiData.balance_modifiable || 'No';
         if (apiData.hidden_owner !== undefined)
           dynamicValues['Hidden Owner'] = apiData.hidden_owner === '1' ? 'Yes' : 'No';
         if (apiData.selfdestruct !== undefined)
           dynamicValues['Self Destruct'] = apiData.selfdestruct === '1' ? 'Yes' : 'No';
         if (apiData.external_call !== undefined)
           dynamicValues['External Call Risk'] = apiData.external_call === '1' ? 'Yes' : 'No';
-        if (apiData.buy_tax !== undefined)
-          dynamicValues['Buy Tax'] = (apiData.buy_tax || '0') + '%';
-        if (apiData.sell_tax !== undefined)
-          dynamicValues['Sell Tax'] = (apiData.sell_tax || '0') + '%';
+        if (apiData.buy_tax !== undefined) dynamicValues['Buy Tax'] = (apiData.buy_tax || '0') + '%';
+        if (apiData.sell_tax !== undefined) dynamicValues['Sell Tax'] = (apiData.sell_tax || '0') + '%';
         if (apiData.cannot_buy !== undefined)
           dynamicValues['Buy Available'] = apiData.cannot_buy === '0' ? 'Yes' : 'No';
         if (apiData.cannot_sell_all !== undefined)
@@ -127,30 +153,21 @@ export default {
           dynamicValues['Honeypot'] = apiData.honeypot_with_same_creator === '1' ? 'Yes' : 'No';
         if (apiData.transfer_pausable !== undefined)
           dynamicValues['Transfer Pausable'] = apiData.transfer_pausable || 'No';
-        if (apiData.is_blacklisted !== undefined)
-          dynamicValues['Blacklisted'] = apiData.is_blacklisted || 'No';
-        if (apiData.is_whitelisted !== undefined)
-          dynamicValues['Whitelisted'] = apiData.is_whitelisted || 'No';
-        if (apiData.is_in_dex !== undefined)
-          dynamicValues['In Dex'] = apiData.is_in_dex === '1' ? 'Yes' : 'No';
-        if (apiData.is_anti_whale !== undefined)
-          dynamicValues['Anti-Whale'] = apiData.is_anti_whale || 'No';
+        if (apiData.is_blacklisted !== undefined) dynamicValues['Blacklisted'] = apiData.is_blacklisted || 'No';
+        if (apiData.is_whitelisted !== undefined) dynamicValues['Whitelisted'] = apiData.is_whitelisted || 'No';
+        if (apiData.is_in_dex !== undefined) dynamicValues['In Dex'] = apiData.is_in_dex === '1' ? 'Yes' : 'No';
+        if (apiData.is_anti_whale !== undefined) dynamicValues['Anti-Whale'] = apiData.is_anti_whale || 'No';
         if (apiData.anti_whale_modifiable !== undefined)
           dynamicValues['Anti-Whale Mod'] = apiData.anti_whale_modifiable || 'No';
         if (apiData.trading_cooldown !== undefined)
           dynamicValues['Trading Cooldown'] = apiData.trading_cooldown || 'No';
-        if (apiData.token_name !== undefined)
-          dynamicValues['Token Name'] = apiData.token_name;
-        if (apiData.token_symbol !== undefined)
-          dynamicValues['Token Symbol'] = apiData.token_symbol;
-        if (apiData.holder_count !== undefined)
-          dynamicValues['Holders'] = this.formatNumber(apiData.holder_count);
-        if (apiData.total_supply !== undefined)
-          dynamicValues['Total Supply'] = this.formatNumber(apiData.total_supply);
+        if (apiData.token_name !== undefined) dynamicValues['Token Name'] = apiData.token_name;
+        if (apiData.token_symbol !== undefined) dynamicValues['Token Symbol'] = apiData.token_symbol;
+        if (apiData.holder_count !== undefined) dynamicValues['Holders'] = this.formatNumber(apiData.holder_count);
+        if (apiData.total_supply !== undefined) dynamicValues['Total Supply'] = this.formatNumber(apiData.total_supply);
         if (apiData.owner_balance !== undefined)
           dynamicValues['Owner Balance'] = this.formatNumber(apiData.owner_balance || '0');
-        if (apiData.owner_percent !== undefined)
-          dynamicValues['Owner Percent'] = (apiData.owner_percent || '0') + '%';
+        if (apiData.owner_percent !== undefined) dynamicValues['Owner Percent'] = (apiData.owner_percent || '0') + '%';
         if (apiData.creator_address !== undefined)
           dynamicValues['Creator Address'] = this.formatAddress(apiData.creator_address);
         if (apiData.creator_balance !== undefined)
@@ -199,6 +216,6 @@ export default {
 
 .dropdown-container {
   margin-bottom: 20px;
-  text-align: center;
+  /* text-align: center; */
 }
 </style>

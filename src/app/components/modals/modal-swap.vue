@@ -49,7 +49,8 @@
           <button
             v-for="token in topTokens"
             :key="token.id"
-            @click.stop="selectToken(token)"
+            @click.stop="checkToken(token) ? () => {} : selectToken(token)"
+            :class="checkToken(token) ? 'selected-token-btn' : ''"
           >
             <img
               :src="getTokenImage(token)"
@@ -98,13 +99,16 @@
             </div>
           </div>
 
-          <h4>Popular tokens</h4>
+          <h4 v-if="!searchText">Popular tokens</h4>
+          <h4 v-else="searchText">Search results</h4>
+
           <div class="swap-token-list">
             <ul>
               <li
                 v-for="token in filteredTokens"
                 :key="token.id"
-                @click.stop="selectToken(token)"
+                @click.stop="checkToken(token) ? () => {} : selectToken(token)"
+                :class="checkToken(token) ? 'disabled-list' : ''"
               >
                 <div class="tk-list">
                   <img
@@ -124,15 +128,19 @@
                   <div class="tokenname">
                     <h3 v-if="isLoading">Fetching Tokens....</h3>
 
-                    <h3 v-else>
-                      No results found! Please try again with valid address
-                    </h3>
+                    <h3 v-else>No results found! Please try again with valid address</h3>
                   </div>
                 </div>
               </li>
             </ul>
           </div>
         </div>
+        <li
+          class="cant-find-tk"
+          v-if="searchText"
+        >
+          Can't find the token? Try searching by address.
+        </li>
       </div>
     </div>
   </div>
@@ -146,6 +154,7 @@ import CheckIcon from '../../components/icons/token-check.vue';
 import { getImageCoin } from '../../utils/helpers/formatter-images';
 import configs from '.././../../configs/configs';
 import '../../assets/scss/modal/swap-modal.scss';
+import _defaultImage from '../../assets/images/default-token.png';
 
 export default {
   name: 'TokenModal',
@@ -160,6 +169,7 @@ export default {
       isLoading: false,
       searchText: '',
       errorMessage: null,
+      defaultImage: _defaultImage,
     };
   },
   components: {
@@ -173,6 +183,8 @@ export default {
       type: Number,
       required: true,
     },
+    fromToken: {},
+    toToken: {},
   },
   methods: {
     hideModal() {
@@ -198,31 +210,21 @@ export default {
       this.networlId = chainId;
       this.isLoading = true;
       try {
-        const response = await axios.get(
-          `${configs.NODE_API_URL}/tokens/getTokensToSwapByChainId?chain=${chain}`
-        );
+        const response = await axios.get(`${configs.NODE_API_URL}/tokens/getTokensToSwapByChainId?chain=${chain}`);
         const dataArray = response?.data || [];
-        const filteredData = dataArray.filter(
-          (item) => item.tags && item.tags.includes('native')
-        );
-        console.log(filteredData, 'filteredData');
+        const filteredData = dataArray.filter((item) => item.tags && item.tags.includes('native'));
         this.apiTokens = response?.data;
         this.topRatedToken = response?.data;
         this.filteredApiTokens = this.apiTokens;
         this.$emit('tokens-fetched', this.apiTokens);
         this.$emit('chainId-fetched', chainId);
         if (address) {
-          const walletResponse = await axios.post(
-            `${configs.NODE_API_URL}/tokens/walletToken`,
-            {
-              chain: chain,
-              address: address,
-              nativeToken: filteredData[0],
-            }
-          );
-          const verifiedTokens = walletResponse.data.msg.filter(
-            (token) => token.verified_contract
-          );
+          const walletResponse = await axios.post(`${configs.NODE_API_URL}/tokens/walletToken`, {
+            chain: chain,
+            address: address,
+            nativeToken: filteredData[0],
+          });
+          const verifiedTokens = walletResponse.data.msg.filter((token) => token.verified_contract);
           this.existingToken = verifiedTokens;
           this.$emit('tokens-fetched', this.apiTokens);
           this.errorMessage = null;
@@ -232,6 +234,9 @@ export default {
       } finally {
         this.isLoading = false;
       }
+    },
+    checkToken(token) {
+      return token?.address === this.fromToken?.address || token?.address === this.toToken?.address;
     },
     async fetchFilteredTokens(token) {
       if (!token) {
@@ -258,21 +263,13 @@ export default {
       return getImageCoin(slug.toLowerCase());
     },
     getTokenImage(token) {
-      return (
-        token.logoURI ||
-        this.getImageCoin(token.symbol.toLowerCase()) ||
-        token.logo
-      );
+      return token.logoURI || this.getImageCoin(token.symbol.toLowerCase()) || token.logo;
     },
     getWalletTokenImage(token) {
-      return (
-        token.logoURI ||
-        token.logo ||
-        this.getImageCoin(token.symbol.toLowerCase())
-      );
+      return token.logoURI || token.logo || this.getImageCoin(token.symbol.toLowerCase());
     },
     handleImageError(event, slug) {
-      // event.target.src = this.getImageCoin(slug.toLowerCase());
+      event.target.src = this.defaultImage;
     },
     formatTokenBalance(value, decimals = 8) {
       // Convert value to a BigInt
@@ -286,19 +283,13 @@ export default {
         return Object.values(this.apiTokens);
       }
       const searchLower = this.searchText.toLowerCase().trim();
-      const filteredTokens = Object.values(this.filteredApiTokens).filter(
-        (token) => {
-          const name = token.name ? token.name.toLowerCase() : '';
-          const symbol = token.symbol ? token.symbol.toLowerCase() : '';
-          const address = token.address ? token.address : '';
+      const filteredTokens = Object.values(this.filteredApiTokens).filter((token) => {
+        const name = token.name ? token.name.toLowerCase() : '';
+        const symbol = token.symbol ? token.symbol.toLowerCase() : '';
+        const address = token.address ? token.address : '';
 
-          return (
-            name.includes(searchLower) ||
-            symbol.includes(searchLower) ||
-            address.includes(searchLower)
-          );
-        }
-      );
+        return name.includes(searchLower) || symbol.includes(searchLower) || address.includes(searchLower);
+      });
 
       if (!filteredTokens.length) this.searchTokens();
       return filteredTokens;
@@ -331,6 +322,16 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+.cant-find-tk {
+  font-size: 12px;
+  color: #7d7d7d;
+  margin: 8px 0;
+  list-style: none;
+}
+.selected-token-btn {
+  background-color: #e4e1e1;
+  cursor: no-drop;
 }
 /* Your existing styles */
 </style>
