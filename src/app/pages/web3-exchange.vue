@@ -646,9 +646,9 @@ export default {
     },
 
     sanitizeInput(event, model) {
-      if (this.selectedFromToken && model === 'fromTokenQuantity') {
-        this.updateTokenBalance(this.selectedFromToken, true);
-      }
+      // if (this.selectedFromToken && model === 'fromTokenQuantity') {
+      //   this.updateTokenBalance(this.selectedFromToken, true);
+      // }
 
       this.calculateRatio(model === 'fromTokenQuantity' ? 'from' : 'to');
     },
@@ -876,11 +876,7 @@ export default {
       };
 
       const urlParams = new URLSearchParams(window.location.search);
-      const fromToken = urlParams.get('fromToken');
-      const toToken = urlParams.get('toToken');
-      // if (fromToken) {
-      //   return;
-      // }
+
       const chainId = parseInt(localStorage.getItem('chainId')) || this.lastSelectedChainId || 1;
       const desiredSymbol = symbolMap[chainId];
       const defaultToken = this.fetchedData?.find((token) => token.symbol === desiredSymbol);
@@ -1025,10 +1021,20 @@ export default {
     formattedAddress(address) {
       if (!address) return;
       localStorage.setItem('walletAddress', address);
+
       this.initializeData();
     },
     getChainId(newChainId) {
       this.fetchTokens().then(() => {
+        // this.selectedFromToken = null;
+        // this.selectedReceiveToken = null;
+        // this.fromTokenQuantity = '';
+        // this.isLoadingQuotation = false;
+        // this.ratio = '';
+        // this.fromTokenBalance = 0;
+        // this.toTokenBalance = 0;
+        this.isLoadingQuotation = false;
+        this.resetTransactionFields();
         this.setDefaultToken();
       });
     },
