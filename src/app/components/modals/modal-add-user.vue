@@ -1,31 +1,34 @@
 <template>
-  <validation-observer
-    ref="validator"
-  >
+  <validation-observer ref="validator">
     <form
       class="modal-user"
       @submit.prevent="formSubmit"
     >
-      <!-- <validation-provider
-        name="email"
-        rules="required|email"
-        v-slot="{ errors }"
-      > -->
-        <cm-input
-          class-wrapper="mt-4"
-          label="Email"
-          v-model="email"
-        />
-        <ErrorMessage name="email" />
+      <cm-input
+        class-wrapper="mt-4"
+        id="input-email"
+        label="Email"
+        v-model="email"
+        @input="emailValidation"
+        @change="emailValidation"
+        :error="emailError"
+      />
+      <ErrorMessage name="email" />
       <!-- </validation-provider> -->
       <cm-button
         type="submit"
         custom-class="mt-4"
         is-block
-        :disabled="invalid"
+        :disabled="isValid"
       >
         Send
       </cm-button>
+      <p
+        v-if="errorMessage"
+        class="auth-form__response-message text--caption text text-danger"
+      >
+        {{ errorMessage }}
+      </p>
     </form>
     <div
       class="modal-user__wrapper-loader"
@@ -39,8 +42,7 @@
 <script>
 import cmButton from '../ui/button/cm-button.vue';
 import cmInput from '../ui/input/cm-input.vue';
-import { ValidationObserver,ErrorMessage } from 'vee-validate';
-// import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
+import { ValidationObserver, ErrorMessage } from 'vee-validate';
 import CmLoader from '../ui/loader/cm-loader.vue';
 export default {
   components: {
@@ -58,26 +60,53 @@ export default {
     isLoad: false,
     email: '',
     errorMessage: '',
+    emailError: '',
+    isValid: true,
   }),
-  watch:{
-    eamil(){
+  watch: {
+    eamil() {
       this.errorMessage = '';
-    }
+    },
   },
   methods: {
+    emailValidation(event) {
+      if (event !== '') {
+        this.email = event;
+      }
+      if (!event) {
+        this.emailError = ' The email field is required';
+        this.errorMessage = '';
+        return;
+      }
+      const regex =
+        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}[a-zA-Z0-9]*$/;
+      if (!regex.test(event)) {
+        this.emailError = ' The email field must be a valid email ';
+        this.errorMessage = '';
+      } else {
+        this.emailError = '';
+      }
+      this.validation();
+    },
+    validation() {
+      if (!this.emailError && this.email) {
+        this.isValid = false;
+      } else {
+        this.isValid = true;
+      }
+    },
     formSubmit() {
+      console.log('hererer');
       this.isLoad = true;
       this.$store
         .dispatch('postInviteUser', this.email)
         .then(({ status }) => {
-          this.onClose()
+          this.onClose();
         })
         .catch((errors) => {
-          console.log(errors,"errors")
-          if (errors?.errors) {
-            this.errorMessage = errors.message;
-          } else {
-            this.errorMessage = errors.message;
+          if (errors) {
+            this.errorMessage = errors.response.data.message
+;
           }
         })
         .finally(() => {

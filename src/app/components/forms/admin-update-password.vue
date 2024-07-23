@@ -4,44 +4,31 @@
       <icon-security class="text-secondary flex-shrink-1" />
       <h2 class="m-0 ml-2 text text--subtitile-1">Update user’s password</h2>
     </div>
-    <validation-observer
-      ref="validator"
-    >
+    <validation-observer ref="validator">
       <form @submit.prevent="submitForm">
-        <!-- <validation-provider
-          name="password"
-          rules="required|min:8"
-          v-slot="{ errors }"
-          vid="password"
-        > -->
-          <cm-input
-            class-wrapper="mt-3"
-            id="input-password"
-            label="Password"
-            type="password"
-            :value="password"
-            @input="onChangePassword"
-          />
-          <ErrorMessage name="password"/>
-        <!-- </validation-provider> -->
-        <!-- <validation-provider
-          name="confirm password"
-          vid="password_confirmation"
-          rules="required|confirmed:password"
-          v-slot="{ errors }"
-        > -->
-          <cm-input
-            class-wrapper="mt-4"
-            id="input-confirm-password"
-            label="Confirm Password"
-            type="password"
-            :value="passwordConfirm"
-            @input="onChangePasswordConfirm"
-          />
-          <ErrorMessage name="confirm password"/>
-        <!-- </validation-provider> -->
+        <cm-input
+          class-wrapper="mt-3"
+          id="input-password"
+          label="Password"
+          type="password"
+          v-model="password"
+          :error="passwordError"
+          @input="passwordValidation"
+        />
+        <ErrorMessage name="password" />
+
+        <cm-input
+          class-wrapper="mt-4"
+          id="input-confirm-password"
+          label="Confirm Password"
+          type="password"
+          v-model="passwordConfirm"
+          @input="passwordConfirmValidation"
+          :error="passwordConfirmError"
+        />
+        <ErrorMessage name="confirm password" />
         <cm-button
-          :disabled="!!message || invalid"
+        :disabled="isValid"
           type="submit"
           is-block
           custom-class="mt-4"
@@ -49,14 +36,14 @@
           Update
         </cm-button>
         <p
-          class="mt-2 text text--caption text-success text-center"
           v-if="message"
+          class="mt-2 text text--caption text-success text-center"
         >
           {{ message }}
         </p>
         <p
-          class="mt-2 text text--caption text-success text-center"
           v-if="error"
+          class="mt-2 text text--caption text-success text-center"
         >
           {{ error }}
         </p>
@@ -72,7 +59,7 @@
 </template>
 
 <script>
-import { ValidationObserver,ErrorMessage } from 'vee-validate';
+import { ValidationObserver, ErrorMessage } from 'vee-validate';
 // import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
 import iconSecurity from '../icons/icon-security.vue';
 import CmButton from '../ui/button/cm-button.vue';
@@ -92,15 +79,56 @@ export default {
   data: () => ({
     isLoad: false,
     password: '',
+    isValid: true,
     passwordConfirm: '',
+    passwordError: '',
+    passwordConfirmError: '',
     message: '',
     error: '',
   }),
   methods: {
+    passwordValidation(event) {
+      if (event !== '') {
+        this.password = event;
+      }
+      if (event === '') {
+        this.passwordError = 'The password field is required';
+        return;
+      }
+      this.passwordError = '';
+      this.validation();
+    },
+    passwordConfirmValidation(event) {
+      if (event !== '') {
+        this.passwordConfirm = event;
+      }
+      if (event === '') {
+        this.passwordConfirmError = 'The password field is required';
+        return;
+      }
+      if (event !== this.passwordValue) {
+        this.passwordConfirmError = 'The passwords do not match';
+      } else {
+        this.passwordConfirmError = '';
+      }
+      this.validation();
+    },
+    validation() {
+      if (
+        !this.passwordError &&
+        this.password &&
+        !this.passwordConfirmError &&
+        this.passwordConfirm
+      ) {
+        this.isValid = false;
+      } else {
+        this.isValid = true;
+      }
+    },
     submitForm() {
-      this.message = '';
       if (validatePassword(this.password)) {
-        this.error = "Password must have digits, uppercase, lowercase and non-alphanumeric symbols"
+        this.error =
+          'Password must have digits, uppercase, lowercase and non-alphanumeric symbols';
       } else {
         this.isLoad = true;
         this.$store
