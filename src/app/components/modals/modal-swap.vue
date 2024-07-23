@@ -100,7 +100,7 @@
           </div>
 
           <h4 v-if="!searchText">Popular tokens</h4>
-          <h4 v-else="searchText">Search results</h4>
+          <h4 v-else>Search results</h4>
 
           <div class="swap-token-list">
             <ul>
