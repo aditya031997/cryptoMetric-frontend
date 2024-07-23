@@ -45,8 +45,15 @@
             <button
               class="btn cm-button btn-outline-primary is-line cm-button--sm"
               @click="handleSell"
-              v-if="showButtons && showSellButton"
+              :disabled="showButtons && !showSellButton"
             >
+              <popper-tooltip
+                custom-class="header-logout"
+                placement="bottom"
+                :disabled="showButtons && !showSellButton"
+              >
+                <template v-slot:popper>no</template>
+              </popper-tooltip>
               Sell
             </button>
           </template>
@@ -95,10 +102,12 @@
 import { reactive, ref, toRefs, watch } from 'vue';
 import { useSwitchChain } from '@wagmi/vue';
 import { watchChainId } from '@wagmi/core';
+import PopperTooltip from '@/components/poppers/popper-tooltip.vue';
+
 import axios from 'axios';
 import { getImageCoin, getBigImageCoin } from '@/utils/helpers/formatter-images';
 import ButtonFavorite from '@/components/ui/button/button-favorite.vue';
-import PopperTooltip from '@/components/poppers/popper-tooltip.vue';
+
 import IconScroll from '@/components/icons/icon-scroll.vue';
 import ButtonIcon from '@/components/ui/button/button-icon.vue';
 import Web3 from 'web3';
@@ -249,19 +258,20 @@ export default {
       this.selectedCoinName = this.name;
       this.selectedCoinSymbol = this.symbol;
       const targetChainId = this.getChainIdFromSymbol(this.symbol);
-      const currentChainId = localStorage.getItem('chainId');
+      const currentChainId = parseInt(localStorage.getItem('chainId'));
+      const walletName = localStorage.getItem('walletName');
+      console.log(walletName, targetChainId, currentChainId, walletName, this.isValidSymbol, 'currentChainId');
       this.setBugOrSell('fromToken');
 
       if (this.isValidSymbol) {
-        this.switchChain({ chainId: targetChainId });
+        return this.switchChain({ chainId: targetChainId });
       }
-
-      if (currentChainId.toString() === targetChainId.toString()) {
-        const url = new URL('/swap', window.location.origin);
-        url.searchParams.set('fromToken', this.symbol);
-        window.location.href = url.toString();
-        this.setBugOrSell('');
-      }
+      // if (currentChainId?.toString() === targetChainId?.toString()) {
+      const url = new URL('/swap', window.location.origin);
+      url.searchParams.set('fromToken', this.symbol);
+      window.location.href = url.toString();
+      this.setBugOrSell('');
+      // }
     },
     async handleSell() {
       this.selectedCoinName = this.name;
@@ -271,15 +281,15 @@ export default {
       this.setBugOrSell('toToken');
 
       if (this.isValidSymbol) {
-        this.switchChain({ chainId: targetChainId });
+        return this.switchChain({ chainId: targetChainId });
       }
 
-      if (currentChainId.toString() === targetChainId.toString()) {
-        const url = new URL('/swap', window.location.origin);
-        url.searchParams.set('toToken', this.symbol);
-        window.location.href = url.toString();
-        this.setBugOrSell('');
-      }
+      // if (currentChainId.toString() === targetChainId.toString()) {
+      const url = new URL('/swap', window.location.origin);
+      url.searchParams.set('toToken', this.symbol);
+      window.location.href = url.toString();
+      this.setBugOrSell('');
+      // }
     },
     checkTokenAvailability() {
       axios

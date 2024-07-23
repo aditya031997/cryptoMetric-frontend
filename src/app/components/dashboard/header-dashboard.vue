@@ -64,13 +64,13 @@
                   (!isConnected && !selectedChain && chain.id === 1) ||
                   (isConnected && chain.id === chainId) ||
                   selectedChain === chain.id,
-                'is-disabled': !isConnected,
+                'is-disabled': (!isConnected || isParamsFromToken || isParamsToToken) && chain.id !== chainId,
               }"
               v-for="chain in chains"
               :key="chain.id"
               @click="
                 // toggleCheck(chain.id);
-                isConnected ? switchChain({ chainId: chain.id }) : ''
+                isConnected && !isParamsFromToken && !isParamsToToken ? switchChain({ chainId: chain.id }) : ''
               "
             >
               <div>
@@ -213,6 +213,8 @@ export default {
       showConnectModal: false,
       dropdownItems: this.initializeDropdownItems(),
       selectedImageUrl: '',
+      isParamsFromToken: false,
+      isParamsToToken: false,
     };
   },
   props: {
@@ -236,6 +238,10 @@ export default {
     },
   },
   methods: {
+    getUrlParameter(name) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
+    },
     initializeDropdownItems() {
       const storedChainId = parseInt(localStorage.getItem('chainId'));
       const items = [
@@ -380,6 +386,9 @@ export default {
     },
   },
   mounted() {
+    this.isParamsFromToken = Boolean(this.getUrlParameter('fromToken'));
+    this.isParamsToToken = Boolean(this.getUrlParameter('toToken'));
+
     document.addEventListener('click', this.handleClickOutside);
     const defaultNetwork = this.dropdownItems.find((item) => item.checked);
     this.selectedImageUrl = this.getImageCoin(defaultNetwork.slug);
@@ -475,6 +484,7 @@ export default {
 }
 .is-disabled {
   cursor: no-drop;
+  opacity: 0.5;
 }
 .is-disabled:hover {
   background-color: transparent !important;
