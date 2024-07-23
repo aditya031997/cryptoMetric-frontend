@@ -105,7 +105,10 @@ import { watchChainId } from '@wagmi/core';
 import PopperTooltip from '@/components/poppers/popper-tooltip.vue';
 
 import axios from 'axios';
-import { getImageCoin, getBigImageCoin } from '@/utils/helpers/formatter-images';
+import {
+  getImageCoin,
+  getBigImageCoin,
+} from '@/utils/helpers/formatter-images';
 import ButtonFavorite from '@/components/ui/button/button-favorite.vue';
 
 import IconScroll from '@/components/icons/icon-scroll.vue';
@@ -114,7 +117,11 @@ import Web3 from 'web3';
 import configs from '../../../configs/configs';
 import { config } from '../modals/config';
 
-import { formatPrice, formatPercent, simpleFormatPrice } from '@/utils/helpers/formatter';
+import {
+  formatPrice,
+  formatPercent,
+  simpleFormatPrice,
+} from '@/utils/helpers/formatter';
 import DefaultImage from '../default-image.vue';
 const symbolChainIdMap = [
   { symbol: 'MATIC', chainId: 137 },
@@ -184,6 +191,7 @@ export default {
   data() {
     return {
       modelValue: this.value,
+      isCheckingToken: false,
       selectedCoinName: '',
       selectedCoinSymbol: '',
       showButtons: false,
@@ -260,7 +268,14 @@ export default {
       const targetChainId = this.getChainIdFromSymbol(this.symbol);
       const currentChainId = parseInt(localStorage.getItem('chainId'));
       const walletName = localStorage.getItem('walletName');
-      console.log(walletName, targetChainId, currentChainId, walletName, this.isValidSymbol, 'currentChainId');
+      console.log(
+        walletName,
+        targetChainId,
+        currentChainId,
+        walletName,
+        this.isValidSymbol,
+        'currentChainId'
+      );
       this.setBugOrSell('fromToken');
 
       if (this.isValidSymbol) {
@@ -291,37 +306,46 @@ export default {
       this.setBugOrSell('');
       // }
     },
-    checkTokenAvailability() {
-      axios
-        .get(`${configs.NODE_API_URL}/supply/tokenDetail?symbol=${this.symbol}`)
-        .then((response) => {
-          const validSymbols = ['MATIC', 'BNB', 'BASE', 'AVAX', 'ETH'];
-          const symbol = response?.data?.msg[0]?.symbol;
-          this.isValidSymbol = validSymbols.includes(symbol);
-          const category = response?.data?.msg[0]?.category;
+    async checkTokenAvailability() {
+      if (this.isCheckingToken) {
+        return; // Prevent multiple calls
+      }
 
-          if (category === 'token') {
-            this.showButtons = true;
-          } else if (category === 'coin' && this.isValidSymbol) {
-            this.showButtons = true;
-            this.showSellButton = false;
-          } else {
-            this.showButtons = false; // Hide both buttons
-            this.showSellButton = false;
-          }
-        })
-        .catch((error) => {
-          console.error('Error fetching token data:', error);
-          this.showButtons = false;
+      this.isCheckingToken = true; // Set flag to true to indicate function is in progress
+
+      try {
+        console.log('here11');
+        const response = await axios.get(
+          `${configs.NODE_API_URL}/supply/tokenDetail?symbol=${this.symbol}`
+        );
+        const validSymbols = ['MATIC', 'BNB', 'BASE', 'AVAX', 'ETH'];
+        const symbol = response?.data?.msg[0]?.symbol;
+        this.isValidSymbol = validSymbols.includes(symbol);
+        const category = response?.data?.msg[0]?.category;
+
+        if (category === 'token') {
+          this.showButtons = true;
+        } else if (category === 'coin' && this.isValidSymbol) {
+          this.showButtons = true;
           this.showSellButton = false;
-        })
-        .finally(() => {
-          this.isLoading = false; // Set isLoading to false after the API request is completed
-        });
+        } else {
+          this.showButtons = false; // Hide both buttons
+          this.showSellButton = false;
+        }
+      } catch (error) {
+        console.error('Error fetching token data:', error);
+        this.showButtons = false;
+        this.showSellButton = false;
+      } finally {
+        this.isLoading = false; // Set isLoading to false after the API request is completed
+        this.isCheckingToken = false; // Reset flag to allow future calls
+      }
     },
   },
   async mounted() {
-    await this.checkTokenAvailability();
+    if (window.location.pathname.includes('/crypto-markets')) {
+      this.checkTokenAvailability();
+    }
   },
 };
 </script>
