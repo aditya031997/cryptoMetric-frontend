@@ -461,9 +461,9 @@ export default {
         }
         await sendTransaction({
           from: wAddre,
-          to: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-          data: '0xd0e30db0',
-          value: '1000000000000000000',
+          to: state.quotationResponse?.to,
+          data: state.quotationResponse?.data,
+          value: state.quotationResponse?.value,
           gasPrice: state.quotationResponse?.gasPrice,
           chainId: chain,
         });

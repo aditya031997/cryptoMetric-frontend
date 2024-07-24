@@ -71,7 +71,7 @@
                   v-for="token in walletTokens"
                   :key="token.id"
                   @click.stop="checkToken(token) ? () => {} : selectToken(token)"
-                  :class="checkToken(token) ? 'selected-token-btn' : ''"
+                  :class="checkToken(token) ? 'disabled-list' : ''"
                 >
                   <div class="tk-list-container">
                     <div class="tk-list">
@@ -247,7 +247,9 @@ export default {
       }
     },
     checkToken(token) {
-      return token?.address === this.fromToken?.address || token?.address === this.toToken?.address;
+     
+      const address= token?.address||token?.token_address
+      return address === this.fromToken?.address || address === this.toToken?.address;
     },
     async fetchFilteredTokens(token) {
       if (!token) {
