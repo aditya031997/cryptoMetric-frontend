@@ -45,6 +45,7 @@
             <button
               class="btn cm-button btn-outline-primary is-line cm-button--sm"
               @click="handleSell"
+              v-if="showButtons"
               :disabled="showButtons && !showSellButton"
             >
               <popper-tooltip
@@ -105,10 +106,7 @@ import { watchChainId } from '@wagmi/core';
 import PopperTooltip from '@/components/poppers/popper-tooltip.vue';
 
 import axios from 'axios';
-import {
-  getImageCoin,
-  getBigImageCoin,
-} from '@/utils/helpers/formatter-images';
+import { getImageCoin, getBigImageCoin } from '@/utils/helpers/formatter-images';
 import ButtonFavorite from '@/components/ui/button/button-favorite.vue';
 
 import IconScroll from '@/components/icons/icon-scroll.vue';
@@ -117,11 +115,7 @@ import Web3 from 'web3';
 import configs from '../../../configs/configs';
 import { config } from '../modals/config';
 
-import {
-  formatPrice,
-  formatPercent,
-  simpleFormatPrice,
-} from '@/utils/helpers/formatter';
+import { formatPrice, formatPercent, simpleFormatPrice } from '@/utils/helpers/formatter';
 import DefaultImage from '../default-image.vue';
 const symbolChainIdMap = [
   { symbol: 'MATIC', chainId: 137 },
@@ -268,18 +262,12 @@ export default {
       const targetChainId = this.getChainIdFromSymbol(this.symbol);
       const currentChainId = parseInt(localStorage.getItem('chainId'));
       const walletName = localStorage.getItem('walletName');
-      console.log(
-        walletName,
-        targetChainId,
-        currentChainId,
-        walletName,
-        this.isValidSymbol,
-        'currentChainId'
-      );
+      console.log(walletName, targetChainId, currentChainId, walletName, this.isValidSymbol, 'currentChainId');
       this.setBugOrSell('fromToken');
 
-      if (this.isValidSymbol) {
-        return this.switchChain({ chainId: targetChainId });
+      if (this.isValidSymbol && currentChainId !== targetChainId) {
+        this.switchChain({ chainId: targetChainId });
+        return;
       }
       // if (currentChainId?.toString() === targetChainId?.toString()) {
       const url = new URL('/swap', window.location.origin);
@@ -315,9 +303,7 @@ export default {
 
       try {
         console.log('here11');
-        const response = await axios.get(
-          `${configs.NODE_API_URL}/supply/tokenDetail?symbol=${this.symbol}`
-        );
+        const response = await axios.get(`${configs.NODE_API_URL}/supply/tokenDetail?symbol=${this.symbol}`);
         const validSymbols = ['MATIC', 'BNB', 'BASE', 'AVAX', 'ETH'];
         const symbol = response?.data?.msg[0]?.symbol;
         this.isValidSymbol = validSymbols.includes(symbol);
