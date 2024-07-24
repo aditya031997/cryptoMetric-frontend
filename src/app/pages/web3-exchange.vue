@@ -116,7 +116,6 @@
         >
           <button
             class="token-btn"
-            :class="{ 'disabled-button': isCalculatingRatio }"
             @click="handleSelectFrom()"
           >
             <span class="swap-list">
@@ -194,7 +193,6 @@
             :class="{
               'select-token-btn': true,
               selected: !!selectedReceiveToken,
-              'disabled-button': isCalculatingRatio,
             }"
           >
             <span v-if="!selectedReceiveToken && !hasToTokenParam">Select Token</span>
@@ -494,16 +492,12 @@ export default {
       this.errorMessage = '';
     },
     handleSelectFrom() {
-      if (!this.isCalculatingRatio) {
-        this.isSwapModalVisible = true;
-        this.isSelectingFrom = true;
-      }
+      this.isSwapModalVisible = true;
+      this.isSelectingFrom = true;
     },
     handleSelectTo() {
-      if (!this.isCalculatingRatio) {
-        this.isSwapModalVisible = true;
-        this.isSelectingFrom = false;
-      }
+      this.isSwapModalVisible = true;
+      this.isSelectingFrom = false;
     },
     getUrlParameter(name) {
       const urlParams = new URLSearchParams(window.location.search);
@@ -659,29 +653,38 @@ export default {
 
       this.calculateRatio(model === 'fromTokenQuantity' ? 'from' : 'to');
     },
-    async calculateRatio(origin, isFromTokenChanged) {
-      if (this.isCalculatingRatio) {
-        return;
+    async handleAllowance(selectedFromToken) {
+      try {
+        const tokenAllowance = await axios.get(`${configs.NODE_API_URL}/tokens/allowances`, {
+          params: {
+            tokenAddress: selectedFromToken?.address,
+            walletAddress: localStorage.getItem('walletAddress') || '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f',
+            chain: parseInt(localStorage.getItem('chainId')) || 1,
+          },
+        });
+        console.log(tokenAllowance, 'tokenAllowance');
+        this.setTokenAllowance(tokenAllowance);
+        this.allowanceResponse = tokenAllowance?.data;
+      } catch (error) {
+        console.log('ERROR IN HANDLE ALLOWANCE Function', error);
       }
+    },
+    async calculateRatio(origin) {
+      // if (this.isCalculatingRatio) {
+      //   return;
+      // }
 
-      this.isCalculatingRatio = true;
+      // this.isCalculatingRatio = true;
 
       if (origin !== 'to') {
         return new Promise(async (resolve, reject) => {
           if (this.disableRecalculation) {
-            this.isCalculatingRatio = false;
+            // this.isCalculatingRatio = false;
             return resolve(null);
           }
 
-          if (
-            !this.selectedFromToken ||
-            !this.selectedReceiveToken ||
-            // !this.fromFiat ||
-            // !this.toFiat ||
-            // this.fromTokenBalance == 0 ||
-            this.fromTokenQuantity == 0
-          ) {
-            this.isCalculatingRatio = false;
+          if (!this.selectedFromToken || !this.selectedReceiveToken || this.fromTokenQuantity == 0) {
+            // this.isCalculatingRatio = false;
             return resolve(null);
           }
 
@@ -706,18 +709,6 @@ export default {
             slippageTolerance: this.slippageValue,
           };
           try {
-            if (isFromTokenChanged) {
-              const tokenAllowance = await axios.get(`${configs.NODE_API_URL}/tokens/allowances`, {
-                params: {
-                  tokenAddress: this.selectedFromToken.address,
-                  walletAddress: localStorage.getItem('walletAddress') || '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f',
-                  chain: parseInt(localStorage.getItem('chainId')) || 1,
-                },
-              });
-              this.setTokenAllowance(tokenAllowance);
-              this.allowanceResponse = tokenAllowance?.data;
-            }
-
             const response = await axios.post(`${configs.NODE_API_URL}/tokens/buildSwapTx`, quotationData);
 
             this.quotationResponse = response.data;
@@ -742,13 +733,13 @@ export default {
             reject(error);
           } finally {
             this.isLoadingQuotation = false;
-            this.isCalculatingRatio = false;
+            // this.isCalculatingRatio = false;
           }
         });
       } else {
         return new Promise(async (resolve, reject) => {
           if (this.disableRecalculation) {
-            this.isCalculatingRatio = false;
+            // this.isCalculatingRatio = false;
             return resolve(null);
           }
 
@@ -778,15 +769,6 @@ export default {
           };
 
           try {
-            const tokenAllowance = await axios.get(`${configs.NODE_API_URL}/tokens/allowances`, {
-              params: {
-                tokenAddress: this.selectedFromToken.address,
-                walletAddress: localStorage.getItem('walletAddress') || '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f',
-                chain: parseInt(localStorage.getItem('chainId')) || 1,
-              },
-            });
-            this.setTokenAllowance(tokenAllowance);
-            this.allowanceResponse = tokenAllowance?.data;
             const response = await axios.post(`${configs.NODE_API_URL}/tokens/buildSwapTx`, quotationData);
 
             this.quotationResponse = response.data;
@@ -811,7 +793,7 @@ export default {
             reject(error);
           } finally {
             this.isLoadingFromQuotation = false;
-            this.isCalculatingRatio = false;
+            // this.isCalculatingRatio = false;
           }
         });
       }
@@ -1017,8 +999,11 @@ export default {
         this.setDefaultToken();
       });
     },
-    selectedFromToken(newVal, oldVal) {
-      if (newVal !== oldVal) this.calculateRatio('from', 'fromTokenChanged');
+    async selectedFromToken(newVal, oldVal) {
+      if (newVal?.address !== oldVal?.address) {
+        await this.handleAllowance(newVal);
+        this.calculateRatio('from');
+      }
     },
     selectedToToken(newVal, oldVal) {
       if (newVal !== oldVal) this.calculateRatio('from');
@@ -1028,9 +1013,7 @@ export default {
         this.updateFromCalculatedFiat();
       }
     },
-    toFiat(newVal) {
-      this.calculateRatio('from');
-    },
+
     fromTokenQuantity(newVal, oldVal) {
       if (newVal !== oldVal && newVal > 0) {
         this.updateFromCalculatedFiat();
