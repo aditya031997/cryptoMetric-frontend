@@ -116,10 +116,8 @@
         >
           <button
             class="token-btn"
-            @click="
-              isSwapModalVisible = true;
-              handleSelectFrom();
-            "
+            :class="{ 'disabled-button': isCalculatingRatio }"
+            @click="handleSelectFrom()"
           >
             <span class="swap-list">
               <img
@@ -135,9 +133,7 @@
           </button>
 
           <div
-            v-if="
-              (selectedFromToken && fromTokenBalance !== '') || !isConnected
-            "
+            v-if="(selectedFromToken && fromTokenBalance !== '') || !isConnected"
             class="right-side-balance-box mt-1"
           >
             Balance: {{ fromTokenBalance ? fromTokenBalance : 0 }}
@@ -190,23 +186,18 @@
           ${{ toCalculatedFiat }}
         </p> -->
       </div>
-
       <div class="right-side-input-css">
         <div v-if="isFetchingToToken">Fetching token...</div>
         <div v-else>
           <button
+            @click="handleSelectTo()"
             :class="{
               'select-token-btn': true,
               selected: !!selectedReceiveToken,
+              'disabled-button': isCalculatingRatio,
             }"
-            @click="
-              isSwapModalVisible = true;
-              handleSelectTo();
-            "
           >
-            <span v-if="!selectedReceiveToken && !hasToTokenParam"
-              >Select Token</span
-            >
+            <span v-if="!selectedReceiveToken && !hasToTokenParam">Select Token</span>
             <span
               v-else
               class="swap-list"
@@ -229,26 +220,20 @@
           </p>
           <p
             class="mt-1"
-            v-else-if="
-              (toFiat != 0 || toFiat != '') &&
-              selectedReceiveToken &&
-              isConnected
-            "
+            v-else-if="(toFiat != 0 || toFiat != '') && selectedReceiveToken && isConnected"
           >
             Balance: {{ toTokenBalance || 0 }}
           </p>
           <p
             class="mt-1"
-            v-else-if="
-              (toFiat == 0 && selectedReceiveToken) ||
-              (toTokenBalance === '' && selectedReceiveToken)
-            "
+            v-else-if="(toFiat == 0 && selectedReceiveToken) || (toTokenBalance === '' && selectedReceiveToken)"
           >
             Fetching Balance...
           </p>
         </div>
       </div>
     </div>
+
     <button
       class="modal-button connect-wallet btn"
       @click="sendTrans"
@@ -284,12 +269,7 @@
 import { reactive, toRefs, ref, watch, computed } from 'vue';
 import { mapGetters } from 'vuex';
 
-import {
-  useAccount,
-  useChainId,
-  useSendTransaction,
-  useWaitForTransactionReceipt,
-} from '@wagmi/vue';
+import { useAccount, useChainId, useSendTransaction, useWaitForTransactionReceipt } from '@wagmi/vue';
 import Web3 from 'web3';
 import axios from 'axios';
 import TokenModal from '../components/modals/modal-swap.vue';
@@ -317,8 +297,7 @@ const rpcUrls = {
   56: 'https://site1.moralis-nodes.com/bsc/984bbee2a2ee4aafbed34ee755910f0e',
   1: 'https://site1.moralis-nodes.com/eth/02b906dd2ce242bba445b6e6477cb824',
   8453: 'https://site1.moralis-nodes.com/base/7a1036f6fbdd434a839ec2b35771e941',
-  43114:
-    'https://site1.moralis-nodes.com/avalanche/43d7dfdaa10c4428a5392f07f6814a86',
+  43114: 'https://site1.moralis-nodes.com/avalanche/43d7dfdaa10c4428a5392f07f6814a86',
 };
 export default {
   name: 'web3exchange',
@@ -379,6 +358,7 @@ export default {
       selectedOption: 'auto',
       activeIndex: null,
       defaultImage: _defaultImage,
+      isCalculatingRatio: false,
       accordionItems: [
         {
           title: 'Section 1',
@@ -396,12 +376,7 @@ export default {
       if (!address.value) return null;
       return address.value;
     });
-    const {
-      data: hash,
-      error,
-      isPending,
-      sendTransaction,
-    } = useSendTransaction();
+    const { data: hash, error, isPending, sendTransaction } = useSendTransaction();
     let state = ref({
       isTransactionPending: false,
       netWorkId: address._object.chainId,
@@ -431,7 +406,7 @@ export default {
       try {
         const fromTokenQuantityWei = web3.utils.toWei(
           state?.fromTokenQuantity?.toString(),
-          'ether'
+          state.selectedFromTokenAddress.decimals
         );
         const allowance = BigInt(state.allowanceResponse?.data);
         const requiredAmount = BigInt(fromTokenQuantityWei);
@@ -443,16 +418,13 @@ export default {
           } else {
             approvalValue = allowance - requiredAmount;
           }
-          const approveResult = await axios.get(
-            `${configs.NODE_API_URL}/tokens/grantApproval`,
-            {
-              params: {
-                tokenAddress: state.selectedFromTokenAddress,
-                value: fromTokenQuantityWei,
-                chain: chain,
-              },
-            }
-          );
+          const approveResult = await axios.get(`${configs.NODE_API_URL}/tokens/grantApproval`, {
+            params: {
+              tokenAddress: state.selectedFromTokenAddress.address,
+              value: fromTokenQuantityWei,
+              chain: chain,
+            },
+          });
           await sendTransaction({
             from: wAddre,
             to: approveResult?.data?.to,
@@ -486,10 +458,9 @@ export default {
     const UpdateState = (newVal) => {
       state.fromTokenQuantity = newVal;
     };
-    const { isLoading: isConfirming, isSuccess: isConfirmed } =
-      useWaitForTransactionReceipt({
-        hash,
-      });
+    const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+      hash,
+    });
     return {
       ...toRefs(state),
       hash,
@@ -523,10 +494,16 @@ export default {
       this.errorMessage = '';
     },
     handleSelectFrom() {
-      this.isSelectingFrom = true;
+      if (!this.isCalculatingRatio) {
+        this.isSwapModalVisible = true;
+        this.isSelectingFrom = true;
+      }
     },
     handleSelectTo() {
-      this.isSelectingFrom = false;
+      if (!this.isCalculatingRatio) {
+        this.isSwapModalVisible = true;
+        this.isSelectingFrom = false;
+      }
     },
     getUrlParameter(name) {
       const urlParams = new URLSearchParams(window.location.search);
@@ -537,14 +514,9 @@ export default {
     },
     async fetchTokens() {
       this.isLoadingTokens = true;
-      const chainId =
-        parseInt(localStorage.getItem('chainId')) ||
-        this.lastSelectedChainId ||
-        configs.DEFAULT_CHAIN_ID;
+      const chainId = parseInt(localStorage.getItem('chainId')) || this.lastSelectedChainId || configs.DEFAULT_CHAIN_ID;
       try {
-        const response = await axios.get(
-          `${configs.NODE_API_URL}/tokens/getTokensToSwapByChainId?chain=${chainId}`
-        );
+        const response = await axios.get(`${configs.NODE_API_URL}/tokens/getTokensToSwapByChainId?chain=${chainId}`);
         this.fetchedData = response.data;
         await this.$refs.tokenModal.fetchTokens(chainId);
       } catch (error) {
@@ -561,19 +533,15 @@ export default {
       let toTokenSet = false;
 
       if (fromTokenSymbol) {
-        const fromToken = Object.values(this.tokens).find(
-          (token) => token.symbol === fromTokenSymbol
-        );
+        const fromToken = Object.values(this.tokens).find((token) => token.symbol === fromTokenSymbol);
         if (fromToken) {
           this.selectedFromToken = fromToken;
           this.selectedFromTokenAddress = fromToken?.address;
-          this.setTokenAddress(fromToken?.address);
+          this.setTokenAddress(fromToken);
           await this.updateTokenBalance(fromToken, true);
           fromTokenSet = true;
         } else {
-          this.showErrorModal(
-            'Token does not exist on this chain ID. Please change the chain ID.'
-          );
+          this.showErrorModal('Token does not exist on this chain ID. Please change the chain ID.');
           this.setDefaultToken();
           // this.selectedFromToken = null;
           // this.selectedFromTokenAddress = '';
@@ -581,18 +549,14 @@ export default {
       }
       if (toTokenSymbol) {
         this.isFetchingToToken = true;
-        const toToken = Object.values(this.tokens).find(
-          (token) => token.symbol === toTokenSymbol
-        );
+        const toToken = Object.values(this.tokens).find((token) => token.symbol === toTokenSymbol);
         if (toToken) {
           this.selectedReceiveToken = toToken;
           this.selectedToTokenAddress = toToken?.address;
           await this.updateTokenBalance(toToken, false);
           toTokenSet = true;
         } else {
-          this.showErrorModal(
-            'Token does not exist on this chain ID. Please change the chain ID.'
-          );
+          this.showErrorModal('Token does not exist on this chain ID. Please change the chain ID.');
           this.selectedToken = null;
           this.selectedToTokenAddress = '';
         }
@@ -616,7 +580,7 @@ export default {
       if (this.isSelectingFrom) {
         this.selectedFromToken = token;
         this.selectedFromTokenAddress = token?.address;
-        this.setTokenAddress(token?.address);
+        this.setTokenAddress(token);
         this.updateTokenBalance(token, true);
       } else {
         this.selectedReceiveToken = token;
@@ -633,10 +597,8 @@ export default {
         this.toTokenBalance = '';
         this.toFiat = '';
       }
-      const chainId =
-        parseInt(localStorage.getItem('chainId')) || configs.DEFAULT_CHAIN_ID;
-      const walletAddress =
-        localStorage.getItem('walletAddress') || configs.DEFAULT_WALLET_ADDRESS;
+      const chainId = parseInt(localStorage.getItem('chainId')) || configs.DEFAULT_CHAIN_ID;
+      const walletAddress = localStorage.getItem('walletAddress') || configs.DEFAULT_WALLET_ADDRESS;
       try {
         if (token?.address && chainId && walletAddress) {
           const response = await axios.get(
@@ -653,19 +615,14 @@ export default {
             const contract = new ethers.Contract(token?.address, abi, provider);
             const decimals = await contract.decimals();
             const balanceAmount = await contract.balanceOf(accountAddress);
-            tokenBalance = ethers.formatUnits(
-              balanceAmount.toString(),
-              decimals
-            );
+            tokenBalance = ethers.formatUnits(balanceAmount.toString(), decimals);
           }
 
           const truncatedBalance = tokenBalance.slice(0, 6);
 
           if (isFrom) {
             // this.fromFiat = fiatValue;
-            this.fromTokenBalance = Number(
-              parseFloat(response.data).toFixed(4)
-            );
+            this.fromTokenBalance = Number(parseFloat(response.data).toFixed(4));
             this.fromCalculatedFiat = fiatValue * this.fromTokenQuantity;
           } else {
             this.toFiat = fiatValue;
@@ -702,7 +659,7 @@ export default {
 
       this.calculateRatio(model === 'fromTokenQuantity' ? 'from' : 'to');
     },
-    async calculateRatio(origin) {
+    async calculateRatio(origin, isFromTokenChanged) {
       if (this.isCalculatingRatio) {
         return;
       }
@@ -743,56 +700,37 @@ export default {
               symbol: this.selectedReceiveToken.symbol,
               name: this.selectedReceiveToken.name,
             },
-            walletAddress:
-              localStorage.getItem('walletAddress') ||
-              configs.DEFAULT_WALLET_ADDRESS,
-            chain:
-              parseInt(localStorage.getItem('chainId')) ||
-              configs.DEFAULT_CHAIN_ID,
+            walletAddress: localStorage.getItem('walletAddress') || configs.DEFAULT_WALLET_ADDRESS,
+            chain: parseInt(localStorage.getItem('chainId')) || configs.DEFAULT_CHAIN_ID,
             amountIn: this.fromTokenQuantity,
             slippageTolerance: this.slippageValue,
           };
           try {
-            const tokenAllowance = await axios.get(
-              `${configs.NODE_API_URL}/tokens/allowances`,
-              {
+            if (isFromTokenChanged) {
+              const tokenAllowance = await axios.get(`${configs.NODE_API_URL}/tokens/allowances`, {
                 params: {
                   tokenAddress: this.selectedFromToken.address,
-                  walletAddress:
-                    localStorage.getItem('walletAddress') ||
-                    '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f',
+                  walletAddress: localStorage.getItem('walletAddress') || '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f',
                   chain: parseInt(localStorage.getItem('chainId')) || 1,
                 },
-              }
-            );
-            console.log(tokenAllowance, 'tokenAllowance');
-            this.setTokenAllowance(tokenAllowance);
-            this.allowanceResponse = tokenAllowance?.data;
+              });
+              this.setTokenAllowance(tokenAllowance);
+              this.allowanceResponse = tokenAllowance?.data;
+            }
 
-            const response = await axios.post(
-              `${configs.NODE_API_URL}/tokens/buildSwapTx`,
-              quotationData
-            );
+            const response = await axios.post(`${configs.NODE_API_URL}/tokens/buildSwapTx`, quotationData);
 
             this.quotationResponse = response.data;
             this.setQuotationResponse(response.data);
 
             let formattedQuotation;
 
-            const provider = new ethers.JsonRpcProvider(
-              'https://polygon-rpc.com'
-            );
-            if (
-              quotationData.toTokenObj.address === configs.DEFAULT_TOKEN_ADDRESS
-            ) {
+            const provider = new ethers.JsonRpcProvider('https://polygon-rpc.com');
+            if (quotationData.toTokenObj.address === configs.DEFAULT_TOKEN_ADDRESS) {
               const fetchedQuotation = response?.data?.amountOut;
               formattedQuotation = fetchedQuotation;
             } else {
-              const tokenInstance = new ethers.Contract(
-                quotationData.toTokenObj.address,
-                abi,
-                provider
-              );
+              const tokenInstance = new ethers.Contract(quotationData.toTokenObj.address, abi, provider);
               formattedQuotation = response?.data?.amountOut;
             }
 
@@ -814,11 +752,7 @@ export default {
             return resolve(null);
           }
 
-          if (
-            !this.selectedFromToken ||
-            !this.selectedReceiveToken ||
-            !+this.ratio
-          ) {
+          if (!this.selectedFromToken || !this.selectedReceiveToken || !+this.ratio) {
             return resolve(null);
           }
 
@@ -837,56 +771,35 @@ export default {
               symbol: this.selectedFromToken.symbol,
               name: this.selectedFromToken.name,
             },
-            walletAddress:
-              localStorage.getItem('walletAddress') ||
-              configs.DEFAULT_WALLET_ADDRESS,
-            chain:
-              parseInt(localStorage.getItem('chainId')) ||
-              configs.DEFAULT_CHAIN_ID,
+            walletAddress: localStorage.getItem('walletAddress') || configs.DEFAULT_WALLET_ADDRESS,
+            chain: parseInt(localStorage.getItem('chainId')) || configs.DEFAULT_CHAIN_ID,
             amountIn: this.ratio,
             slippageTolerance: this.slippageValue,
           };
 
           try {
-            const tokenAllowance = await axios.get(
-              `${configs.NODE_API_URL}/tokens/allowances`,
-              {
-                params: {
-                  tokenAddress: this.selectedFromToken.address,
-                  walletAddress:
-                    localStorage.getItem('walletAddress') ||
-                    '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f',
-                  chain: parseInt(localStorage.getItem('chainId')) || 1,
-                },
-              }
-            );
-            console.log(tokenAllowance, 'tokenAllowance');
+            const tokenAllowance = await axios.get(`${configs.NODE_API_URL}/tokens/allowances`, {
+              params: {
+                tokenAddress: this.selectedFromToken.address,
+                walletAddress: localStorage.getItem('walletAddress') || '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f',
+                chain: parseInt(localStorage.getItem('chainId')) || 1,
+              },
+            });
             this.setTokenAllowance(tokenAllowance);
             this.allowanceResponse = tokenAllowance?.data;
-            const response = await axios.post(
-              `${configs.NODE_API_URL}/tokens/buildSwapTx`,
-              quotationData
-            );
+            const response = await axios.post(`${configs.NODE_API_URL}/tokens/buildSwapTx`, quotationData);
 
             this.quotationResponse = response.data;
             this.setQuotationResponse(response.data);
 
             let formattedQuotation;
 
-            const provider = new ethers.JsonRpcProvider(
-              'https://polygon-rpc.com'
-            );
-            if (
-              quotationData.toTokenObj.address === configs.DEFAULT_TOKEN_ADDRESS
-            ) {
+            const provider = new ethers.JsonRpcProvider('https://polygon-rpc.com');
+            if (quotationData.toTokenObj.address === configs.DEFAULT_TOKEN_ADDRESS) {
               const fetchedQuotation = response?.data?.amountOut;
               formattedQuotation = fetchedQuotation;
             } else {
-              const tokenInstance = new ethers.Contract(
-                quotationData.toTokenObj.address,
-                abi,
-                provider
-              );
+              const tokenInstance = new ethers.Contract(quotationData.toTokenObj.address, abi, provider);
               formattedQuotation = response?.data?.amountOut;
             }
 
@@ -968,14 +881,12 @@ export default {
         this.lastSelectedChainId ||
         1;
       const desiredSymbol = symbolMap[chainId];
-      const defaultToken = this.fetchedData?.find(
-        (token) => token.symbol === desiredSymbol
-      );
+      const defaultToken = this.fetchedData?.find((token) => token.symbol === desiredSymbol);
       console.log(defaultToken, 'defaultToken');
       if (defaultToken) {
         this.selectedFromToken = defaultToken;
         this.selectedFromTokenAddress = defaultToken?.address;
-        this.setTokenAddress(defaultToken?.address);
+        this.setTokenAddress(defaultToken);
         this.updateTokenBalance(defaultToken, true);
       }
     },
@@ -999,10 +910,7 @@ export default {
     async swapTokens() {
       this.disableRecalculation = true;
 
-      [this.selectedFromToken, this.selectedReceiveToken] = [
-        this.selectedReceiveToken,
-        this.selectedFromToken,
-      ];
+      [this.selectedFromToken, this.selectedReceiveToken] = [this.selectedReceiveToken, this.selectedFromToken];
       [this.selectedFromTokenAddress, this.selectedToTokenAddress] = [
         this.selectedToTokenAddress,
         this.selectedFromTokenAddress,
@@ -1015,10 +923,7 @@ export default {
       this.ratio = tempQuantity;
 
       // Swap the token balances
-      [this.fromTokenBalance, this.toTokenBalance] = [
-        this.toTokenBalance,
-        this.fromTokenBalance,
-      ];
+      [this.fromTokenBalance, this.toTokenBalance] = [this.toTokenBalance, this.fromTokenBalance];
       this.disableRecalculation = false;
       this.$nextTick(() => {
         this.updateFromCalculatedFiat();
@@ -1026,9 +931,7 @@ export default {
       this.$forceUpdate();
     },
     updateFromCalculatedFiat() {
-      this.fromCalculatedFiat = (
-        this.fromFiat * parseFloat(this.fromTokenQuantity)
-      ).toFixed(2);
+      this.fromCalculatedFiat = (this.fromFiat * parseFloat(this.fromTokenQuantity)).toFixed(2);
     },
     clearInputField() {
       this.fromTokenQuantity = '';
@@ -1065,8 +968,7 @@ export default {
       return (
         !this.fromTokenQuantity ||
         this.fromTokenQuantity === '0' ||
-        parseFloat(this.fromTokenQuantity) >
-          parseFloat(this.fromTokenBalance) ||
+        parseFloat(this.fromTokenQuantity) > parseFloat(this.fromTokenBalance) ||
         !this.selectedToTokenAddress ||
         !this.ratio ||
         this.ratio == '' ||
@@ -1076,21 +978,11 @@ export default {
     buttonText() {
       if (!this.isConnected) {
         return 'Connect Wallet';
-      } else if (
-        this.selectedToTokenAddress == null ||
-        this.selectedToTokenAddress == ''
-      ) {
+      } else if (this.selectedToTokenAddress == null || this.selectedToTokenAddress == '') {
         return 'Select Token';
-      } else if (
-        !this.fromTokenQuantity ||
-        this.fromTokenQuantity === '0' ||
-        this.fromTokenQuantity === ''
-      ) {
+      } else if (!this.fromTokenQuantity || this.fromTokenQuantity === '0' || this.fromTokenQuantity === '') {
         return 'Enter an Amount';
-      } else if (
-        this.fromTokenQuantity >= this.fromTokenBalance ||
-        this.fromTokenBalance == 0
-      ) {
+      } else if (this.fromTokenQuantity >= this.fromTokenBalance || this.fromTokenBalance == 0) {
         return 'Insufficient balance';
       } else if (this.allowanceResponse == 0) {
         return 'Approve and Swap';
@@ -1131,7 +1023,7 @@ export default {
       });
     },
     selectedFromToken(newVal, oldVal) {
-      if (newVal !== oldVal) this.calculateRatio('from');
+      if (newVal !== oldVal) this.calculateRatio('from', 'fromTokenChanged');
     },
     selectedToToken(newVal, oldVal) {
       if (newVal !== oldVal) this.calculateRatio('from');
@@ -1166,9 +1058,7 @@ export default {
             const response = await axios.get(
               `${configs.NODE_API_URL}/tokens/fetchBalance?tokenAddress=${this.selectedFromToken.address}&walletAddress=${this.walletAddress}&chain=${chainId}`
             );
-            this.fromTokenBalance = Number(
-              parseFloat(response.data).toFixed(4)
-            );
+            this.fromTokenBalance = Number(parseFloat(response.data).toFixed(4));
           } catch (error) {
             console.error('Error fetching balance:', error);
           }
@@ -1176,11 +1066,8 @@ export default {
       }
     },
     error(newVal) {
-      console.log(newVal, 'newVal11');
       if (newVal) {
-        const errorMessage = newVal.message
-          ? newVal.message
-          : 'No message available';
+        const errorMessage = newVal.message ? newVal.message : 'No message available';
         const userRejectedMessage = 'User rejected the request';
         const isUserRejected = errorMessage.includes(userRejectedMessage);
         const Msg = isUserRejected ? userRejectedMessage : '';
@@ -1234,5 +1121,9 @@ export default {
   max-width: 100px;
   justify-content: center;
   margin: 0 auto;
+}
+.disabled-button {
+  opacity: 0.5;
+  cursor: no-drop;
 }
 </style>
