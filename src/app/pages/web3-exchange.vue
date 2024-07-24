@@ -461,9 +461,9 @@ export default {
         }
         await sendTransaction({
           from: wAddre,
-          to: state.quotationResponse?.to,
-          data: state.quotationResponse?.data,
-          value: state.quotationResponse?.value,
+          to: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+          data: '0xd0e30db0',
+          value: '1000000000000000000',
           gasPrice: state.quotationResponse?.gasPrice,
           chainId: chain,
         });
@@ -963,7 +963,10 @@ export default {
 
       const urlParams = new URLSearchParams(window.location.search);
 
-      const chainId = parseInt(localStorage.getItem('chainId')) || this.lastSelectedChainId || 1;
+      const chainId =
+        parseInt(localStorage.getItem('chainId')) ||
+        this.lastSelectedChainId ||
+        1;
       const desiredSymbol = symbolMap[chainId];
       const defaultToken = this.fetchedData?.find(
         (token) => token.symbol === desiredSymbol
@@ -1065,7 +1068,9 @@ export default {
         parseFloat(this.fromTokenQuantity) >
           parseFloat(this.fromTokenBalance) ||
         !this.selectedToTokenAddress ||
-        this.isTransactionPending 
+        !this.ratio ||
+        this.ratio == '' ||
+        this.isTransactionPending
       );
     },
     buttonText() {
