@@ -262,7 +262,7 @@ export default {
       const targetChainId = this.getChainIdFromSymbol(this.symbol);
       const currentChainId = parseInt(localStorage.getItem('chainId'));
       const walletName = localStorage.getItem('walletName');
-      console.log(walletName, targetChainId, currentChainId, walletName, this.isValidSymbol, 'currentChainId');
+
       this.setBugOrSell('fromToken');
 
       if (this.isValidSymbol && currentChainId !== targetChainId) {
