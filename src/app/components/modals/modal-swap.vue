@@ -70,7 +70,8 @@
                 <li
                   v-for="token in walletTokens"
                   :key="token.id"
-                  @click.stop="selectToken(token)"
+                  @click.stop="checkToken(token) ? () => {} : selectToken(token)"
+                  :class="checkToken(token) ? 'selected-token-btn' : ''"
                 >
                   <div class="tk-list-container">
                     <div class="tk-list">
