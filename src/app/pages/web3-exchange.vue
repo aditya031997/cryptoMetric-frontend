@@ -429,7 +429,7 @@ export default {
       }
     };
     const sendTrans = async () => {
-      state.isTransactionPending = isPending;
+      state.isTransactionPending = true;
       const chain = parseInt(localStorage.getItem('chainId'));
       const wAddre = localStorage.getItem('walletAddress');
       try {
@@ -1036,7 +1036,7 @@ export default {
         this.fromTokenBalance,
       ];
       this.disableRecalculation = false;
-      await this.calculateRatio('from')
+      await this.calculateRatio('from');
       this.$nextTick(() => {
         this.updateFromCalculatedFiat();
       });
@@ -1109,10 +1109,14 @@ export default {
         this.fromTokenBalance == 0
       ) {
         return 'Insufficient balance';
-      } else if (this.allowanceResponse === 0) {
-        return 'Approve and Swap';
       } else {
-        return this.isTransactionPending ? 'Processing...' : 'Swap';
+        return this.isTransactionPending
+          ? 'Processing...'
+          : this.allowanceResponse === ''
+          ? 'Fetching quotation'
+          : this.allowanceResponse === 0
+          ? 'Approve and Swap'
+          : 'Swap';
       }
     },
   },
@@ -1145,10 +1149,10 @@ export default {
           speed: 1000,
         });
         this.resetTransactionFields();
+        this.isTransactionPending = false;
         return;
       }
       if (newVal) {
-        this.isTransactionPending = false;
         this.checkHash(newVal);
       }
     },
