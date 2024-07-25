@@ -250,8 +250,6 @@
     >
       {{ buttonText }}
     </button>
-    <!-- <div v-if="hash">Transaction Hash: {{ hash }}</div> -->
-    <!-- In your component template -->
     <TokenModal
       ref="tokenModal"
       :is-visible="isSwapModalVisible"
@@ -374,6 +372,7 @@ export default {
       activeIndex: null,
       defaultImage: _defaultImage,
       isCalculatingRatio: false,
+      hashVal: '',
       accordionItems: [
         {
           title: 'Section 1',
@@ -397,6 +396,10 @@ export default {
       isPending,
       sendTransaction,
     } = useSendTransaction();
+    const { isLoading, isSuccess } = useWaitForTransactionReceipt({
+      confirmations: 2,
+      hash,
+    });
     let state = ref({
       isTransactionPending: false,
       netWorkId: address._object.chainId,
@@ -405,6 +408,8 @@ export default {
       fromTokenQuantity: '',
       walletAddress: isConnected._object.address,
       quotationResponse: null,
+      hashVal: '',
+      isHash: false,
     });
     const setQuotationResponse = (val) => {
       state.quotationResponse = val;
@@ -418,6 +423,11 @@ export default {
     const setTokenAllowance = (val) => {
       state.allowanceResponse = val;
     };
+    const checkHash = (newVal) => {
+      if (newVal) {
+        callSwapTsx();
+      }
+    };
     const sendTrans = async () => {
       state.isTransactionPending = isPending;
       const chain = parseInt(localStorage.getItem('chainId'));
@@ -428,6 +438,7 @@ export default {
           state.selectedFromTokenAddress.decimals
         );
         const allowance = BigInt(state.allowanceResponse?.data);
+        let approvalRecpit = null;
         if (allowance < fromTokenQuantityWei) {
           let approvalValue;
           if (allowance === 0) {
@@ -442,23 +453,26 @@ export default {
                 tokenAddress: state.selectedFromTokenAddress.address,
                 value: fromTokenQuantityWei,
                 chain: chain,
+                spender: state.quotationResponse?.to,
               },
             }
           );
-          await sendTransaction({
+          sendTransaction({
             from: wAddre,
             to: approveResult?.data?.to,
             data: approveResult?.data?.data,
           });
+        } else {
+          state.isHash = true;
+          sendTransaction({
+            from: wAddre,
+            to: state.quotationResponse?.to,
+            data: state.quotationResponse?.data,
+            value: state.quotationResponse?.value,
+            gasPrice: state.quotationResponse?.gasPrice,
+            chainId: chain,
+          });
         }
-        await sendTransaction({
-          from: wAddre,
-          to: state.quotationResponse?.to,
-          data: state.quotationResponse?.data,
-          value: state.quotationResponse?.value,
-          gasPrice: state.quotationResponse?.gasPrice,
-          chainId: chain,
-        });
       } catch (error) {
         console.error(error);
       } finally {
@@ -466,22 +480,36 @@ export default {
       }
     };
 
+    const returnIsHash = () => {
+      return state.isHash;
+    };
+    const callSwapTsx = async () => {
+      const chain = parseInt(localStorage.getItem('chainId'));
+      const wAddre = localStorage.getItem('walletAddress');
+      state.isHash = true;
+      sendTransaction({
+        from: wAddre,
+        to: state.quotationResponse?.to,
+        data: state.quotationResponse?.data,
+        // value: state.quotationResponse?.value,
+        // gasPrice: state.quotationResponse?.gasPrice,
+        chainId: chain,
+      });
+    };
     const resetState = () => {
       state.value = {
         fromTokenQuantity: '',
         quotationResponse: '',
         selectedFromTokenAddress: '',
         allowanceResponse: '',
+        isHash: false,
       };
     };
 
     const UpdateState = (newVal) => {
       state.fromTokenQuantity = newVal;
     };
-    const { isLoading: isConfirming, isSuccess: isConfirmed } =
-      useWaitForTransactionReceipt({
-        hash,
-      });
+
     return {
       ...toRefs(state),
       hash,
@@ -497,6 +525,10 @@ export default {
       setTokenAddress,
       setTokenAllowance,
       formattedAddress,
+      isSuccess,
+      checkHash,
+      callSwapTsx,
+      returnIsHash,
     };
   },
   methods: {
@@ -621,6 +653,8 @@ export default {
     },
     async updateTokenBalance(token, isFrom) {
       let loadingFlag = isFrom ? 'isLoadingFromBalance' : 'isLoadingToBalance';
+      if (this[loadingFlag]) return;
+      this[loadingFlag] = true;
       if (isFrom) {
         this.fromTokenBalance = '';
       } else {
@@ -690,22 +724,23 @@ export default {
     },
 
     sanitizeInput(event, model) {
-      // if (this.selectedFromToken && model === 'fromTokenQuantity') {
-      //   this.updateTokenBalance(this.selectedFromToken, true);
-      // }
-
       this.calculateRatio(model === 'fromTokenQuantity' ? 'from' : 'to');
     },
-    async handleAllowance(selectedFromToken) {
+    async handleAllowance(selectedFromToken, spender) {
       try {
-        const tokenAllowance = await axios.get(`${configs.NODE_API_URL}/tokens/allowances`, {
-          params: {
-            tokenAddress: selectedFromToken?.address,
-            walletAddress: localStorage.getItem('walletAddress') || '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f',
-            chain: parseInt(localStorage.getItem('chainId')) || 1,
-          },
-        });
-        console.log(tokenAllowance, 'tokenAllowance');
+        const tokenAllowance = await axios.get(
+          `${configs.NODE_API_URL}/tokens/allowances`,
+          {
+            params: {
+              tokenAddress: selectedFromToken?.address,
+              walletAddress:
+                localStorage.getItem('walletAddress') ||
+                '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f',
+              chain: parseInt(localStorage.getItem('chainId')) || 1,
+              spender,
+            },
+          }
+        );
         this.setTokenAllowance(tokenAllowance);
         this.allowanceResponse = tokenAllowance?.data;
       } catch (error) {
@@ -726,7 +761,11 @@ export default {
             return resolve(null);
           }
 
-          if (!this.selectedFromToken || !this.selectedReceiveToken || this.fromTokenQuantity == 0) {
+          if (
+            !this.selectedFromToken ||
+            !this.selectedReceiveToken ||
+            this.fromTokenQuantity == 0
+          ) {
             // this.isCalculatingRatio = false;
             return resolve(null);
           }
@@ -756,11 +795,16 @@ export default {
             slippageTolerance: this.slippageValue,
           };
           try {
-            const response = await axios.post(`${configs.NODE_API_URL}/tokens/buildSwapTx`, quotationData);
-
+            const response = await axios.post(
+              `${configs.NODE_API_URL}/tokens/buildSwapTx`,
+              quotationData
+            );
             this.quotationResponse = response.data;
             this.setQuotationResponse(response.data);
-
+            await this.handleAllowance(
+              this.selectedFromToken,
+              response?.data?.to
+            );
             let formattedQuotation;
 
             const provider = new ethers.JsonRpcProvider(
@@ -832,11 +876,16 @@ export default {
           };
 
           try {
-            const response = await axios.post(`${configs.NODE_API_URL}/tokens/buildSwapTx`, quotationData);
-
+            const response = await axios.post(
+              `${configs.NODE_API_URL}/tokens/buildSwapTx`,
+              quotationData
+            );
             this.quotationResponse = response.data;
             this.setQuotationResponse(response.data);
-
+            await this.handleAllowance(
+              this.selectedReceiveToken,
+              response?.data?.to
+            );
             let formattedQuotation;
 
             const provider = new ethers.JsonRpcProvider(
@@ -937,7 +986,7 @@ export default {
       const defaultToken = this.fetchedData?.find(
         (token) => token.symbol === desiredSymbol
       );
-      console.log(defaultToken, 'defaultToken');
+      // console.log(defaultToken, 'defaultToken');
       if (defaultToken) {
         this.selectedFromToken = defaultToken;
         this.selectedFromTokenAddress = defaultToken?.address;
@@ -948,6 +997,7 @@ export default {
     updateStateBasedOnChainId() {},
 
     resetTransactionFields() {
+      // console.log('resettttttt');
       this.selectedToToken = null;
       this.selectedReceiveToken = null;
       this.resetState();
@@ -986,6 +1036,7 @@ export default {
         this.fromTokenBalance,
       ];
       this.disableRecalculation = false;
+      await this.calculateRatio('from')
       this.$nextTick(() => {
         this.updateFromCalculatedFiat();
       });
@@ -1058,7 +1109,7 @@ export default {
         this.fromTokenBalance == 0
       ) {
         return 'Insufficient balance';
-      } else if (this.allowanceResponse == 0) {
+      } else if (this.allowanceResponse === 0) {
         return 'Approve and Swap';
       } else {
         return this.isTransactionPending ? 'Processing...' : 'Swap';
@@ -1071,6 +1122,36 @@ export default {
     this.initializeData();
   },
   watch: {
+    isSuccess(newVal) {
+      if (newVal && this.returnIsHash()) {
+        setTimeout(async () => {
+          try {
+            const chainId = parseInt(localStorage.getItem('chainId')) || 1;
+            const response = await axios.get(
+              `${configs.NODE_API_URL}/tokens/fetchBalance?tokenAddress=${this.selectedFromToken.address}&walletAddress=${this.walletAddress}&chain=${chainId}`
+            );
+            this.fromTokenBalance = Number(
+              parseFloat(response.data).toFixed(4)
+            );
+          } catch (error) {
+            console.error('Error fetching balance:', error);
+          }
+        }, 200);
+        const Msg = 'Transaction successfully';
+        notification.notify({
+          text: Msg,
+          type: 'success',
+          duration: 2000,
+          speed: 1000,
+        });
+        this.resetTransactionFields();
+        return;
+      }
+      if (newVal) {
+        this.isTransactionPending = false;
+        this.checkHash(newVal);
+      }
+    },
     isConnected(newVal) {
       if (newVal) {
         this.initializeData();
@@ -1084,23 +1165,9 @@ export default {
     },
     getChainId(newChainId) {
       this.fetchTokens().then(() => {
-        // this.selectedFromToken = null;
-        // this.selectedReceiveToken = null;
-        // this.fromTokenQuantity = '';
-        // this.isLoadingQuotation = false;
-        // this.ratio = '';
-        // this.fromTokenBalance = 0;
-        // this.toTokenBalance = 0;
         this.isLoadingQuotation = false;
-        this.resetTransactionFields();
         this.setDefaultToken();
       });
-    },
-    async selectedFromToken(newVal, oldVal) {
-      if (newVal?.address !== oldVal?.address) {
-        await this.handleAllowance(newVal);
-        this.calculateRatio('from');
-      }
     },
     selectedToToken(newVal, oldVal) {
       if (newVal !== oldVal) this.calculateRatio('from');
@@ -1118,31 +1185,10 @@ export default {
     },
     hash(newVal) {
       if (newVal) {
-        this.resetTransactionFields();
-        const Msg = 'Transaction successfully';
-        notification.notify({
-          text: Msg,
-          type: 'success',
-          duration: 2000,
-          speed: 1000,
-        });
-
-        setTimeout(async () => {
-          try {
-            const chainId = this.getChainId ?? this.netWorkId;
-            const response = await axios.get(
-              `${configs.NODE_API_URL}/tokens/fetchBalance?tokenAddress=${this.selectedFromToken.address}&walletAddress=${this.walletAddress}&chain=${chainId}`
-            );
-            this.fromTokenBalance = Number(
-              parseFloat(response.data).toFixed(4)
-            );
-          } catch (error) {
-            console.error('Error fetching balance:', error);
-          }
-        }, 35000);
       }
     },
     error(newVal) {
+      // console.log(newVal, 'newVal');
       if (newVal) {
         const errorMessage = newVal.message
           ? newVal.message
