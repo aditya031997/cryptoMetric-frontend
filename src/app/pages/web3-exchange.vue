@@ -1188,6 +1188,7 @@ export default {
         this.resetTransactionFields();
         this.fetchTokens()
         this.isTransactionPending = false;
+        this.pendingRequest = false
         return;
       }
       if (newVal) {
