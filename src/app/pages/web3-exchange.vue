@@ -474,7 +474,6 @@ export default {
             data: approveResult?.data?.data,
           });
         } else {
-          console.log(state.quotationResponse, 'quotationResponse');
           state.isHash = true;
           sendTransaction({
             from: wAddre,
@@ -645,7 +644,6 @@ export default {
     },
     handleTokensFetched(tokens) {
       this.tokens = tokens;
-      console.log('default1');
       this.setDefaultToken();
     },
     handleChainIdFetched(chainId) {
@@ -815,7 +813,6 @@ export default {
               quotationData
             );
             if (response.data.amountOut === 0) {
-              console.log('checkinggg');
               const Msg = response.data.amountOut === 0;
               ('Please increasee the amount');
               notification.notify({
@@ -915,7 +912,6 @@ export default {
               quotationData
             );
             if (response.data.amountOut === 0) {
-              console.log('checkinggg');
               const Msg = response.data.amountOut === 0;
               ('Please increasee the amount');
 
@@ -994,7 +990,6 @@ export default {
         await this.$refs.tokenModal.fetchTokens(chainId);
         await new Promise((resolve) => setTimeout(resolve, 2000));
         await this.fetchTokens(chainId);
-        console.log('default2');
         this.setDefaultToken();
       } catch (error) {
         console.error('Error fetching tokens:', error);
@@ -1003,7 +998,6 @@ export default {
       }
     },
     setDefaultToken() {
-      console.log('here');
       // if (this.hasDefaultTokenBeenSet) {
       //   return;
       // }
@@ -1107,7 +1101,6 @@ export default {
           });
         });
       } else {
-        console.log('default3');
         this.setDefaultToken();
         this.fetchAndSetDefaultToken();
       }
@@ -1217,7 +1210,6 @@ export default {
       this.resetTransactionFields();
       this.fetchTokens().then(() => {
         this.isLoadingQuotation = false;
-        console.log('default4');
         this.setDefaultToken();
       });
     },
@@ -1236,7 +1228,6 @@ export default {
       }
     },
     hash(newVal) {
-      console.log(newVal, 'vvvvvvv');
       if (newVal) {
         this.pendingRequest = true;
       } else {
@@ -1244,7 +1235,7 @@ export default {
       }
     },
     error(newVal) {
-      console.log(newVal, 'errorrrrr');
+      // console.log(newVal, 'errorrrrr');
       if (newVal) {
         const errorMessage = newVal.message
           ? newVal.message
