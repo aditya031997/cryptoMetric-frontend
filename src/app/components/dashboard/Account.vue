@@ -8,7 +8,7 @@ import { useNotification } from '@kyvg/vue3-notification';
 const notification = useNotification();
 const { address, isConnected } = useAccount();
 const { disconnect } = useDisconnect();
-
+console.log(isConnected,"isConnected")
 const formattedAddress = computed(() => {
   if (!address.value) return null;
   return `${address.value.slice(0, 6)}…${address.value.slice(38, 42)}`;
@@ -16,6 +16,7 @@ const formattedAddress = computed(() => {
 
 // Function to update localStorage
 const updateLocalStorage = () => {
+  localStorage.removeItem('walletRequestSent');
   localStorage.setItem('walletAddress', isConnected._object.address);
   localStorage.setItem('chainId', isConnected._object.chainId);
   localStorage.setItem('walletName', isConnected._object.connector.name);

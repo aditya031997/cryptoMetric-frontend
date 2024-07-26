@@ -1,6 +1,6 @@
 <script setup>
 import { useConnect, useChainId } from '@wagmi/vue';
-import { ref, watch } from 'vue';
+import { ref, watch,defineEmits } from 'vue';
 import IconMetamask from '../icons/icon-metamask.vue';
 import IconCoinbase from '../icons/icon-coinbase.vue';
 import IconTrustWallet from '../icons/icon-trust-wallet.vue';
@@ -8,7 +8,7 @@ import IconWalletConnect from '../icons/icon-wallet-connect.vue';
 
 const chainId = useChainId();
 const { connectors, connect } = useConnect();
-
+const emit = defineEmits(['walletConnected']);
 watch(chainId, async (newChainId, oldChainId) => {
   console.log('HERE IS CHAIN IDs ', newChainId, oldChainId);
 });
@@ -39,6 +39,11 @@ const uniqueConnectors = filteredConnectors
       return acc;
     }
   }, []);
+
+  const handleConnect = async (connector) => {
+  await connect({ connector, chainId });
+  emit('walletConnected');
+};
 </script>
 
 <template>
@@ -46,7 +51,7 @@ const uniqueConnectors = filteredConnectors
     <button
       v-for="connector in uniqueConnectors"
       :key="connector.id"
-      @click="connect({ connector, chainId })"
+      @click="handleConnect(connector)"
       class="connector-button"
     >
       <component

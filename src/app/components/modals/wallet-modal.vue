@@ -6,14 +6,17 @@
   >
     <div class="modal">
       <p>Connect a wallet</p>
-      <Connect />
-     <div class="modal-close-btn"> <button @click="closeModal" class="close-btn">Close</button></div>
+      <Connect @walletConnected="handleWalletConnected" />
+      <div class="modal-close-btn">
+        <button @click="closeModal" class="close-btn">Close</button>
+      </div>
     </div>
   </div>
 </template>
-  
-  <script>
+
+<script>
 import Connect from '../dashboard/Connect.vue';
+
 export default {
   components: {
     Connect,
@@ -28,9 +31,13 @@ export default {
     closeModal() {
       this.$emit('close');
     },
+    handleWalletConnected() {
+      this.closeModal();
+    },
   },
 };
 </script>
+
   
   <style scoped>
 .modal-overlay {

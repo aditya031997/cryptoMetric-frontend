@@ -29,7 +29,9 @@
                   >
                     Max. slippage
                     <div class="accrodion-right-content">
-                      <p>{{ selectedOption === 'auto' ? 'Auto' : '0.5' }}</p>
+                      <p>
+                        {{ selectedOption === 'auto' ? 'Auto' : slippageValue }}
+                      </p>
                       <dropdownIcon />
                     </div>
                   </div>
@@ -64,6 +66,15 @@
                       />
                     </div>
                   </div>
+                  <p
+                    v-if="slippageValue > 1"
+                    class="warning-message"
+                  >
+                    <slipage-warning /><span
+                      >Your transaction may be frontrun and result in an
+                      unfavorable trade.</span
+                    >
+                  </p>
                 </div>
               </div>
             </div>
@@ -289,6 +300,7 @@ import '../assets/scss/pages/swap.scss';
 import SwapIcon from '../assets/images/zrx-icon.png';
 import Multiselect from 'vue-multiselect';
 import slipageAdd from '../components/icons/slipage-add.vue';
+import slipageWarning from '../components/icons/icon-warning.vue';
 import dropdownIcon from '../components/icons/icon-dropdown.vue';
 import settingIcon from '../components/icons/icon-settings.vue';
 import { ethers } from 'ethers';
@@ -321,6 +333,7 @@ export default {
     dropdownIcon,
     SwapIcon,
     TokenModal,
+    slipageWarning,
     settingIcon,
   },
   props: {
@@ -366,12 +379,14 @@ export default {
       showSlippageModal: false,
       slippageValue: 0.5,
       isTransactionPending: false,
+      pendingRequest: false,
       allowanceResponse: '',
       slippageType: 'auto',
       selectedOption: 'auto',
       activeIndex: null,
       defaultImage: _defaultImage,
       isCalculatingRatio: false,
+      hasDefaultTokenBeenSet: false,
       hashVal: '',
       accordionItems: [
         {
@@ -423,11 +438,7 @@ export default {
     const setTokenAllowance = (val) => {
       state.allowanceResponse = val;
     };
-    const checkHash = (newVal) => {
-      if (newVal) {
-        callSwapTsx();
-      }
-    };
+
     const sendTrans = async () => {
       state.isTransactionPending = true;
       const chain = parseInt(localStorage.getItem('chainId'));
@@ -463,6 +474,7 @@ export default {
             data: approveResult?.data?.data,
           });
         } else {
+          console.log(state.quotationResponse, 'quotationResponse');
           state.isHash = true;
           sendTransaction({
             from: wAddre,
@@ -484,6 +496,7 @@ export default {
       return state.isHash;
     };
     const callSwapTsx = async () => {
+      state.isTransactionPending = true;
       const chain = parseInt(localStorage.getItem('chainId'));
       const wAddre = localStorage.getItem('walletAddress');
       state.isHash = true;
@@ -491,8 +504,8 @@ export default {
         from: wAddre,
         to: state.quotationResponse?.to,
         data: state.quotationResponse?.data,
-        // value: state.quotationResponse?.value,
-        // gasPrice: state.quotationResponse?.gasPrice,
+        value: state.quotationResponse?.value,
+        gasPrice: state.quotationResponse?.gasPrice,
         chainId: chain,
       });
     };
@@ -526,7 +539,7 @@ export default {
       setTokenAllowance,
       formattedAddress,
       isSuccess,
-      checkHash,
+      // checkHash,
       callSwapTsx,
       returnIsHash,
     };
@@ -625,12 +638,14 @@ export default {
         this.isFetchingToToken = false;
       }
 
-      if (!fromTokenSet) {
-        this.setDefaultToken();
-      }
+      // if (!fromTokenSet) {
+      //   console.log("default2")
+      //   this.setDefaultToken();
+      // }
     },
     handleTokensFetched(tokens) {
       this.tokens = tokens;
+      console.log('default1');
       this.setDefaultToken();
     },
     handleChainIdFetched(chainId) {
@@ -653,7 +668,7 @@ export default {
     },
     async updateTokenBalance(token, isFrom) {
       let loadingFlag = isFrom ? 'isLoadingFromBalance' : 'isLoadingToBalance';
-      if (this[loadingFlag]) return;
+      // if (this[loadingFlag]) return;
       this[loadingFlag] = true;
       if (isFrom) {
         this.fromTokenBalance = '';
@@ -799,7 +814,18 @@ export default {
               `${configs.NODE_API_URL}/tokens/buildSwapTx`,
               quotationData
             );
-            this.quotationResponse = response.data;
+            if (response.data.amountOut === 0) {
+              console.log('checkinggg');
+              const Msg = response.data.amountOut === 0;
+              ('Please increasee the amount');
+              notification.notify({
+                text: Msg,
+                type: 'warn',
+                duration: 2000,
+                speed: 10000,
+              });
+            }
+            if (response.amountOut) this.quotationResponse = response.data;
             this.setQuotationResponse(response.data);
             await this.handleAllowance(
               this.selectedFromToken,
@@ -827,6 +853,14 @@ export default {
             this.ratio = formattedQuotation;
             resolve(formattedQuotation);
           } catch (error) {
+            const Msg = error.response.data.message;
+            notification.notify({
+              text: Msg,
+              type: 'warn',
+              duration: 2000,
+              speed: 10000,
+            });
+            this.resetTransactionFields();
             console.error('Error fetching quotation:', error);
             this.ratio = 0;
             reject(error);
@@ -880,6 +914,18 @@ export default {
               `${configs.NODE_API_URL}/tokens/buildSwapTx`,
               quotationData
             );
+            if (response.data.amountOut === 0) {
+              console.log('checkinggg');
+              const Msg = response.data.amountOut === 0;
+              ('Please increasee the amount');
+
+              notification.notify({
+                text: Msg,
+                type: 'warn',
+                duration: 2000,
+                speed: 10000,
+              });
+            }
             this.quotationResponse = response.data;
             this.setQuotationResponse(response.data);
             await this.handleAllowance(
@@ -940,18 +986,6 @@ export default {
     toggleAccordion(index) {
       this.activeIndex = this.activeIndex === index ? null : index;
     },
-    async getAccountBalance() {
-      if (window.ethereum) {
-        const web3 = new Web3(window.ethereum);
-        try {
-          await this.fetchAndSetDefaultToken();
-        } catch (error) {
-          console.error('Error fetching account balance:', error);
-        }
-      } else {
-        console.log('Please install MetaMask!');
-      }
-    },
 
     async fetchAndSetDefaultToken() {
       this.isLoadingTokens = true;
@@ -960,6 +994,7 @@ export default {
         await this.$refs.tokenModal.fetchTokens(chainId);
         await new Promise((resolve) => setTimeout(resolve, 2000));
         await this.fetchTokens(chainId);
+        console.log('default2');
         this.setDefaultToken();
       } catch (error) {
         console.error('Error fetching tokens:', error);
@@ -968,6 +1003,11 @@ export default {
       }
     },
     setDefaultToken() {
+      console.log('here');
+      // if (this.hasDefaultTokenBeenSet) {
+      //   return;
+      // }
+
       const symbolMap = {
         137: 'MATIC',
         1: 'ETH',
@@ -992,12 +1032,12 @@ export default {
         this.selectedFromTokenAddress = defaultToken?.address;
         this.setTokenAddress(defaultToken);
         this.updateTokenBalance(defaultToken, true);
+        // this.hasDefaultTokenBeenSet = true;
       }
     },
     updateStateBasedOnChainId() {},
 
     resetTransactionFields() {
-      // console.log('resettttttt');
       this.selectedToToken = null;
       this.selectedReceiveToken = null;
       this.resetState();
@@ -1055,20 +1095,23 @@ export default {
     },
     async initializeData() {
       document.addEventListener('click', this.handleClickOutside);
-      this.getAccountBalance().then(() => {
-        if (this.isConnected) {
-          this.fetchTokens().then(() => {
-            this.setTokenFromParams().then(() => {
-              if (!this.initialLoadComplete) {
-                this.updateTokenBalance(this.selectedFromToken, true);
-                this.updateTokenBalance(this.selectedReceiveToken, false);
-                this.initialLoadComplete = true;
-              }
-              this.setDefaultToken();
-            });
+      // this.getAccountBalance().then(() => {
+      if (this.isConnected) {
+        this.fetchTokens().then(() => {
+          this.setTokenFromParams().then(() => {
+            if (!this.initialLoadComplete) {
+              this.updateTokenBalance(this.selectedFromToken, true);
+              this.updateTokenBalance(this.selectedReceiveToken, false);
+              this.initialLoadComplete = true;
+            }
           });
-        }
-      });
+        });
+      } else {
+        console.log('default3');
+        this.setDefaultToken();
+        this.fetchAndSetDefaultToken();
+      }
+      // });
     },
   },
 
@@ -1087,7 +1130,8 @@ export default {
         !this.selectedToTokenAddress ||
         !this.ratio ||
         this.ratio == '' ||
-        this.isTransactionPending
+        this.isTransactionPending ||
+        this.pendingRequest
       );
     },
     buttonText() {
@@ -1110,7 +1154,7 @@ export default {
       ) {
         return 'Insufficient balance';
       } else {
-        return this.isTransactionPending
+        return this.isTransactionPending || this.pendingRequest
           ? 'Processing...'
           : this.allowanceResponse === ''
           ? 'Fetching quotation'
@@ -1149,11 +1193,13 @@ export default {
           speed: 1000,
         });
         this.resetTransactionFields();
+        this.fetchTokens()
         this.isTransactionPending = false;
         return;
       }
       if (newVal) {
-        this.checkHash(newVal);
+        this.callSwapTsx();
+        // this.checkHash(newVal);
       }
     },
     isConnected(newVal) {
@@ -1168,8 +1214,10 @@ export default {
       this.initializeData();
     },
     getChainId(newChainId) {
+      this.resetTransactionFields();
       this.fetchTokens().then(() => {
         this.isLoadingQuotation = false;
+        console.log('default4');
         this.setDefaultToken();
       });
     },
@@ -1188,11 +1236,15 @@ export default {
       }
     },
     hash(newVal) {
+      console.log(newVal, 'vvvvvvv');
       if (newVal) {
+        this.pendingRequest = true;
+      } else {
+        this.pendingRequest = false;
       }
     },
     error(newVal) {
-      // console.log(newVal, 'newVal');
+      console.log(newVal, 'errorrrrr');
       if (newVal) {
         const errorMessage = newVal.message
           ? newVal.message
@@ -1254,5 +1306,23 @@ export default {
 .disabled-button {
   opacity: 0.5;
   cursor: no-drop;
+}
+.warning-message {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin-top: 15px;
+}
+.warning-message svg {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  color: rgb(238, 179, 23);
+  margin-right: 10px;
+}
+.warning-message span {
+  color: rgb(238, 179, 23);
+  font-size: 13px;
+  font-weight: 400;
 }
 </style>
