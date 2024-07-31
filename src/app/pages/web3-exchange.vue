@@ -821,7 +821,7 @@ export default {
                 text: Msg,
                 type: 'warn',
                 duration: 2000,
-                speed: 10000,
+                speed: 1000,
                 position: 'top right',
               });
             }
@@ -859,7 +859,7 @@ export default {
               text: Msg,
               type: 'warn',
               duration: 2000,
-              speed: 10000,
+              speed: 1000,
               position: 'top right',
             });
             console.error('Error fetching quotation:', error);
@@ -922,7 +922,7 @@ export default {
               notification.notify({
                 text: Msg,
                 type: 'warn',
-                duration: 3000,
+                duration: 2000,
                 speed: 1000,
                 position: 'top right',
               });
