@@ -8,7 +8,6 @@ import { useNotification } from '@kyvg/vue3-notification';
 const notification = useNotification();
 const { address, isConnected } = useAccount();
 const { disconnect } = useDisconnect();
-console.log(isConnected,"isConnected")
 const formattedAddress = computed(() => {
   if (!address.value) return null;
   return `${address.value.slice(0, 6)}…${address.value.slice(38, 42)}`;

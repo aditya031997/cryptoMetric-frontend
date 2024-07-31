@@ -264,7 +264,6 @@
     <TokenModal
       ref="tokenModal"
       :is-visible="isSwapModalVisible"
-      :chain-id="137"
       :fromToken="selectedFromToken"
       :toToken="selectedReceiveToken"
       @hide-modal="toggleSwapModal(false)"
@@ -474,6 +473,7 @@ export default {
             data: approveResult?.data?.data,
           });
         } else {
+          // console.log('run else part');
           state.isHash = true;
           sendTransaction({
             from: wAddre,
@@ -494,7 +494,12 @@ export default {
     const returnIsHash = () => {
       return state.isHash;
     };
+
+    const updateHash = () => {
+      return (state.isHash = false);
+    };
     const callSwapTsx = async () => {
+      // console.log('after approve swap function');
       state.isTransactionPending = true;
       const chain = parseInt(localStorage.getItem('chainId'));
       const wAddre = localStorage.getItem('walletAddress');
@@ -541,6 +546,7 @@ export default {
       // checkHash,
       callSwapTsx,
       returnIsHash,
+      updateHash,
     };
   },
   methods: {
@@ -666,6 +672,7 @@ export default {
     },
     async updateTokenBalance(token, isFrom) {
       let loadingFlag = isFrom ? 'isLoadingFromBalance' : 'isLoadingToBalance';
+      this.calculateRatio();
       // if (this[loadingFlag]) return;
       this[loadingFlag] = true;
       if (isFrom) {
@@ -712,8 +719,6 @@ export default {
             this.toFiat = fiatValue;
             this.toTokenBalance = truncatedBalance;
           }
-
-          this.calculateRatio();
         }
       } catch (error) {
         console.error('Failed to fetch token balance:', error);
@@ -748,7 +753,7 @@ export default {
               tokenAddress: selectedFromToken?.address,
               walletAddress:
                 localStorage.getItem('walletAddress') ||
-                '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f',
+                configs.DEFAULT_TOKEN_ADDRESS,
               chain: parseInt(localStorage.getItem('chainId')) || 1,
               spender,
             },
@@ -761,16 +766,12 @@ export default {
       }
     },
     async calculateRatio(origin) {
-      // if (this.isCalculatingRatio) {
-      //   return;
-      // }
-
-      // this.isCalculatingRatio = true;
+      this.isCalculatingRatio = true;
 
       if (origin !== 'to') {
         return new Promise(async (resolve, reject) => {
           if (this.disableRecalculation) {
-            // this.isCalculatingRatio = false;
+            this.isCalculatingRatio = false;
             return resolve(null);
           }
 
@@ -779,7 +780,7 @@ export default {
             !this.selectedReceiveToken ||
             this.fromTokenQuantity == 0
           ) {
-            // this.isCalculatingRatio = false;
+            this.isCalculatingRatio = false;
             return resolve(null);
           }
 
@@ -807,37 +808,40 @@ export default {
             amountIn: this.fromTokenQuantity,
             slippageTolerance: this.slippageValue,
           };
+
           try {
             const response = await axios.post(
               `${configs.NODE_API_URL}/tokens/buildSwapTx`,
               quotationData
             );
+
             if (response.data.amountOut === 0) {
-              const Msg = response.data.amountOut === 0;
-              ('Please increasee the amount');
+              const Msg = 'Please increase the input amount';
               notification.notify({
                 text: Msg,
                 type: 'warn',
                 duration: 2000,
                 speed: 10000,
+                position: 'top right',
               });
             }
-            if (response.amountOut) this.quotationResponse = response.data;
+            if (response.data.amountOut) this.quotationResponse = response.data;
             this.setQuotationResponse(response.data);
             await this.handleAllowance(
               this.selectedFromToken,
               response?.data?.to
             );
+
             let formattedQuotation;
 
             const provider = new ethers.JsonRpcProvider(
-              'https://polygon-rpc.com'
+              rpcUrls[quotationData.chain]
             );
+
             if (
               quotationData.toTokenObj.address === configs.DEFAULT_TOKEN_ADDRESS
             ) {
-              const fetchedQuotation = response?.data?.amountOut;
-              formattedQuotation = fetchedQuotation;
+              formattedQuotation = response?.data?.amountOut;
             } else {
               const tokenInstance = new ethers.Contract(
                 quotationData.toTokenObj.address,
@@ -856,20 +860,20 @@ export default {
               type: 'warn',
               duration: 2000,
               speed: 10000,
+              position: 'top right',
             });
-            this.resetTransactionFields();
             console.error('Error fetching quotation:', error);
             this.ratio = 0;
             reject(error);
           } finally {
+            this.isCalculatingRatio = false;
             this.isLoadingQuotation = false;
-            // this.isCalculatingRatio = false;
           }
         });
       } else {
         return new Promise(async (resolve, reject) => {
           if (this.disableRecalculation) {
-            // this.isCalculatingRatio = false;
+            this.isCalculatingRatio = false;
             return resolve(null);
           }
 
@@ -878,6 +882,7 @@ export default {
             !this.selectedReceiveToken ||
             !+this.ratio
           ) {
+            this.isCalculatingRatio = false;
             return resolve(null);
           }
 
@@ -911,33 +916,35 @@ export default {
               `${configs.NODE_API_URL}/tokens/buildSwapTx`,
               quotationData
             );
-            if (response.data.amountOut === 0) {
-              const Msg = response.data.amountOut === 0;
-              ('Please increasee the amount');
 
+            if (response.data.amountOut === 0) {
+              const Msg = 'Please increase input input amount';
               notification.notify({
                 text: Msg,
                 type: 'warn',
-                duration: 2000,
-                speed: 10000,
+                duration: 3000,
+                speed: 1000,
+                position: 'top right',
               });
             }
+
             this.quotationResponse = response.data;
             this.setQuotationResponse(response.data);
             await this.handleAllowance(
               this.selectedReceiveToken,
               response?.data?.to
             );
+
             let formattedQuotation;
 
             const provider = new ethers.JsonRpcProvider(
-              'https://polygon-rpc.com'
+              rpcUrls[quotationData.chain]
             );
+
             if (
               quotationData.toTokenObj.address === configs.DEFAULT_TOKEN_ADDRESS
             ) {
-              const fetchedQuotation = response?.data?.amountOut;
-              formattedQuotation = fetchedQuotation;
+              formattedQuotation = response?.data?.amountOut;
             } else {
               const tokenInstance = new ethers.Contract(
                 quotationData.toTokenObj.address,
@@ -954,8 +961,8 @@ export default {
             this.ratio = 0;
             reject(error);
           } finally {
+            this.isCalculatingRatio = false;
             this.isLoadingFromQuotation = false;
-            // this.isCalculatingRatio = false;
           }
         });
       }
@@ -1033,6 +1040,7 @@ export default {
 
     resetTransactionFields() {
       this.selectedToToken = null;
+      this.selectedToTokenAddress = null;
       this.selectedReceiveToken = null;
       this.resetState();
       this.fromTokenQuantity = '';
@@ -1124,7 +1132,8 @@ export default {
         !this.ratio ||
         this.ratio == '' ||
         this.isTransactionPending ||
-        this.pendingRequest
+        this.pendingRequest ||
+        this.isCalculatingRatio
       );
     },
     buttonText() {
@@ -1149,7 +1158,7 @@ export default {
       } else {
         return this.isTransactionPending || this.pendingRequest
           ? 'Processing...'
-          : this.allowanceResponse === ''
+          : this.allowanceResponse === '' || this.isCalculatingRatio
           ? 'Fetching quotation'
           : this.allowanceResponse === 0
           ? 'Approve and Swap'
@@ -1164,6 +1173,7 @@ export default {
   },
   watch: {
     isSuccess(newVal) {
+      // console.log(newVal, this.returnIsHash(), 'newValTest');
       if (newVal && this.returnIsHash()) {
         setTimeout(async () => {
           try {
@@ -1184,16 +1194,17 @@ export default {
           type: 'success',
           duration: 2000,
           speed: 1000,
+          position: 'top right',
         });
         this.resetTransactionFields();
-        this.fetchTokens()
+        this.updateHash();
+        this.fetchTokens();
         this.isTransactionPending = false;
-        this.pendingRequest = false
+        this.pendingRequest = false;
         return;
       }
       if (newVal) {
         this.callSwapTsx();
-        // this.checkHash(newVal);
       }
     },
     isConnected(newVal) {
@@ -1236,19 +1247,21 @@ export default {
       }
     },
     error(newVal) {
-      // console.log(newVal, 'errorrrrr');
+      // console.log(newVal?.message, 'errorrrrr');
       if (newVal) {
-        const errorMessage = newVal.message
-          ? newVal.message
+        const errorMessage = newVal?.message
+          ? newVal?.message
           : 'No message available';
         const userRejectedMessage = 'User rejected the request';
+        const metaMaskError = 'Internal JSON-RPC error';
         const isUserRejected = errorMessage.includes(userRejectedMessage);
-        const Msg = isUserRejected ? userRejectedMessage : '';
+        const Msg = isUserRejected ? userRejectedMessage : metaMaskError;
         notification.notify({
           text: Msg,
           type: 'warn',
           duration: 2000,
           speed: 1000,
+          position: 'top right',
         });
       }
     },
@@ -1295,6 +1308,9 @@ export default {
   justify-content: center;
   margin: 0 auto;
 }
+.connect-wallet:disabled {
+  cursor: not-allowed;
+}
 .disabled-button {
   opacity: 0.5;
   cursor: no-drop;
@@ -1311,6 +1327,10 @@ export default {
   min-width: 20px;
   color: rgb(238, 179, 23);
   margin-right: 10px;
+}
+
+.vue-notification.warn {
+  margin-top: 20px !important;
 }
 .warning-message span {
   color: rgb(238, 179, 23);

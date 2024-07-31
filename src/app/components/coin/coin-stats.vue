@@ -47,14 +47,9 @@
               @click="handleSell"
               v-if="showButtons"
               :disabled="showButtons && !showSellButton"
+               :class="{ 'not-allowed': showButtons && !showSellButton }"
             >
-              <popper-tooltip
-                custom-class="header-logout"
-                placement="bottom"
-                :disabled="showButtons && !showSellButton"
-              >
-                <template v-slot:popper>no</template>
-              </popper-tooltip>
+   
               Sell
             </button>
           </template>
@@ -341,6 +336,9 @@ export default {
   width: 100%;
   height: 100%;
   overflow: hidden;
+}
+.not-allowed {
+  cursor: not-allowed;
 }
 .custom-iframe {
   width: 100%;

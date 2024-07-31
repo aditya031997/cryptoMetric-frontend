@@ -235,7 +235,7 @@ export default {
             address,
             nativeToken: filteredData[0],
           });
-          const verifiedTokens = walletResponse.data.msg.filter((token) => token.verified_contract);
+          const verifiedTokens = walletResponse.data.msg.filter((token) => token.verified_contract || token.logo !== null);
           this.existingToken = verifiedTokens;
           this.$emit('tokens-fetched', this.apiTokens);
           this.errorMessage = null;
