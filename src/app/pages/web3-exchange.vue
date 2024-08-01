@@ -62,7 +62,7 @@
                         placeholder="0.5"
                         v-model="slippageValue"
                         @focus="setToCustom"
-                        @input="setToCustom"
+                        @input="validateInput"
                       />
                     </div>
                   </div>
@@ -73,6 +73,12 @@
                     <slipage-warning /><span
                       >Your transaction may be frontrun and result in an
                       unfavorable trade.</span
+                    >
+                  </p>
+                  <p v-else-if="slippageValue < 0.05" class="warning-message">
+                    <slipage-warning /><span
+                      >Slippage below 0.05% may result in a failed
+                      transaction</span
                     >
                   </p>
                 </div>
@@ -978,6 +984,16 @@ export default {
     setToCustom() {
       this.selectOption('custom');
     },
+    validateInput(event) {
+      let newValue = event.target.value.replace(/[^0-9.]/g, '');
+      const decimalCount = (newValue.match(/\./g) || []).length;
+      if (decimalCount > 1) {
+        newValue =
+          newValue.slice(0, newValue.lastIndexOf('.')) +
+          newValue.slice(newValue.lastIndexOf('.') + 1);
+      }
+      this.slippageValue = newValue;
+    },
     selectOption(option) {
       this.selectedOption = option;
       if (option === 'auto') {
@@ -1224,6 +1240,20 @@ export default {
         this.isLoadingQuotation = false;
         this.setDefaultToken();
       });
+    },
+    slippageValue(newValue) {
+      if (newValue > 50) {
+        const firstChar = newValue.charAt(0);
+        const restChars = newValue.slice(1);
+
+        if (restChars.length === 0) {
+          this.slippageValue = firstChar;
+        } else if (restChars.length === 1) {
+          this.slippageValue = firstChar;
+        } else {
+          this.slippageValue = firstChar + restChars.charAt(0);
+        }
+      }
     },
     selectedToToken(newVal, oldVal) {
       if (newVal !== oldVal) this.calculateRatio('from');
