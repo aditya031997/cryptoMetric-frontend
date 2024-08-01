@@ -75,7 +75,10 @@
                       unfavorable trade.</span
                     >
                   </p>
-                  <p v-else-if="slippageValue < 0.05" class="warning-message">
+                  <p
+                    v-else-if="slippageValue < 0.05"
+                    class="warning-message"
+                  >
                     <slipage-warning /><span
                       >Slippage below 0.05% may result in a failed
                       transaction</span
@@ -416,7 +419,7 @@ export default {
       isPending,
       sendTransaction,
     } = useSendTransaction();
-    const { isLoading, isSuccess } = useWaitForTransactionReceipt({
+    const { isLoading, isSuccess, isError } = useWaitForTransactionReceipt({
       confirmations: 2,
       hash,
     });
@@ -550,6 +553,7 @@ export default {
       formattedAddress,
       isSuccess,
       // checkHash,
+      isError,
       callSwapTsx,
       returnIsHash,
       updateHash,
@@ -1223,6 +1227,12 @@ export default {
         this.callSwapTsx();
       }
     },
+    isError(isError) {
+      consple.log(isError,"isError")
+      if (isError) {
+        this.pendingRequest = false;
+      }
+    },
     isConnected(newVal) {
       if (newVal) {
         this.initializeData();
@@ -1270,6 +1280,7 @@ export default {
       }
     },
     hash(newVal) {
+      console.log('newVal', newVal);
       if (newVal) {
         this.pendingRequest = true;
       } else {
