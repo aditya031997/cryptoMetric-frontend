@@ -446,7 +446,6 @@ export default {
     const setTokenAllowance = (val) => {
       state.allowanceResponse = val;
     };
-
     const sendTrans = async () => {
       state.isTransactionPending = true;
       const chain = parseInt(localStorage.getItem('chainId'));
@@ -457,14 +456,7 @@ export default {
           state.selectedFromTokenAddress.decimals
         );
         const allowance = BigInt(state.allowanceResponse?.data);
-        let approvalRecpit = null;
         if (allowance < fromTokenQuantityWei) {
-          let approvalValue;
-          if (allowance === 0) {
-            approvalValue = fromTokenQuantityWei;
-          } else {
-            approvalValue = allowance - fromTokenQuantityWei;
-          }
           const approveResult = await axios.get(
             `${configs.NODE_API_URL}/tokens/grantApproval`,
             {
@@ -482,7 +474,6 @@ export default {
             data: approveResult?.data?.data,
           });
         } else {
-          // console.log('run else part');
           state.isHash = true;
           sendTransaction({
             from: wAddre,
@@ -1228,7 +1219,7 @@ export default {
       }
     },
     isError(isError) {
-      consple.log(isError,"isError")
+      // consple.log(isError, 'isError');
       if (isError) {
         this.pendingRequest = false;
       }
@@ -1304,6 +1295,7 @@ export default {
           speed: 1000,
           position: 'top right',
         });
+        this.calculateRatio();
       }
     },
     isPending(newVal) {
