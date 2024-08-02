@@ -7,11 +7,6 @@
       <h2 class="m-0 pb-4 text text--title-3 profile-forms__title">
         Personal Info
       </h2>
-      <!-- <validation-provider
-        name="email"
-        rules="required"
-        v-slot="{ errors }"
-      > -->
       <cm-input
         id="first_name"
         label="First Name"
@@ -20,12 +15,6 @@
         v-model="firstName"
       />
       <ErrorMessage name="first_name" />
-      <!-- </validation-provider>
-      <validation-provider
-        name="email"
-        rules="required"
-        v-slot="{ errors }"
-      > -->
       <cm-input
         id="last_name"
         label="Last Name"
@@ -34,7 +23,6 @@
         v-model="lastName"
       />
       <ErrorMessage name="last_name" />
-      <!-- </validation-provider> -->
       <cm-input
         label="Email"
         class-wrapper="mt-4"

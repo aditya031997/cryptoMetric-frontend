@@ -14,7 +14,6 @@
         :error="emailError"
       />
       <ErrorMessage name="email" />
-      <!-- </validation-provider> -->
       <cm-button
         type="submit"
         custom-class="mt-4"

@@ -73,6 +73,7 @@
             :error="passwordConfirmError"
             placeholder="Confirm your password"
           >
+          
             <template #append>
               <button
                 type="button"
@@ -85,7 +86,16 @@
             </template>
           </cm-input>
           <ErrorMessage name="passwordConfirm" />
-
+          <cm-input
+            class-wrapper="mt-3"
+            id="input-invite-code"
+            label="Invitation code"
+            v-model="invitation_id"
+            @input="invitationCodeValidation"
+            :error="invideCodeError"
+            placeholder="Enter your invitation code"
+          />
+          <ErrorMessage name="invite-code" />
           <cm-button
             custom-class="mt-4"
             :disabled="isValid"
@@ -138,6 +148,7 @@ export default {
   data: () => ({
     isLoad: false,
     firstNameValue: '',
+    invitation_id:'',
     lastNameValue: '',
     emailValue: '',
     passwordValue: '',
@@ -146,11 +157,12 @@ export default {
     emailError: '',
     passwordError: '',
     firstNameError: '',
+    invideCodeError:'',
     lastNameError: '',
     passwordConfirmError: '',
     isValid: true,
-    passwordFieldType: 'password', // initial password field type
-    passwordConfirmFieldType: 'password', // initial confirm password field type
+    passwordFieldType: 'password',
+    passwordConfirmFieldType: 'password',
   }),
   methods: {
     togglePasswordVisibility() {
@@ -198,6 +210,17 @@ export default {
         return;
       }
       this.firstNameError = '';
+      this.validation();
+    },
+    invitationCodeValidation(event){
+      if (event !== '') {
+        this.invitation_id = event;
+      }
+      if (event === '') {
+        this.invideCodeError = 'The invitation code field is required';
+        return;
+      }
+      this.invideCodeError = '';
       this.validation();
     },
     lastNameValidation(event) {
@@ -262,6 +285,7 @@ export default {
           email: this.emailValue,
           password: this.passwordValue,
           password_confirmation: this.passwordConfirmValue,
+          invitation_id : this.invitation_id
         };
         this.isLoad = true;
         this.$api
