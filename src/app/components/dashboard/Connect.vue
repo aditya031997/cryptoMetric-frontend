@@ -1,6 +1,6 @@
 <script setup>
 import { useConnect, useChainId } from '@wagmi/vue';
-import { ref, watch,defineEmits } from 'vue';
+import { ref, watch, defineEmits } from 'vue';
 import IconMetamask from '../icons/icon-metamask.vue';
 import IconCoinbase from '../icons/icon-coinbase.vue';
 import IconTrustWallet from '../icons/icon-trust-wallet.vue';
@@ -13,34 +13,41 @@ watch(chainId, async (newChainId, oldChainId) => {
   console.log('HERE IS CHAIN IDs ', newChainId, oldChainId);
 });
 
-const desiredConnectors = [
-  'MetaMask',
-  'WalletConnect',
-  'Trust Wallet',
-  'Coinbase Wallet',
-];
 const walletComponents = {
   MetaMask: IconMetamask,
   WalletConnect: IconWalletConnect,
   'Trust Wallet': IconTrustWallet,
   'Coinbase Wallet': IconCoinbase,
+  'Coinbase Wallet SDK': IconCoinbase,
+  'MetaMask SDK': IconMetamask,
 };
 
-const filteredConnectors = connectors.filter(
-  (connector) => connector.id !== 'metaMaskSDK'
-);
-const uniqueConnectors = filteredConnectors
-  .filter((connector) => desiredConnectors.includes(connector.name))
-  .reduce((acc, current) => {
-    const x = acc.find((item) => item.name === current.name);
-    if (!x) {
-      return acc.concat([current]);
-    } else {
-      return acc;
-    }
-  }, []);
 
-  const handleConnect = async (connector) => {
+
+const excludedIds = new Set([
+  'io.metamask',
+  'com.coinbase.wallet',
+  'com.trustwallet.app',
+]);
+const extensionConnectors = connectors.filter((connector) =>
+  excludedIds.has(connector.id) || connector.id === 'walletConnect'
+);
+
+const sdkConnectors = connectors.filter((connector) =>
+  (connector.id.includes('SDK') || connector.id === 'walletConnect') && !excludedIds.has(connector.id)
+);
+const filteredConnectors = extensionConnectors.length > 1 ? extensionConnectors : sdkConnectors;
+
+const updatedConnectors = filteredConnectors.map((connector) => {
+  if (connector.id.includes('SDK')) {
+    return { ...connector, name: `${connector.name} SDK` };
+  }
+  return connector;
+});
+
+
+
+const handleConnect = async (connector) => {
   await connect({ connector, chainId });
   emit('walletConnected');
 };
@@ -49,7 +56,7 @@ const uniqueConnectors = filteredConnectors
 <template>
   <div class="connector-list">
     <button
-      v-for="connector in uniqueConnectors"
+      v-for="connector in updatedConnectors"
       :key="connector.id"
       @click="handleConnect(connector)"
       class="connector-button"
