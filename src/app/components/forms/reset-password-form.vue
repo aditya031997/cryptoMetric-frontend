@@ -11,23 +11,47 @@
             class-wrapper="mt-3"
             id="input-password"
             label="Password"
-            type="password"
+            :type="passwordFieldType"
             v-model="passwordValue"
             @input="passwordValidation"
             :error="passwordError"
             placeholder="Enter your password"
-          />
+          >
+            <template #append>
+              <button
+                type="button"
+                @click="togglePasswordVisibility"
+                class="password-toggle"
+              >
+                <icon-hide v-if="passwordFieldType === 'password'" />
+
+                <icon-show v-else />
+              </button>
+            </template>
+          </cm-input>
           <ErrorMessage name="password" />
           <cm-input
             classWrapper="mt-3"
             id="input-confirm-password"
             label="Confirm Password"
-            type="password"
+            :type="passwordConfirmFieldType"
             v-model="passwordConfirmValue"
             @input="passwordConfirmValidation"
             :error="passwordConfirmError"
             placeholder="Enter your confirm password"
-          />
+          >
+            <template #append>
+              <button
+                type="button"
+                @click="togglePasswordConfirmVisibility"
+                class="password-toggle"
+              >
+                <icon-hide v-if="passwordConfirmFieldType === 'password'" />
+
+                <icon-show v-else />
+              </button>
+            </template>
+          </cm-input>
           <ErrorMessage name="password" />
           <cm-button
             custom-class="mt-4"
@@ -89,6 +113,8 @@ export default {
     passwordError: '',
     passwordConfirmError: '',
     passwordConfirmValue: '',
+    passwordFieldType: 'password',
+    passwordConfirmFieldType: 'password',
   }),
   watch: {
     isLoad() {
@@ -111,6 +137,14 @@ export default {
     }
   },
   methods: {
+    togglePasswordVisibility() {
+      this.passwordFieldType =
+        this.passwordFieldType === 'password' ? 'text' : 'password';
+    },
+    togglePasswordConfirmVisibility() {
+      this.passwordConfirmFieldType =
+        this.passwordConfirmFieldType === 'password' ? 'text' : 'password';
+    },
     clearErrors() {
       this.$refs.passwordProvider.errors.length = 0;
       this.$refs.passwordProvider.isActive = false;

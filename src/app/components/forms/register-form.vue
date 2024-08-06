@@ -56,8 +56,9 @@
                 @click="togglePasswordVisibility"
                 class="password-toggle"
               >
-                <icon-show v-if="passwordFieldType === 'password'" />
-                <icon-hide v-else />
+                <icon-hide v-if="passwordFieldType === 'password'" />
+
+                <icon-show v-else />
               </button>
             </template>
           </cm-input>
@@ -73,15 +74,15 @@
             :error="passwordConfirmError"
             placeholder="Confirm your password"
           >
-          
             <template #append>
               <button
                 type="button"
                 @click="togglePasswordConfirmVisibility"
                 class="password-toggle"
               >
-                <icon-show v-if="passwordConfirmFieldType === 'password'" />
-                <icon-hide v-else />
+                <icon-hide v-if="passwordConfirmFieldType === 'password'" />
+
+                <icon-show v-else />
               </button>
             </template>
           </cm-input>
@@ -148,7 +149,7 @@ export default {
   data: () => ({
     isLoad: false,
     firstNameValue: '',
-    invitation_id:'',
+    invitation_id: '',
     lastNameValue: '',
     emailValue: '',
     passwordValue: '',
@@ -157,7 +158,7 @@ export default {
     emailError: '',
     passwordError: '',
     firstNameError: '',
-    invideCodeError:'',
+    invideCodeError: '',
     lastNameError: '',
     passwordConfirmError: '',
     isValid: true,
@@ -212,7 +213,7 @@ export default {
       this.firstNameError = '';
       this.validation();
     },
-    invitationCodeValidation(event){
+    invitationCodeValidation(event) {
       if (event !== '') {
         this.invitation_id = event;
       }
@@ -285,7 +286,7 @@ export default {
           email: this.emailValue,
           password: this.passwordValue,
           password_confirmation: this.passwordConfirmValue,
-          invitation_id : this.invitation_id
+          invitation_id: this.invitation_id,
         };
         this.isLoad = true;
         this.$api
