@@ -53,11 +53,7 @@
         </div>
 
         <div class="swap-popular-token">
-          <div
-            v-if="
-               walletTokens.length > 0 && !searchText
-            "
-          >
+          <div v-if="isConnected && walletTokens.length > 0 && !searchText">
             <h4>Your tokens</h4>
             <div class="swap-token-list">
               <ul>
@@ -162,6 +158,7 @@ import { getImageCoin } from '../../utils/helpers/formatter-images';
 import configs from '.././../../configs/configs';
 import '../../assets/scss/modal/swap-modal.scss';
 import _defaultImage from '../../assets/images/default-token.png';
+import { useAccount } from '@wagmi/vue';
 
 export default {
   name: 'TokenModal',
@@ -182,6 +179,13 @@ export default {
     SearchIcon,
     DropdownIcon,
     CheckIcon,
+  },
+  setup() {
+    const { isConnected } = useAccount();
+
+    return {
+      isConnected,
+    };
   },
   props: {
     isVisible: Boolean,
@@ -254,7 +258,7 @@ export default {
           this.$emit('tokens-fetched', this.apiTokens);
           this.$forceUpdate();
           this.errorMessage = null;
-        } 
+        }
       } catch (error) {
         console.error(error);
       } finally {
@@ -355,7 +359,6 @@ export default {
       return this.filteredTokens.length === 0;
     },
   },
- 
 };
 </script>
 

@@ -157,7 +157,7 @@
             "
             class="right-side-balance-box mt-1"
           >
-            Balance: {{ fromTokenBalance ? fromTokenBalance : 0 }}
+          Balance: {{ !isConnected ? 0 : (fromTokenBalance ? fromTokenBalance : 0) }}
           </div>
           <div
             class="mt-1"
@@ -248,7 +248,8 @@
               isConnected
             "
           >
-            Balance: {{ toTokenBalance || 0 }}
+          Balance: {{ !isConnected ? 0 : (toTokenBalance || 0) }}
+
           </p>
           <p
             class="mt-1"
