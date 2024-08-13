@@ -137,8 +137,16 @@
           <button
             class="token-btn"
             @click="handleSelectFrom()"
+            :class="{
+              'select-token-btn': true,
+              selected: !!selectedFromToken,
+            }"
           >
-            <span class="swap-list">
+            <span v-if="!selectedFromToken">Select Token</span>
+            <span
+              v-else
+              class="swap-list"
+            >
               <img
                 v-if="selectedFromToken && selectedFromToken.logoURI"
                 :src="selectedFromToken?.logoURI || defaultImage"
@@ -157,7 +165,8 @@
             "
             class="right-side-balance-box mt-1"
           >
-          Balance: {{ !isConnected ? 0 : (fromTokenBalance ? fromTokenBalance : 0) }}
+            Balance:
+            {{ !isConnected ? 0 : fromTokenBalance ? fromTokenBalance : 0 }}
           </div>
           <div
             class="mt-1"
@@ -248,8 +257,7 @@
               isConnected
             "
           >
-          Balance: {{ !isConnected ? 0 : (toTokenBalance || 0) }}
-
+            Balance: {{ !isConnected ? 0 : toTokenBalance || 0 }}
           </p>
           <p
             class="mt-1"
@@ -302,7 +310,6 @@ import {
   useSendTransaction,
   useWaitForTransactionReceipt,
 } from '@wagmi/vue';
-import Web3 from 'web3';
 import axios from 'axios';
 import TokenModal from '../components/modals/modal-swap.vue';
 import '../assets/scss/pages/swap.scss';
@@ -643,7 +650,6 @@ export default {
         }
         this.isFetchingToToken = false;
       }
-
     },
     handleTokensFetched(tokens) {
       this.tokens = tokens;
@@ -679,7 +685,9 @@ export default {
         this.toFiat = '';
       }
       const chainId =
-        parseInt(localStorage.getItem('chainId')) || configs.DEFAULT_CHAIN_ID;
+        parseInt(localStorage.getItem('chainId')) ||
+        this.lastSelectedChainId ||
+        configs.DEFAULT_CHAIN_ID;
       const walletAddress =
         localStorage.getItem('walletAddress') || configs.DEFAULT_WALLET_ADDRESS;
       try {
@@ -801,6 +809,7 @@ export default {
               configs.DEFAULT_WALLET_ADDRESS,
             chain:
               parseInt(localStorage.getItem('chainId')) ||
+              this.lastSelectedChainId ||
               configs.DEFAULT_CHAIN_ID,
             amountIn: this.fromTokenQuantity,
             slippageTolerance: this.slippageValue,
@@ -903,6 +912,7 @@ export default {
               configs.DEFAULT_WALLET_ADDRESS,
             chain:
               parseInt(localStorage.getItem('chainId')) ||
+              this.lastSelectedChainId ||
               configs.DEFAULT_CHAIN_ID,
             amountIn: this.ratio,
             slippageTolerance: this.slippageValue,
@@ -1068,6 +1078,7 @@ export default {
         this.selectedReceiveToken,
         this.selectedFromToken,
       ];
+
       [this.selectedFromTokenAddress, this.selectedToTokenAddress] = [
         this.selectedToTokenAddress,
         this.selectedFromTokenAddress,
@@ -1185,7 +1196,10 @@ export default {
       if (newVal && this.returnIsHash()) {
         setTimeout(async () => {
           try {
-            const chainId = parseInt(localStorage.getItem('chainId')) || 1;
+            const chainId =
+              parseInt(localStorage.getItem('chainId')) ||
+              this.lastSelectedChainId ||
+              configs.DEFAULT_CHAIN_ID;
             const response = await axios.get(
               `${configs.NODE_API_URL}/tokens/fetchBalance?tokenAddress=${this.selectedFromToken.address}&walletAddress=${this.walletAddress}&chain=${chainId}`
             );

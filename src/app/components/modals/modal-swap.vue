@@ -158,7 +158,7 @@ import { getImageCoin } from '../../utils/helpers/formatter-images';
 import configs from '.././../../configs/configs';
 import '../../assets/scss/modal/swap-modal.scss';
 import _defaultImage from '../../assets/images/default-token.png';
-import { useAccount } from '@wagmi/vue';
+import { useAccount, useChainId } from '@wagmi/vue';
 
 export default {
   name: 'TokenModal',
@@ -182,9 +182,11 @@ export default {
   },
   setup() {
     const { isConnected } = useAccount();
+    const lastSelectedChainId = useChainId();
 
     return {
       isConnected,
+      lastSelectedChainId
     };
   },
   props: {
@@ -221,10 +223,10 @@ export default {
       this.hideModal();
     },
     async fetchTokens(chainId) {
-      const chain = localStorage.getItem('chainId') || 1;
-      const address =
-        localStorage.getItem('walletAddress') ||
-        '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f';
+      const chain =   parseInt(localStorage.getItem('chainId')) ||
+        this.lastSelectedChainId ||
+        configs.DEFAULT_CHAIN_ID;
+      const address = localStorage.getItem('walletAddress');
       this.networlId = chainId;
       this.isLoading = true;
       try {
