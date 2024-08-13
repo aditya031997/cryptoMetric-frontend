@@ -53,14 +53,20 @@
         </div>
 
         <div class="swap-popular-token">
-          <div v-if="walletTokens.length > 0 && !searchText">
+          <div
+            v-if="
+               walletTokens.length > 0 && !searchText
+            "
+          >
             <h4>Your tokens</h4>
             <div class="swap-token-list">
               <ul>
                 <li
                   v-for="token in walletTokens"
                   :key="token.id"
-                  @click.stop="checkToken(token) ? () => {} : selectToken(token)"
+                  @click.stop="
+                    checkToken(token) ? () => {} : selectToken(token)
+                  "
                   :class="checkToken(token) ? 'disabled-list' : ''"
                 >
                   <div class="tk-list-container">
@@ -161,7 +167,6 @@ export default {
   name: 'TokenModal',
   data() {
     return {
-      isWalletModalVisible: false,
       apiTokens: [],
       topRatedToken: [],
       networlId: '',
@@ -188,12 +193,16 @@ export default {
     toToken: {},
   },
   watch: {
-    searchText: 'filterTokens'
+    searchText: 'filterTokens',
   },
   methods: {
     hideModal() {
       this.searchText = '';
       this.$emit('hide-modal');
+      this.hideToken();
+    },
+    hideToken() {
+      this.$emit('hide-token');
     },
     selectToken(token) {
       const selectedToken = {
@@ -209,29 +218,43 @@ export default {
     },
     async fetchTokens(chainId) {
       const chain = localStorage.getItem('chainId') || 1;
-      const address = localStorage.getItem('walletAddress');
+      const address =
+        localStorage.getItem('walletAddress') ||
+        '0xB7aacD03a2f18a9868fdCA4e664c57f5a2d4008f';
       this.networlId = chainId;
       this.isLoading = true;
       try {
-        const response = await axios.get(`${configs.NODE_API_URL}/tokens/getTokensToSwapByChainId?chain=${chain}`);
+        const response = await axios.get(
+          `${configs.NODE_API_URL}/tokens/getTokensToSwapByChainId?chain=${chain}`
+        );
         const dataArray = response?.data || [];
-        const filteredData = dataArray.filter((item) => item.tags && item.tags.includes('native'));
+        const filteredData = dataArray.filter(
+          (item) => item.tags && item.tags.includes('native')
+        );
         this.apiTokens = Array.isArray(response?.data) ? response.data : [];
         this.topRatedToken = this.apiTokens;
         this.filteredApiTokens = this.apiTokens;
         this.$emit('tokens-fetched', this.apiTokens);
         this.$emit('chainId-fetched', chainId);
         if (address) {
-          const walletResponse = await axios.post(`${configs.NODE_API_URL}/tokens/walletToken`, {
-            chain,
-            address,
-            nativeToken: filteredData[0],
-          });
-          const verifiedTokens = walletResponse.data.msg.filter((token) => token.verified_contract || token.logo !== null);
-          this.existingToken = Array.isArray(verifiedTokens) ? verifiedTokens : [];
+          const walletResponse = await axios.post(
+            `${configs.NODE_API_URL}/tokens/walletToken`,
+            {
+              chain,
+              address,
+              nativeToken: filteredData[0],
+            }
+          );
+          const verifiedTokens = walletResponse.data.msg.filter(
+            (token) => token.verified_contract || token.logo !== null
+          );
+          this.existingToken = Array.isArray(verifiedTokens)
+            ? verifiedTokens
+            : [];
           this.$emit('tokens-fetched', this.apiTokens);
+          this.$forceUpdate();
           this.errorMessage = null;
-        }
+        } 
       } catch (error) {
         console.error(error);
       } finally {
@@ -240,7 +263,9 @@ export default {
     },
     checkToken(token) {
       const address = token?.address || token?.token_address;
-      return address === this.fromToken?.address || address === this.toToken?.address;
+      return (
+        address === this.fromToken?.address || address === this.toToken?.address
+      );
     },
     async fetchFilteredTokens(token) {
       if (!token) {
@@ -271,18 +296,31 @@ export default {
         const name = token.name ? token.name.toLowerCase() : '';
         const symbol = token.symbol ? token.symbol.toLowerCase() : '';
         const address = token.address ? token.address : '';
-        return name.includes(searchLower) || symbol.includes(searchLower) || address.includes(searchLower);
+        return (
+          name.includes(searchLower) ||
+          symbol.includes(searchLower) ||
+          address.includes(searchLower)
+        );
       });
-      if (!this.filteredApiTokens.length) await this.fetchFilteredTokens(this.searchText);
+      if (!this.filteredApiTokens.length)
+        await this.fetchFilteredTokens(this.searchText);
     },
     getImageCoin(slug) {
       return getImageCoin(slug.toLowerCase());
     },
     getTokenImage(token) {
-      return token.logoURI || this.getImageCoin(token.symbol.toLowerCase()) || token.logo;
+      return (
+        token.logoURI ||
+        this.getImageCoin(token.symbol.toLowerCase()) ||
+        token.logo
+      );
     },
     getWalletTokenImage(token) {
-      return token.logoURI || token.logo || this.getImageCoin(token.symbol.toLowerCase());
+      return (
+        token.logoURI ||
+        token.logo ||
+        this.getImageCoin(token.symbol.toLowerCase())
+      );
     },
     handleImageError(event, slug) {
       event.target.src = this.defaultImage;
@@ -293,7 +331,9 @@ export default {
   },
   computed: {
     filteredTokens() {
-      return Array.isArray(this.filteredApiTokens) ? this.filteredApiTokens : [];
+      return Array.isArray(this.filteredApiTokens)
+        ? this.filteredApiTokens
+        : [];
     },
     walletTokens() {
       if (!this.searchText) {
@@ -315,6 +355,7 @@ export default {
       return this.filteredTokens.length === 0;
     },
   },
+ 
 };
 </script>
 

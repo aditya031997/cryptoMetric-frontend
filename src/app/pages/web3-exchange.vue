@@ -499,7 +499,6 @@ export default {
       return (state.isHash = false);
     };
     const callSwapTsx = async () => {
-      // console.log('after approve swap function');
       state.isTransactionPending = true;
       const chain = parseInt(localStorage.getItem('chainId'));
       const wAddre = localStorage.getItem('walletAddress');
@@ -644,10 +643,6 @@ export default {
         this.isFetchingToToken = false;
       }
 
-      // if (!fromTokenSet) {
-      //   console.log("default2")
-      //   this.setDefaultToken();
-      // }
     },
     handleTokensFetched(tokens) {
       this.tokens = tokens;
@@ -821,7 +816,7 @@ export default {
               notification.notify({
                 text: Msg,
                 type: 'warn',
-                duration: 2000,
+                duration: 4000,
                 speed: 1000,
                 position: 'top right',
               });
@@ -859,7 +854,7 @@ export default {
             notification.notify({
               text: Msg,
               type: 'warn',
-              duration: 2000,
+              duration: 4000,
               speed: 1000,
               position: 'top right',
             });
@@ -923,7 +918,7 @@ export default {
               notification.notify({
                 text: Msg,
                 type: 'warn',
-                duration: 2000,
+                duration: 4000,
                 speed: 1000,
                 position: 'top right',
               });
@@ -1144,7 +1139,8 @@ export default {
         this.ratio == '' ||
         this.isTransactionPending ||
         this.pendingRequest ||
-        this.isCalculatingRatio
+        this.isCalculatingRatio ||
+        !this.isConnected
       );
     },
     buttonText() {
@@ -1271,7 +1267,6 @@ export default {
       }
     },
     hash(newVal) {
-      console.log('newVal', newVal);
       if (newVal) {
         this.pendingRequest = true;
       } else {
@@ -1291,7 +1286,7 @@ export default {
         notification.notify({
           text: Msg,
           type: 'warn',
-          duration: 2000,
+          duration: 4000,
           speed: 1000,
           position: 'top right',
         });

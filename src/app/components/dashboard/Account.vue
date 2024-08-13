@@ -1,9 +1,10 @@
 <script setup>
-import { computed, watch, onMounted } from 'vue';
+import { computed, watch, onMounted, ref } from 'vue';
 import { useAccount, useDisconnect } from '@wagmi/vue';
 import PopperTooltip from '@/components/poppers/popper-tooltip.vue';
 import iconSwitch from '../icons/icon-switch.vue';
 import { useNotification } from '@kyvg/vue3-notification';
+import TokenModal from '../../components/modals/modal-swap.vue';
 
 const notification = useNotification();
 const { address, isConnected } = useAccount();
@@ -12,6 +13,8 @@ const formattedAddress = computed(() => {
   if (!address.value) return null;
   return `${address.value.slice(0, 6)}…${address.value.slice(38, 42)}`;
 });
+
+const tokenModalRef = ref(null);
 
 // Function to update localStorage
 const updateLocalStorage = () => {
@@ -34,14 +37,18 @@ watch(
 onMounted(() => {
   updateLocalStorage();
 });
-
+const hideTokenModal = () => {
+  if (tokenModalRef.value) {
+    // tokenModalRef.value.hideToken();
+    tokenModalRef.value.fetchTokens(1)
+  }
+};
 const handleDisconnect = async () => {
   try {
     await disconnect();
     localStorage.removeItem('walletAddress');
     localStorage.removeItem('walletName');
     localStorage.removeItem('chainId');
-
     const Msg = 'Wallet disconnected successfully';
     notification.notify({
       title: 'Disconnected',
@@ -52,6 +59,7 @@ const handleDisconnect = async () => {
       position: 'top right',
       classes: 'custom-notification',
     });
+    hideTokenModal();
   } catch (error) {
     console.error('Error disconnecting:', error);
   }
@@ -81,6 +89,10 @@ const handleDisconnect = async () => {
         <div>{{ formattedAddress }}</div>
       </div>
     </div>
+    <TokenModal
+      ref="tokenModal"
+      @hide-token="hideTokenModal"
+    />
   </div>
 </template>
 

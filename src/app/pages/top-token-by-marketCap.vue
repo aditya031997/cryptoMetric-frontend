@@ -73,6 +73,7 @@ export default {
       isLoading: true,
       currentPage: 1,
       totalPages: 1,
+      dataPerPage: '',
       bubblesPerPage: 35,
       filters: [
         { label: '1 Hour', value: '1h' },
@@ -92,6 +93,7 @@ export default {
     this.socket = io(configs.NODE_API_URL);
     this.socket.on('InitialTableListing', (initialData) => {
       this.cryptocurrencyData = initialData.data;
+      console.log(this.cryptocurrencyData, this.bubblesPerPage, 'checkinggg');
       this.originalData = [...this.cryptocurrencyData];
       this.calculateGlobalPositions();
       this.updatePagination();
@@ -142,7 +144,10 @@ export default {
     },
 
     filterFavorites(data) {
-      const favorites = this.getFavorites.map((favorite) => favorite.slug);
+      // const favorites = this.getFavorites.map((favorite) => favorite.slug);
+      const favorites = this.getFavorites.map((favorite) => {
+        return favorite.slug;
+      });
       return data.filter((item) => favorites.includes(item.slug));
     },
 
@@ -213,9 +218,10 @@ export default {
       });
     },
     getBubbleRadius(crypto) {
-      return 25;
+      return 20;
     },
     updateChart(data, imageUrl, isFavorites = false) {
+      console.log(this.dataPerPage.length, 'hhhhhh');
       let maxSizeConfig = isFavorites ? '130%' : '230%';
       const startIdx = isFavorites
         ? 0
@@ -286,8 +292,24 @@ export default {
         });
       const screenWidth = window.innerWidth;
       const minSize = screenWidth < 768 ? '30%' : '60%';
-      const maxSize = screenWidth < 768 ? '100%' : '220%';
+      let maxSize;
+      if (this.dataPerPage.length === 0) {
+        maxSize = screenWidth < 768 ? '100%' : '220%';
+      } else if (this.dataPerPage.length > 1 && this.dataPerPage.length < 10) {
+        maxSize = screenWidth < 768 ? '80%' : '150%';
+      } else if (this.dataPerPage.length >= 10) {
+        maxSize = screenWidth < 768 ? '100%' : '220%';
+      }
+      console.log(maxSize, 'maxSize');
       if (this.chart) {
+        this.chart.update({
+          plotOptions: {
+            packedbubble: {
+              minSize: minSize,
+              maxSize: maxSize, 
+            },
+          },
+        });
         this.chart.series[0].setData(processedData);
       } else {
         this.chart = Highcharts.chart(this.$refs.chartContainer, {
@@ -403,7 +425,7 @@ export default {
               },
             },
           ],
-           responsive: {
+          responsive: {
             rules: [
               {
                 condition: {
@@ -510,23 +532,26 @@ export default {
       }
     },
     gotoPage(pageNumber) {
+      console.log(pageNumber, 'pageNumber');
       if (
         this.activeFilter !== 'favorites' &&
         pageNumber >= 1 &&
         pageNumber <= this.totalPages
       ) {
-        this.renderPage();
+        this.renderPage(pageNumber);
         this.currentPage = pageNumber;
         this.filterData(this.activeFilter);
         this.updateBubblePositions();
       }
     },
 
-    renderPage() {
-      const pageData = this.cryptocurrencyData.slice(
-        (this.currentPage - 1) * this.bubblesPerPage,
-        this.currentPage * this.bubblesPerPage
-      );
+    renderPage(data) {
+      console.log(data, 'currentPage');
+      const startIndex = (data - 1) * this.bubblesPerPage;
+      const endIndex = startIndex + this.bubblesPerPage;
+      const pageData = this.cryptocurrencyData.slice(startIndex, endIndex);
+      this.dataPerPage = pageData;
+      console.log(pageData, 'pageData');
       this.updateChart(pageData, this.getCoinImageUrl());
     },
 
@@ -597,9 +622,9 @@ export default {
   margin: 0px -20px;
   box-shadow: 0px 0px 0px 100vw #06111d;
 }
-.highchart-wrapper .cm-loader{
-  margin-left:125px;
-  margin-top:70px;
+.highchart-wrapper .cm-loader {
+  margin-left: 125px;
+  margin-top: 70px;
 }
 .loader {
   border: 4px solid #f3f3f3;
