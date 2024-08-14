@@ -47,9 +47,8 @@
               @click="handleSell"
               v-if="showButtons"
               :disabled="showButtons && !showSellButton"
-               :class="{ 'not-allowed': showButtons && !showSellButton }"
+              :class="{ 'not-allowed': showButtons && !showSellButton }"
             >
-   
               Sell
             </button>
           </template>
@@ -101,7 +100,10 @@ import { watchChainId } from '@wagmi/core';
 import PopperTooltip from '@/components/poppers/popper-tooltip.vue';
 
 import axios from 'axios';
-import { getImageCoin, getBigImageCoin } from '@/utils/helpers/formatter-images';
+import {
+  getImageCoin,
+  getBigImageCoin,
+} from '@/utils/helpers/formatter-images';
 import ButtonFavorite from '@/components/ui/button/button-favorite.vue';
 
 import IconScroll from '@/components/icons/icon-scroll.vue';
@@ -110,7 +112,11 @@ import Web3 from 'web3';
 import configs from '../../../configs/configs';
 import { config } from '../modals/config';
 
-import { formatPrice, formatPercent, simpleFormatPrice } from '@/utils/helpers/formatter';
+import {
+  formatPrice,
+  formatPercent,
+  simpleFormatPrice,
+} from '@/utils/helpers/formatter';
 import DefaultImage from '../default-image.vue';
 const symbolChainIdMap = [
   { symbol: 'MATIC', chainId: 137 },
@@ -298,19 +304,24 @@ export default {
 
       try {
         console.log('here11');
-        const response = await axios.get(`${configs.NODE_API_URL}/supply/tokenDetail?symbol=${this.symbol}`);
+        const response = await axios.get(
+          `${configs.NODE_API_URL}/supply/tokenDetail?symbol=${this.symbol}`
+        );
         const validSymbols = ['MATIC', 'BNB', 'BASE', 'AVAX', 'ETH'];
         const symbol = response?.data?.msg[0]?.symbol;
         this.isValidSymbol = validSymbols.includes(symbol);
         const category = response?.data?.msg[0]?.category;
-
-        if (category === 'token') {
+        const platform = response?.data?.msg[0]?.platform;
+        if (category === 'token' && platform.length > 0) {
           this.showButtons = true;
         } else if (category === 'coin' && this.isValidSymbol) {
           this.showButtons = true;
           this.showSellButton = false;
+        } else if (category === 'token' && platform.length === 0) {
+          this.showButtons = false; 
+          this.showSellButton = false;
         } else {
-          this.showButtons = false; // Hide both buttons
+          this.showButtons = false;
           this.showSellButton = false;
         }
       } catch (error) {

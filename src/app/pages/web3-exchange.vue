@@ -172,7 +172,7 @@
             class="mt-1"
             v-else-if="selectedFromToken && fromTokenBalance === ''"
           >
-            Fetching Balance...
+            Loading Balance...
           </div>
         </div>
       </div>
@@ -234,7 +234,7 @@
               class="swap-list"
             >
               <img
-                :src="selectedReceiveToken?.logoURI"
+                :src="selectedReceiveToken?.logoURI || defaultImage"
                 :alt="selectedReceiveToken?.symbol"
                 class="token-logo"
                 @error="handleImageError($event, selectedFromToken.symbol)"
@@ -609,9 +609,6 @@ export default {
       const fromTokenSymbol = this.getUrlParameter('fromToken');
       const toTokenSymbol = this.getUrlParameter('toToken');
 
-      let fromTokenSet = false;
-      let toTokenSet = false;
-
       if (fromTokenSymbol) {
         const fromToken = Object.values(this.tokens).find(
           (token) => token.symbol === fromTokenSymbol
@@ -621,7 +618,6 @@ export default {
           this.selectedFromTokenAddress = fromToken?.address;
           this.setTokenAddress(fromToken);
           await this.updateTokenBalance(fromToken, true);
-          fromTokenSet = true;
         } else {
           this.showErrorModal(
             'Token does not exist on this chain ID. Please change the chain ID.'
@@ -640,7 +636,6 @@ export default {
           this.selectedReceiveToken = toToken;
           this.selectedToTokenAddress = toToken?.address;
           await this.updateTokenBalance(toToken, false);
-          toTokenSet = true;
         } else {
           this.showErrorModal(
             'Token does not exist on this chain ID. Please change the chain ID.'
@@ -1022,10 +1017,11 @@ export default {
       }
     },
     setDefaultToken() {
-      // if (this.hasDefaultTokenBeenSet) {
-      //   return;
-      // }
-
+      const fromTokenSymbol = this.getUrlParameter('fromToken');
+      const toTokenSymbol = this.getUrlParameter('toToken');
+      if (fromTokenSymbol || toTokenSymbol) {
+        return; // Exit the function early
+      }
       const symbolMap = {
         137: 'MATIC',
         1: 'ETH',
