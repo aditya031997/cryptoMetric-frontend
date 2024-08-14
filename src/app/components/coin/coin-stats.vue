@@ -46,8 +46,7 @@
               class="btn cm-button btn-outline-primary is-line cm-button--sm"
               @click="handleSell"
               v-if="showButtons"
-              :disabled="showButtons && !showSellButton"
-              :class="{ 'not-allowed': showButtons && !showSellButton }"
+            
             >
               Sell
             </button>
