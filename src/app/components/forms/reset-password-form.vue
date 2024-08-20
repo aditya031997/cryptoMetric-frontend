@@ -90,8 +90,8 @@ import CmLink from '../ui/link/cm-link.vue';
 import CmButton from '../ui/button/cm-button.vue';
 import CmInput from '../ui/input/cm-input.vue';
 import CmLogo from '../cm-logo.vue';
-import { validatePassword } from '../../utils/helpers/validate-password';
-
+import IconShow from '../icons/icon-show-password.vue';
+import IconHide from '../icons/icon-hide-password.vue';
 export default {
   name: 'reset-password-form',
   components: {
@@ -101,6 +101,8 @@ export default {
     CmButton,
     CmInput,
     CmLogo,
+    IconShow,
+    IconHide,
   },
   data: () => ({
     isLoad: false,
@@ -144,15 +146,6 @@ export default {
     togglePasswordConfirmVisibility() {
       this.passwordConfirmFieldType =
         this.passwordConfirmFieldType === 'password' ? 'text' : 'password';
-    },
-    clearErrors() {
-      this.$refs.passwordProvider.errors.length = 0;
-      this.$refs.passwordProvider.isActive = false;
-      this.$refs.passwordProvider.isActive = true;
-
-      this.$refs.confirmationProvider.errors.length = 0;
-      this.$refs.confirmationProvider.isActive = false;
-      this.$refs.confirmationProvider.isActive = true;
     },
     passwordValidation(event) {
       if (event !== '') {
@@ -248,4 +241,18 @@ export default {
 <style
   lang="scss"
   scoped
-></style>
+>
+.password-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+}
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+</style>

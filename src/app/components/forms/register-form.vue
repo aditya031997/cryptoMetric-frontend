@@ -309,6 +309,21 @@ export default {
       }
     },
   },
+  mounted() {
+    const emailFromUrl = this.$route.query.email;
+    const tokenFromUrl = this.$route.query.token;
+
+    if (emailFromUrl) {
+      this.emailValue = decodeURIComponent(emailFromUrl);
+      this.emailValidation(this.emailValue);
+    }
+
+    if (tokenFromUrl) {
+      this.invitation_id = tokenFromUrl;
+      this.invitationCodeValidation(this.invitation_id);
+    }
+  },
+
 };
 </script>
 

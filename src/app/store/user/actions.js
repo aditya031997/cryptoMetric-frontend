@@ -54,7 +54,7 @@ updatePassword(context, data) {
 
   return axios.patch(endpoint, data, { headers })
     .then((response) => {
-      context.commit('updatePassword', response.data);
+      // context.commit('updatePassword', response.data);
       return response.data;
     })
     .catch((error) => {
