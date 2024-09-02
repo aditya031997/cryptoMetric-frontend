@@ -202,7 +202,7 @@ export default {
     let state = ref({
       buyOrSell: '',
     });
-    const setBugOrSell = (val) => {
+    const setBuyOrSell = (val) => {
       state.buyOrSell = val;
     };
     watchChainId(config, {
@@ -219,7 +219,7 @@ export default {
     return {
       ...toRefs(state),
       switchChain,
-      setBugOrSell,
+      setBuyOrSell,
     };
   },
   computed: {
@@ -261,9 +261,8 @@ export default {
       this.selectedCoinSymbol = this.symbol;
       const targetChainId = this.getChainIdFromSymbol(this.symbol);
       const currentChainId = parseInt(localStorage.getItem('chainId'));
-      const walletName = localStorage.getItem('walletName');
 
-      this.setBugOrSell('fromToken');
+      this.setBuyOrSell('fromToken');
 
       if (this.isValidSymbol && currentChainId !== targetChainId) {
         this.switchChain({ chainId: targetChainId });
@@ -273,25 +272,26 @@ export default {
       const url = new URL('/swap', window.location.origin);
       url.searchParams.set('fromToken', this.symbol);
       window.location.href = url.toString();
-      this.setBugOrSell('');
+      this.setBuyOrSell('');
       // }
     },
     async handleSell() {
       this.selectedCoinName = this.name;
       this.selectedCoinSymbol = this.symbol;
       const targetChainId = this.getChainIdFromSymbol(this.symbol);
-      const currentChainId = localStorage.getItem('chainId');
-      this.setBugOrSell('toToken');
+      const currentChainId = parseInt(localStorage.getItem('chainId'));
+      this.setBuyOrSell('toToken');
 
-      if (this.isValidSymbol) {
-        return this.switchChain({ chainId: targetChainId });
+      if (this.isValidSymbol && currentChainId !== targetChainId) {
+        this.switchChain({ chainId: targetChainId });
+        return;
       }
 
       // if (currentChainId.toString() === targetChainId.toString()) {
       const url = new URL('/swap', window.location.origin);
       url.searchParams.set('toToken', this.symbol);
       window.location.href = url.toString();
-      this.setBugOrSell('');
+      this.setBuyOrSell('');
       // }
     },
     async checkTokenAvailability() {
@@ -302,7 +302,6 @@ export default {
       this.isCheckingToken = true; // Set flag to true to indicate function is in progress
 
       try {
-        console.log('here11');
         const response = await axios.get(
           `${configs.NODE_API_URL}/supply/tokenDetail?symbol=${this.symbol}`
         );

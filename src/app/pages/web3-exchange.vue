@@ -226,7 +226,7 @@
               selected: !!selectedReceiveToken,
             }"
           >
-            <span v-if="!selectedReceiveToken && !hasToTokenParam"
+            <span v-if="!selectedReceiveToken"
               >Select Token</span
             >
             <span
@@ -588,7 +588,12 @@ export default {
       event.target.src = this.defaultImage;
     },
     async fetchTokens() {
-      this.isLoadingTokens = true;
+      const BuyTokenSymbol = this.getUrlParameter('fromToken');
+      if (BuyTokenSymbol) {
+        this.isFetchingToToken = true;
+      } else {
+        this.isLoadingTokens = true;
+      }
       const chainId =
         parseInt(localStorage.getItem('chainId')) ||
         this.lastSelectedChainId ||
@@ -603,11 +608,12 @@ export default {
         console.error('Error fetching tokens:', error);
       } finally {
         this.isLoadingTokens = false;
+        this.isFetchingToToken = false;
       }
     },
     async setTokenFromParams() {
-      const fromTokenSymbol = this.getUrlParameter('fromToken');
-      const toTokenSymbol = this.getUrlParameter('toToken');
+      const fromTokenSymbol = this.getUrlParameter('toToken');
+      const toTokenSymbol = this.getUrlParameter('fromToken');
 
       if (fromTokenSymbol) {
         const fromToken = Object.values(this.tokens).find(
@@ -628,7 +634,6 @@ export default {
         }
       }
       if (toTokenSymbol) {
-        this.isFetchingToToken = true;
         const toToken = Object.values(this.tokens).find(
           (token) => token.symbol === toTokenSymbol
         );
@@ -1133,9 +1138,7 @@ export default {
   computed: {
     ...mapGetters(['getChainId']),
 
-    hasToTokenParam() {
-      return this.getUrlParameter('toToken') !== null;
-    },
+
     isDisabled() {
       return (
         !this.fromTokenQuantity ||
@@ -1182,8 +1185,6 @@ export default {
     },
   },
   mounted() {
-    const toTokenSymbol = this.getUrlParameter('toToken');
-    if (toTokenSymbol) this.isFetchingToToken = true;
     this.initializeData();
   },
   watch: {
