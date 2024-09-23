@@ -114,7 +114,6 @@ import { useAccountEffect } from '@wagmi/vue';
 import iconBack from '../icons/icon-back.vue';
 import ButtonIcon from '../ui/button/button-icon.vue';
 import UserProfile from './user-profile.vue';
-import { useNotification } from '@kyvg/vue3-notification';
 import UserNotify from './user-notify.vue';
 import DashboardSettings from './dashboard-settings.vue';
 import Account from '../dashboard/Account.vue';

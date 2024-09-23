@@ -164,6 +164,7 @@ export default {
     isValid: true,
     passwordFieldType: 'password',
     passwordConfirmFieldType: 'password',
+    hasTypedInConfirmPassword: false,
   }),
   methods: {
     togglePasswordVisibility() {
@@ -197,9 +198,12 @@ export default {
       }
       if (event === '') {
         this.passwordError = 'The password field is required';
-        return;
+      } else {
+        this.passwordError = '';
       }
-      this.passwordError = '';
+      if (this.hasTypedInConfirmPassword) {
+        this.passwordConfirmValidation(this.passwordConfirmValue);
+      }
       this.validation();
     },
     firstNameValidation(event) {
@@ -236,6 +240,7 @@ export default {
       this.validation();
     },
     passwordConfirmValidation(event) {
+      this.hasTypedInConfirmPassword = true;
       if (event !== '') {
         this.passwordConfirmValue = event;
       }
@@ -323,7 +328,6 @@ export default {
       this.invitationCodeValidation(this.invitation_id);
     }
   },
-
 };
 </script>
 

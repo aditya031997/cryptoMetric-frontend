@@ -42,7 +42,7 @@
     <cm-pagination
       class="mt-4"
       :change-item-value="changeRowsValue"
-      :current-page="getCurrent"
+      :current-page="tablePage" 
       :go-to-page="changePage"
       label-pagination="Rows :"
       :links="formatterPagination(getCurrent, getTotal)"
@@ -67,6 +67,7 @@ import IconAdd from '../components/icons/icon-add.vue';
 import CmModal from '../components/ui/modal/cm-modal.vue';
 import ModalAddUser from '../components/modals/modal-add-user.vue';
 import { pagination } from '../utils/helpers/pagination-create';
+
 export default {
   mixins: [ModalMixin],
   components: {
@@ -91,7 +92,6 @@ export default {
   }),
   computed: {
     ...mapGetters(['getUsers', 'getLinksAdmin', 'getCurrent', 'getTotal', 'getUsersLength']),
-    
   },
   mounted() {
     this.getUsersDebounced = _.debounce(this.getUsersAdmin, 300);
@@ -106,13 +106,16 @@ export default {
     if (this.$route.query.search) {
       this.search = this.$route.query.search;
     }
-    this.$store
-      .dispatch('getUsers', {
-        page: this.$route.query.page,
-        perPage: this.$route.query.rows,
-        search: this.$route.query.search,
-      })
-      .finally(() => (this.isLoad = false));
+    this.getUsersAdmin(); // Initial load
+  },
+  watch: {
+    '$route.query.page': {
+      immediate: true,
+      handler(newPage) {
+        this.tablePage = Number(newPage) || 1; // Update local page state
+        this.getUsersAdmin(); // Fetch users for the new page
+      },
+    },
   },
   methods: {
     changeTablePage(page) {
@@ -129,35 +132,35 @@ export default {
       }
       this.getUsersAdmin();
     },
-    changePage(page, isLoad = true) {
-      this.$router.replace({ query: { ...this.$route.query, page } });
-      if (isLoad) {
-        this.getUsersAdmin();
-      }
+    changePage(page) {
+      this.$router.replace({ query: { ...this.$route.query, page } }).then(() => {
+        this.tablePage = page; // Update local page state
+        this.getUsersAdmin(); // Fetch users for the new page
+      });
     },
     onChangeSearch(value) {
       this.search = value;
       if (value.trim()) {
         this.$router.replace({ query: { ...this.$route.query, search: value } }).catch((error) => {
-          if (error.name != 'NavigationDuplicated') {
+          if (error.name !== 'NavigationDuplicated') {
             throw error;
           }
         });
       } else {
         this.$router.replace({ query: { ...this.$route.query, search: undefined } }).catch((error) => {
-          if (error.name != 'NavigationDuplicated') {
+          if (error.name !== 'NavigationDuplicated') {
             throw error;
           }
         });
       }
-      this.changePage(1, false);
+      this.changePage(1);
       this.getUsersDebounced();
     },
     getUsersAdmin() {
       this.isLoad = true;
       this.$store
         .dispatch('getUsers', {
-          page: this.$route.query.page,
+          page: this.tablePage, // Use local page state
           perPage: this.rows,
           search: this.search,
         })
@@ -171,11 +174,7 @@ export default {
       return pagination(currentPage, maxPages);
     },
   },
- 
 };
 </script>
 
-<style
-  lang="scss"
-  scoped
-></style>
+<style lang="scss" scoped></style>

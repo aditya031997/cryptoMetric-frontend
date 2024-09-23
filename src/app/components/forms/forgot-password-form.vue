@@ -127,15 +127,9 @@ export default {
           .then((response) => {
             this.responseMessage = 'The letter has been mailed';
           })
-          .catch((error) => {
-            console.log(error, 'error');
-            if (error) {
-              this.errorMessage = error.status || 'Something went wrong';
-            } else if (error.request) {
-              this.errorMessage = 'No response received from the server';
-            } else {
-              this.errorMessage = error;
-            }
+          .catch((error) => {           
+              this.errorMessage = error || 'Something went wrong';
+         
           })
           .finally(() => {
             this.isLoad = false;

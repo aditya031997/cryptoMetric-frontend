@@ -71,7 +71,7 @@
       </p>
       <p
         v-if="errorMessage"
-        class="mt-2 text text--caption text-success text-center"
+        class="mt-2 text text--caption text-danger text-center"
       >
         {{ errorMessage }}
       </p>
@@ -114,6 +114,7 @@ export default {
     passwordConfirmFieldType: 'password',
     responseMessage: '',
     errorMessage: '',
+    hasTypedInConfirmPassword: false,
   }),
   watch: {
     isLoad() {
@@ -141,12 +142,16 @@ export default {
       }
       if (event === '') {
         this.passwordError = 'The password field is required';
-        return;
+      } else {
+        this.passwordError = '';
       }
-      this.passwordError = '';
+      if (this.hasTypedInConfirmPassword) {
+        this.passwordConfirmValidation(this.passwordConfirmValue);
+      }
       this.validation();
     },
     passwordConfirmValidation(event) {
+      this.hasTypedInConfirmPassword = true;
       if (event !== '') {
         this.passwordConfirmValue = event;
       }
@@ -200,10 +205,8 @@ export default {
           })
           .catch((errors) => {
             console.log('Error: ', errors);
-            if (typeof errors === 'string') {
-              this.errorMessage = errors;
-            } else if (errors?.errors) {
-              this.errorMessage = errors.message;
+           if (errors) {
+              this.errorMessage = errors?.response?.data?.message;
             } else {
               this.errorMessage =
                 'An error occurred while updating the password';

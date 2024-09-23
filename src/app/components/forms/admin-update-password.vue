@@ -10,42 +10,67 @@
           class-wrapper="mt-3"
           id="input-password"
           label="Password"
-          type="password"
-          v-model="password"
+          :type="passwordFieldType"
+          v-model="passwordValue"
           :error="passwordError"
           @input="passwordValidation"
-        />
-        <ErrorMessage name="password" />
+          placeholder="Enter your password"
+        >
+          <template #append>
+            <button
+              type="button"
+              @click="togglePasswordVisibility"
+              class="password-toggle"
+            >
+              <icon-hide v-if="passwordFieldType === 'password'" />
 
+              <icon-show v-else />
+            </button>
+          </template>
+        </cm-input>
+        <ErrorMessage name="password" />
         <cm-input
-          class-wrapper="mt-4"
+          class-wrapper="mt-3"
           id="input-confirm-password"
           label="Confirm Password"
-          type="password"
-          v-model="passwordConfirm"
+          :type="passwordConfirmFieldType"
+          v-model="passwordConfirmValue"
           @input="passwordConfirmValidation"
           :error="passwordConfirmError"
-        />
-        <ErrorMessage name="confirm password" />
+          placeholder="Enter your confirm password"
+        >
+          <template #append>
+            <button
+              type="button"
+              @click="togglePasswordConfirmVisibility"
+              class="password-toggle"
+            >
+              <icon-hide v-if="passwordConfirmFieldType === 'password'" />
+
+              <icon-show v-else />
+            </button>
+          </template>
+        </cm-input>
+        <ErrorMessage name="password" />
         <cm-button
-        :disabled="isValid"
-          type="submit"
-          is-block
           custom-class="mt-4"
+          is-block
+          :disabled="isValid"
+          type="submit"
         >
           Update
         </cm-button>
         <p
-          v-if="message"
+          v-if="responseMessage"
           class="mt-2 text text--caption text-success text-center"
         >
-          {{ message }}
+          {{ responseMessage }}
         </p>
         <p
-          v-if="error"
-          class="mt-2 text text--caption text-success text-center"
+          v-if="errorMessage"
+          class="mt-2 text text--caption text-danger text-center"
         >
-          {{ error }}
+          {{ errorMessage }}
         </p>
       </form>
     </validation-observer>
@@ -60,11 +85,12 @@
 
 <script>
 import { ValidationObserver, ErrorMessage } from 'vee-validate';
-// import { ValidationProvider } from 'vee-validate/dist/vee-validate.full.esm';
 import iconSecurity from '../icons/icon-security.vue';
 import CmButton from '../ui/button/cm-button.vue';
 import CmInput from '../ui/input/cm-input.vue';
 import CmLoader from '../ui/loader/cm-loader.vue';
+import IconShow from '../icons/icon-show-password.vue';
+import IconHide from '../icons/icon-hide-password.vue';
 import { validatePassword } from '../../utils/helpers/validate-password';
 export default {
   components: {
@@ -73,34 +99,63 @@ export default {
     CmButton,
     ValidationObserver,
     ErrorMessage,
-    // ValidationProvider,
     CmLoader,
+    IconShow,
+    IconHide,
   },
   data: () => ({
     isLoad: false,
-    password: '',
+    passwordValue: '',
     isValid: true,
-    passwordConfirm: '',
+    passwordConfirmValue: '',
     passwordError: '',
     passwordConfirmError: '',
-    message: '',
-    error: '',
+    passwordFieldType: 'password',
+    passwordConfirmFieldType: 'password',
+    responseMessage: '',
+    errorMessage: '',
+    hasTypedInConfirmPassword: false,
   }),
+  watch: {
+    isLoad() {
+      this.$root.$emit('set-auth-loading', this.isLoad);
+    },
+    passwordValue() {
+      this.errorMessage = '';
+    },
+    passwordConfirmValue() {
+      this.errorMessage = '';
+    },
+  },
   methods: {
+    togglePasswordVisibility() {
+      this.passwordFieldType =
+        this.passwordFieldType === 'password' ? 'text' : 'password';
+    },
+    togglePasswordConfirmVisibility() {
+      this.passwordConfirmFieldType =
+        this.passwordConfirmFieldType === 'password' ? 'text' : 'password';
+    },
     passwordValidation(event) {
       if (event !== '') {
-        this.password = event;
+        this.passwordValue = event;
       }
       if (event === '') {
         this.passwordError = 'The password field is required';
-        return;
+      } else {
+        this.passwordError = '';
       }
-      this.passwordError = '';
+
+      // Trigger confirm password validation when password changes
+      if (this.hasTypedInConfirmPassword) {
+        this.passwordConfirmValidation(this.passwordConfirmValue);
+      }
       this.validation();
     },
     passwordConfirmValidation(event) {
+      this.hasTypedInConfirmPassword = true;
       if (event !== '') {
-        this.passwordConfirm = event;
+        this.passwordConfirmValue = event;
       }
       if (event === '') {
         this.passwordConfirmError = 'The password field is required';
@@ -116,9 +171,9 @@ export default {
     validation() {
       if (
         !this.passwordError &&
-        this.password &&
+        this.passwordValue &&
         !this.passwordConfirmError &&
-        this.passwordConfirm
+        this.passwordConfirmValue
       ) {
         this.isValid = false;
       } else {
@@ -126,46 +181,58 @@ export default {
       }
     },
     submitForm() {
-      if (validatePassword(this.password)) {
-        this.error =
-          'Password must have digits, uppercase, lowercase and non-alphanumeric symbols';
-      } else {
+      if (
+        !this.passwordError &&
+        this.passwordValue &&
+        this.passwordConfirmValue &&
+        !this.passwordConfirmError
+      ) {
+        const data = {
+          password: this.passwordValue,
+          password_confirmation: this.passwordConfirmValue,
+        };
+
         this.isLoad = true;
+
         this.$store
           .dispatch('adminUpdatePassword', {
             id: this.$route.params.user,
-            passwords: {
-              password: this.password,
-              password_confirmation: this.passwordConfirm,
-            },
+            passwords: data,
           })
-          .then((value) => {
-            // this.$refs.validator.reset();
-            this.password = '';
-            this.passwordConfirm = '';
-            this.message = value;
+          .then((response) => {
+            // Handle response message
+            if (response) {
+              this.responseMessage = response;
+            } else {
+              this.responseMessage = 'Password Updated';
+            }
+
+            // Reset password fields
+            this.passwordValue = '';
+            this.passwordConfirmValue = '';
+            this.isValid = true;
           })
           .catch((errors) => {
-            if (typeof errors === 'string') {
-              this.error = errors.message;
+            console.log('Error: ', errors);
+            if (errors) {
+              this.errorMessage = errors?.response?.data?.message;
             } else {
-              if (errors?.errors) {
-                this.error = errors.message;
-              } else {
-                this.error = errors.message;
-              }
+              this.errorMessage =
+                'An error occurred while updating the password';
             }
           })
-          .finally(() => (this.isLoad = false));
+          .finally(() => {
+            this.isLoad = false;
+          });
       }
     },
     onChangePassword(value) {
-      this.message = '';
-      this.password = value;
+      this.responseMessage = '';
+      this.passwordValue = value;
     },
     onChangePasswordConfirm(value) {
-      this.message = '';
-      this.passwordConfirm = value;
+      this.responseMessage = '';
+      this.passwordConfirmValue = value;
     },
   },
 };
@@ -174,4 +241,18 @@ export default {
 <style
   lang="scss"
   scoped
-></style>
+>
+.password-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+}
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+</style>

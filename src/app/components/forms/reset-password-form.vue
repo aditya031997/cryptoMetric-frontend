@@ -92,6 +92,10 @@ import CmInput from '../ui/input/cm-input.vue';
 import CmLogo from '../cm-logo.vue';
 import IconShow from '../icons/icon-show-password.vue';
 import IconHide from '../icons/icon-hide-password.vue';
+import { useNotification } from '@kyvg/vue3-notification';
+
+const notification = useNotification();
+
 export default {
   name: 'reset-password-form',
   components: {
@@ -117,6 +121,7 @@ export default {
     passwordConfirmValue: '',
     passwordFieldType: 'password',
     passwordConfirmFieldType: 'password',
+    hasTypedInConfirmPassword: false,
   }),
   watch: {
     isLoad() {
@@ -153,12 +158,18 @@ export default {
       }
       if (event === '') {
         this.passwordError = 'The password field is required';
-        return;
+      } else {
+        this.passwordError = '';
       }
-      this.passwordError = '';
+
+      // Trigger confirm password validation when password changes
+      if (this.hasTypedInConfirmPassword) {
+        this.passwordConfirmValidation(this.passwordConfirmValue);
+      }
       this.validation();
     },
     passwordConfirmValidation(event) {
+      this.hasTypedInConfirmPassword = true;
       if (event !== '') {
         this.passwordConfirmValue = event;
       }
@@ -202,32 +213,22 @@ export default {
         this.$api
           .post('/reset-password', data)
           .then((response) => {
-            this.$root.$emit('set-auth-loading', false);
+            const Msg = response;
+            notification.notify({
+              text: Msg,
+              type: 'success',
+              duration: 2000,
+              speed: 1000,
+              position: 'top right',
+              classes: 'custom-notification',
+            });
             this.responseMessage = response;
+            this.$root.$emit('set-auth-loading', false);
             this.$router.push({ name: 'login' });
           })
-          .catch((response) => {
-            if (response?.errors) {
-              if (typeof response === 'string') {
-                this.$refs.validator.setErrors({ password: [response] });
-              } else {
-                const { password, password_confirmation, ...other } =
-                  response.errors;
-                const errors = {};
-                if (other) {
-                  errors.password = Object.values(other).flat();
-                }
-                if (password) {
-                  errors.password = [...errors.password, ...password];
-                }
-                if (password_confirmation) {
-                  errors.password_confirmation = password_confirmation;
-                }
-                this.errorMessage = errors.message;
-              }
-            } else {
-              this.errorMessage = errors.message;
-            }
+          .catch((error) => {
+            this.errorMessage =
+              error.errors.password[0] || 'Something went wrong';
           })
           .finally(() => {
             this.isLoad = false;
@@ -254,5 +255,8 @@ export default {
 .password-toggle svg {
   width: 20px;
   height: 20px;
+}
+.custom-notification {
+  margin-top: 20px;
 }
 </style>

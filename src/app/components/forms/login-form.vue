@@ -1,4 +1,5 @@
 <template>
+  <div class="auth-form-box-view">
   <div class="auth-form auth-form--login">
     <cm-logo />
     <h1 class="auth-form__title text text--title-2">Sign In</h1>
@@ -61,6 +62,7 @@
         </p>
       </form>
     </validation-observer>
+  </div>
   </div>
 </template>
 
@@ -201,7 +203,16 @@ export default {
   padding: 0;
   margin: 0;
 }
-
+.auth-form-box-view {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: center;
+}
+.auth-form-box-view .auth-form{
+  width:100%;
+}
 .password-toggle svg {
   width: 20px;
   height: 20px;

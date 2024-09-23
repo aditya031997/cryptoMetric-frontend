@@ -95,7 +95,6 @@ export default {
       }
     },
     formSubmit() {
-      console.log('hererer');
       this.isLoad = true;
       this.$store
         .dispatch('postInviteUser', this.email)

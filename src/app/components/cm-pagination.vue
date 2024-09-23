@@ -5,7 +5,9 @@
     v-if="links.length > 1"
   >
     <div class="d-flex align-items-center">
-      <p class="m-0 mr-2 text text-grey text--caption cm-pagination__label">{{ labelPagination }}</p>
+      <p class="m-0 mr-2 text text-grey text--caption cm-pagination__label">
+        {{ labelPagination }}
+      </p>
       <cm-select
         :value="valuePagination"
         :options="optionsPagination"
@@ -28,7 +30,7 @@
           @click="onClickPage(link.label)"
           class="cm-pagination__button text"
           :class="{
-            'is-active': link.active,
+            'is-active': Number(link.label) === currentPage,  // Ensure both are numbers
             'is-disable': link.label === '...',
           }"
           :disabled="link.label === '...'"
@@ -51,6 +53,7 @@
 import IconArrowHorizontal from './icons/icon-arrow-horizontal.vue';
 import buttonIcon from './ui/button/button-icon.vue';
 import CmSelect from './ui/select/cm-select.vue';
+
 export default {
   components: {
     buttonIcon,
@@ -59,50 +62,35 @@ export default {
   },
   name: 'cm-pagination',
   props: {
-    currentPage: { type: Number },
-    total: { type: Number },
-    links: {
-      type: Array,
-    },
-    goToPage: {
-      type: Function,
-    },
-    optionsPagination: {
-      type: Array,
-    },
-    valuePagination: {
-      type: Number,
-    },
-    changeItemValue: {
-      type: Function,
-    },
-    labelPagination: {
-      type: String,
-    },
-    isRows: {
-      type: Boolean,
-      default: false,
-    },
+    currentPage: { type: Number, required: true },
+    total: { type: Number, required: true },
+    links: { type: Array, required: true },
+    goToPage: { type: Function, required: true },
+    optionsPagination: { type: Array, required: true },
+    valuePagination: { type: Number, required: true },
+    changeItemValue: { type: Function, required: true },
+    labelPagination: { type: String, required: true },
+    isRows: { type: Boolean, default: false },
   },
   methods: {
     onClickBack() {
-      this.goToPage(this.currentPage - 1);
+      if (this.currentPage > 1) {
+        this.goToPage(this.currentPage - 1);
+      }
     },
     onClickPage(page) {
-      this.goToPage(page);
+      this.goToPage(Number(page)); // Ensure page is a number
     },
     onClickNext() {
-      this.goToPage(this.currentPage + 1);
+      if (this.currentPage < this.total) {
+        this.goToPage(this.currentPage + 1);
+      }
     },
     changeItemsShow(value) {
-      this.valueSelect = value;
       this.changeItemValue(value);
     },
   },
 };
 </script>
 
-<style
-  lang="scss"
-  scoped
-></style>
+<style lang="scss" scoped></style>

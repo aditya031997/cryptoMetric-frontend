@@ -1,5 +1,5 @@
 <template>
-  <tr class="">
+  <tr>
     <td class="table-col">{{ id }}</td>
     <td class="table-col">
       <cm-link
@@ -10,26 +10,20 @@
         <span class="m-0 text">{{ firstName }} {{ lastName }}</span>
       </cm-link>
     </td>
+    <td v-if="email" class="table-col table-col--email">{{ email }}</td>
+    <td v-if="date" class="table-col">{{ getDate }}</td>
     <td
-      v-if="email"
-      class="table-col table-col--email"
-    >
-      {{ email }}
-    </td>
-    <td
-      v-if="date"
+      v-if="typeof isAdmin !== 'undefined'"
       class="table-col"
-    >
-      {{ getDate }}
-    </td>
-    <td
-      class="table-col"
-      v-if="typeof this.isAdmin !== 'undefined'"
       :class="{ 'text-blue': isAdmin }"
     >
       {{ isAdmin ? 'Admin' : '-' }}
     </td>
-    <td class="d-sm-none d-xs-none"></td>
+    <td v-if="!isAdmin" class="text-center">
+      <button @click="onDeleteClick" class="remove-btn">
+        <icon-delete />
+      </button>
+    </td>
   </tr>
 </template>
 
@@ -37,51 +31,44 @@
 import { format, parseISO } from 'date-fns';
 import CmLink from '../../ui/link/cm-link.vue';
 import { useRouter } from 'vue-router';
+import IconDelete from '../../icons/icon-delete.vue';
 
 export default {
   components: {
     CmLink,
+    IconDelete,
   },
   props: {
-    id: {
-      type: Number,
-    },
-    firstName: {
-      type: String,
-    },
-    lastName: {
-      type: String,
-    },
-    email: {
-      type: String,
-    },
-    isAdmin: {
-      type: Boolean,
-    },
-    date: {
-      type: String,
-    },
+    id: Number,
+    firstName: String,
+    lastName: String,
+    email: String,
+    isAdmin: Boolean,
+    date: String,
   },
   setup() {
     const router = useRouter();
 
-    const getLink = (id) => {
-      return `/users/${id}`;
-    };
+    const getLink = (id) => `/users/${id}`;
     const navigateToLink = (link) => {
-      router
-        .push(link)
-        .then(() => {
-        })
-        .catch((error) => {
-          console.error('Navigation error:', error);
-        });
+      router.push(link).catch((error) => {
+        console.error('Navigation error:', error);
+      });
     };
 
     return {
       getLink,
       navigateToLink,
     };
+  },
+  methods: {
+    onDeleteClick() {
+      this.$emit('open-delete-modal', {
+        id: this.id,
+        firstName: this.firstName,
+        lastName: this.lastName,
+      });
+    },
   },
   computed: {
     getDate() {
@@ -91,7 +78,10 @@ export default {
 };
 </script>
 
-<style
-  lang="scss"
-  scoped
-></style>
+<style lang="scss" scoped>
+.remove-btn {
+  background: transparent;
+  border: none;
+  padding: 0px;
+}
+</style>
