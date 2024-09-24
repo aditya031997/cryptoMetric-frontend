@@ -38,11 +38,12 @@
       :options="userData"
       :change-page="changeTablePage"
       :page="tablePage"
+      :search="search"
     />
     <cm-pagination
       class="mt-4"
       :change-item-value="changeRowsValue"
-      :current-page="tablePage" 
+      :current-page="tablePage"
       :go-to-page="changePage"
       label-pagination="Rows :"
       :links="formatterPagination(getCurrent, getTotal)"
@@ -91,17 +92,27 @@ export default {
     userData: [],
   }),
   computed: {
-    ...mapGetters(['getUsers', 'getLinksAdmin', 'getCurrent', 'getTotal', 'getUsersLength']),
+    ...mapGetters([
+      'getUsers',
+      'getLinksAdmin',
+      'getCurrent',
+      'getTotal',
+      'getUsersLength',
+    ]),
   },
   mounted() {
     this.getUsersDebounced = _.debounce(this.getUsersAdmin, 300);
     this.isLoad = true;
     this.getUsersAdmin();
-    if (this.rowsOptions.find((row) => row === Number(this.$route.query.rows))) {
+    if (
+      this.rowsOptions.find((row) => row === Number(this.$route.query.rows))
+    ) {
       this.rows = Number(this.$route.query.rows);
     } else {
       this.rows = this.rowsOptions[0];
-      this.$router.replace({ query: { ...this.$route.query, rows: this.rowsOptions[0] } });
+      this.$router.replace({
+        query: { ...this.$route.query, rows: this.rowsOptions[0] },
+      });
     }
     if (this.$route.query.search) {
       this.search = this.$route.query.search;
@@ -112,8 +123,8 @@ export default {
     '$route.query.page': {
       immediate: true,
       handler(newPage) {
-        this.tablePage = Number(newPage) || 1; // Update local page state
-        this.getUsersAdmin(); // Fetch users for the new page
+        this.tablePage = Number(newPage) || 1;
+        this.getUsersAdmin();
       },
     },
   },
@@ -128,30 +139,38 @@ export default {
         this.rows = this.rowsOptions[0];
       }
       if (Number(this.$route.query.rows) !== this.rows) {
-        this.$router.replace({ query: { ...this.$route.query, page: 1, rows: this.rows } });
+        this.$router.replace({
+          query: { ...this.$route.query, page: 1, rows: this.rows },
+        });
       }
       this.getUsersAdmin();
     },
     changePage(page) {
-      this.$router.replace({ query: { ...this.$route.query, page } }).then(() => {
-        this.tablePage = page; // Update local page state
-        this.getUsersAdmin(); // Fetch users for the new page
-      });
+      this.$router
+        .replace({ query: { ...this.$route.query, page } })
+        .then(() => {
+          this.tablePage = page; // Update local page state
+          this.getUsersAdmin(); // Fetch users for the new page
+        });
     },
     onChangeSearch(value) {
       this.search = value;
       if (value.trim()) {
-        this.$router.replace({ query: { ...this.$route.query, search: value } }).catch((error) => {
-          if (error.name !== 'NavigationDuplicated') {
-            throw error;
-          }
-        });
+        this.$router
+          .replace({ query: { ...this.$route.query, search: value } })
+          .catch((error) => {
+            if (error.name !== 'NavigationDuplicated') {
+              throw error;
+            }
+          });
       } else {
-        this.$router.replace({ query: { ...this.$route.query, search: undefined } }).catch((error) => {
-          if (error.name !== 'NavigationDuplicated') {
-            throw error;
-          }
-        });
+        this.$router
+          .replace({ query: { ...this.$route.query, search: undefined } })
+          .catch((error) => {
+            if (error.name !== 'NavigationDuplicated') {
+              throw error;
+            }
+          });
       }
       this.changePage(1);
       this.getUsersDebounced();
@@ -165,7 +184,7 @@ export default {
           search: this.search,
         })
         .then((response) => {
-          this.userData = response?.data; 
+          this.userData = response?.data;
           document.body.scrollIntoView(true);
         })
         .finally(() => (this.isLoad = false));

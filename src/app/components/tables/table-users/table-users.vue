@@ -8,7 +8,7 @@
   >
     <responsive-table
       :titles="titles"
-      :options="options"
+      :options="localOptions" 
       :responsive="responsive"
       :default-options="defaultOptionsRow"
       :change-page="onChangePage"
@@ -50,7 +50,7 @@
       :isVisible="isDeleteModalVisible"
       :user="selectedUser"
       @close="closeDeleteModal"
-      @delete="confirmDelete"
+      @delete="confirmDelete" 
     />
   </page-card>
 </template>
@@ -61,7 +61,6 @@ import ResponsiveTable from '../responsive-table.vue';
 import RowUsers from './row-users.vue';
 import DeleteModal from '../../modals/modal-delete.vue';
 import PageCard from '../../../components/ui/card/page-card.vue';
-import _ from 'lodash'; // Ensure lodash is imported
 import { useNotification } from '@kyvg/vue3-notification';
 
 const notification = useNotification();
@@ -74,14 +73,18 @@ export default {
     PageCard,
   },
   props: {
-    options: {
+    options: { // Existing options prop containing user data
       type: Array,
+      required: true,
     },
     changePage: {
       type: Function,
     },
     page: {
       type: Number,
+    },
+    search: {
+      type: String,
     },
   },
   data() {
@@ -105,48 +108,77 @@ export default {
       isDeleteModalVisible: false,
       selectedUser: null,
       isLoad: false,
+      
+      // Create a local copy of options to manage state
+      localOptions: [] 
     };
   },
+  
   computed: {
     ...mapGetters(['getUsers', 'getUsersLength']),
   },
+
   mounted() {
-    console.log('Initial options:', this.options);
     this.isLoad = true;
-    this.getUsersAdmin();
+    
+    // Initialize localOptions with the prop value
+    this.localOptions = [...this.options]; // Copy initial options
+    this.loadData(); // Load initial data on mount
   },
+
   methods: {
     ...mapActions(['deleteUser']),
 
+    loadData() {
+      this.isLoad = true;
+      
+      // Fetch users from the store or API based on current page and search
+      this.$store.dispatch('getUsers', {
+        page: this.page,
+        perPage: 10,
+        search: this.search,
+      })
+      .then(response => {
+        // Update localOptions with the fetched data
+        this.localOptions = response.data; // Ensure response.data contains the user list
+        console.log(this.localOptions, 'Loaded options after API call');
+      })
+      .catch(error => {
+        console.error('Failed to load users:', error);
+      })
+      .finally(() => {
+        this.isLoad = false;
+      });
+    },
+
     onChangePage(page) {
       this.changePage(page);
+      
+      // Reload data when page changes
+      this.loadData();
     },
+
     openDeleteModal(user) {
       this.selectedUser = user;
       this.isDeleteModalVisible = true;
     },
+
     closeDeleteModal() {
       this.isDeleteModalVisible = false;
       this.selectedUser = null;
     },
-    getUsersAdmin() {
-      this.isLoad = true;
-      this.$store
-        .dispatch('getUsers')
-        .then((response) => {
-          console.log(response.data, 'response111');
-        })
-        .finally(() => {
-          this.isLoad = false;
-        });
-    },
+
     confirmDelete(userId) {
       const Msg = 'User deleted successfully';
-      // console.log(`Deleting user with ID: ${userId}`);
+      
       this.isLoad = true;
 
+      // Call the delete action
       this.deleteUser(userId)
         .then(() => {
+          // Remove the deleted user from localOptions array
+          this.localOptions = this.localOptions.filter(user => user.id !== userId);
+          
           notification.notify({
             title: 'Delete',
             text: Msg,
@@ -156,9 +188,8 @@ export default {
             position: 'top right',
             classes: 'custom-notification',
           });
-          // console.log('User deleted successfully');
-          this.getUsersAdmin();
-          this.closeDeleteModal();
+          
+          this.closeDeleteModal(); // Close the modal after deletion
         })
         .catch((error) => {
           console.error('Failed to delete user:', error);
