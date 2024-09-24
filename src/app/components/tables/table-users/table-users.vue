@@ -62,13 +62,16 @@ import RowUsers from './row-users.vue';
 import DeleteModal from '../../modals/modal-delete.vue';
 import PageCard from '../../../components/ui/card/page-card.vue';
 import _ from 'lodash'; // Ensure lodash is imported
+import { useNotification } from '@kyvg/vue3-notification';
+
+const notification = useNotification();
 
 export default {
   components: {
     ResponsiveTable,
     RowUsers,
     DeleteModal,
-    PageCard
+    PageCard,
   },
   props: {
     options: {
@@ -128,20 +131,33 @@ export default {
     },
     getUsersAdmin() {
       this.isLoad = true;
-      this.$store.dispatch('getUsers').then(response => {
-        console.log(response.data, "response111");
-      }).finally(() => {
-        this.isLoad = false;
-      });
+      this.$store
+        .dispatch('getUsers')
+        .then((response) => {
+          console.log(response.data, 'response111');
+        })
+        .finally(() => {
+          this.isLoad = false;
+        });
     },
     confirmDelete(userId) {
-      console.log(`Deleting user with ID: ${userId}`);
+      const Msg = 'User deleted successfully';
+      // console.log(`Deleting user with ID: ${userId}`);
       this.isLoad = true;
 
       this.deleteUser(userId)
         .then(() => {
-          console.log('User deleted successfully');
-          this.getUsersAdmin(); // Refresh the user list
+          notification.notify({
+            title: 'Disconnected',
+            text: Msg,
+            type: 'success',
+            duration: 2000,
+            speed: 1000,
+            position: 'top right',
+            classes: 'custom-notification',
+          });
+          // console.log('User deleted successfully');
+          this.getUsersAdmin();
           this.closeDeleteModal();
         })
         .catch((error) => {
@@ -158,5 +174,8 @@ export default {
 <style lang="scss" scoped>
 table tr th:last-child {
   text-align: center;
+}
+.custom-notification {
+  margin-top: 20px;
 }
 </style>
