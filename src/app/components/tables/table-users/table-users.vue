@@ -148,7 +148,7 @@ export default {
       this.deleteUser(userId)
         .then(() => {
           notification.notify({
-            title: 'Disconnected',
+            title: 'Delete',
             text: Msg,
             type: 'success',
             duration: 2000,
