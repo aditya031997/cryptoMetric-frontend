@@ -40,11 +40,11 @@
           :email="row.email"
           :is-admin="row.is_admin"
           :date="row.created_at"
+          :status="row.invitation_status" 
           @open-delete-modal="openDeleteModal"
         />
       </template>
     </responsive-table>
-
     <delete-modal
       v-if="isDeleteModalVisible"
       :isVisible="isDeleteModalVisible"
@@ -97,7 +97,8 @@ export default {
         { id: 2, name: 'Email', sortedName: 'email' },
         { id: 3, name: 'Registration date', sortedName: 'created_at' },
         { id: 4, name: 'Role', sortedName: 'is_admin' },
-        { id: 5, name: 'Action', sortedName: 'is_admin' },
+        { id: 5, name: 'User Verified', sortedName: 'invitation_status' },
+        { id: 6, name: 'Action', sortedName: 'is_admin' },
       ],
       responsive: [
         { max: 1600, min: 991, elements: 6, pages: 1 },
@@ -139,9 +140,7 @@ export default {
         search: this.search,
       })
       .then(response => {
-        // Update localOptions with the fetched data
         this.localOptions = response.data; // Ensure response.data contains the user list
-        console.log(this.localOptions, 'Loaded options after API call');
       })
       .catch(error => {
         console.error('Failed to load users:', error);
