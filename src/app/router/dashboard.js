@@ -7,6 +7,7 @@ import DashboardAlerts from '../pages/dashboard-alerts.vue';
 import DashboardUsers from '../pages/dashboard-users.vue';
 import DashboardUser from '../pages/dashboard-user.vue';
 import DashboardBubble from '../pages/top-token-by-marketCap.vue';
+import DisclaimerDesc from '../pages/disclaimer.vue';
 import DashboardSwap from '../pages/web3-exchange.vue';
 import roles from './roles';
 
@@ -58,6 +59,12 @@ export default [
     name: 'swap-token',
     component: DashboardSwap,
     meta: { requiresAuth: true, headerName: 'Swap Token' },
+  },
+  {
+    path: '/disclaimer',
+    name: 'disclaimer',
+    component: DisclaimerDesc,
+    meta: { requiresAuth: true, headerName: 'Disclaimer' },
   },
   {
     path: '/alerts',
